@@ -1,0 +1,11 @@
+# Node
+client/node_modules
+client/.nuxt
+client/.output
+
+# Laravel
+api/vendor
+api/.env
+
+# Logs
+*.log
