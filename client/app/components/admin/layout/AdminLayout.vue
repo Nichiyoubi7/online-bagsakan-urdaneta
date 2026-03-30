@@ -24,7 +24,8 @@
               type="text"
               placeholder="Search..."
               class="bg-transparent text-sm outline-none text-gray-700 placeholder:text-gray-400 w-40"
-            />
+            1/>
+
           </div>
 
           <!-- Notifications -->
