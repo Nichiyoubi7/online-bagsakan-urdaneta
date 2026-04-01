@@ -1,7 +1,5 @@
 <template>
   <GuestLayout>
-
-    <!-- Breadcrumb Banner -->
     <div class="bg-gray-800">
       <div class="max-w-7xl mx-auto px-6 py-8">
         <div class="flex items-center gap-2 text-sm text-gray-300">
@@ -9,52 +7,28 @@
           <span>/</span>
           <NuxtLink to="/customer" class="hover:text-green-400 transition-colors">Categories</NuxtLink>
           <span>/</span>
-          <NuxtLink
-            :to="`/customer?category=${encodeURIComponent(product.category)}`"
-            class="hover:text-green-400 transition-colors"
-          >
+          <NuxtLink :to="`/customer?category=${encodeURIComponent(product.category)}`" class="hover:text-green-400 transition-colors">
             {{ product.category }}
           </NuxtLink>
         </div>
       </div>
     </div>
 
-    <!-- Product Detail -->
     <div class="max-w-7xl mx-auto px-6 py-10">
-
-      <!-- Top Section: Gallery + Info -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-12">
-
-        <!-- Left: Image Gallery -->
-        <ProductGallery
-          :images="product.images"
-          :product-name="product.name"
-        />
-
-        <!-- Right: Product Info -->
+        <ProductGallery :images="product.images" :product-name="product.name" />
         <ProductInfo :product="product" />
-
       </div>
-
-      <!-- Tabs -->
       <div class="mb-12">
         <ProductTabs :product="product" />
       </div>
-
-      <!-- Related Products -->
       <div v-if="relatedProducts.length > 0">
         <h2 class="text-2xl font-black text-gray-900 mb-6">Related Products</h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
-          <ProductCard
-            v-for="related in relatedProducts"
-            :key="related.id"
-            :product="related"
-          />
+          <ProductCard v-for="related in relatedProducts" :key="related.id" :product="related" />
         </div>
       </div>
-
     </div>
-
   </GuestLayout>
 </template>
 
@@ -72,361 +46,173 @@ const productId = Number(route.params.id)
 
 const allProducts = [
   {
-    id: 1,
-    name: 'Green Apple',
-    rating: 4,
-    reviews: [
-      { id: 1, name: 'Maria Santos',   rating: 5, comment: 'Very fresh and delicious!',      date: '2 hrs ago' },
-      { id: 2, name: 'Juan dela Cruz', rating: 4, comment: 'Great quality, will buy again.', date: '1 day ago' },
-    ],
-    sku: 'SKU-001',
-    price: 15.00,
-    originalPrice: 25.00,
-    discount: 40,
-    brand: 'Bagsakan',
-    description: 'Fresh green apples sourced directly from local farms in Pangasinan. Crispy, sweet and healthy.',
-    highlights: [
-      'Freshly harvested from local farms',
-      'Rich in vitamins and antioxidants',
-      'Perfect for snacking or cooking',
-      'No artificial preservatives',
-    ],
-    additionalInfo: [
-      { label: 'Weight',   value: '1 kg' },
-      { label: 'Color',    value: 'Green' },
-      { label: 'Type',     value: 'Organic' },
-      { label: 'Category', value: 'Fresh Fruit' },
-    ],
-    category: 'Fresh Fruit',
-    tags: ['Fruit', 'Fresh', 'Organic', 'Healthy'],
-    images: ['/images/products/green-apple.png', '/images/products/green-apple.png'],
-  },
-  {
-    id: 2,
-    name: 'Guijapur Mango',
-    rating: 4,
-    reviews: [
-      { id: 1, name: 'Ana Reyes', rating: 5, comment: 'Sweetest mangoes I have ever tasted!', date: '3 hrs ago' },
-    ],
-    sku: 'SKU-002',
-    price: 15.00,
-    originalPrice: 20.00,
-    discount: 25,
-    brand: 'Bagsakan',
-    description: 'Sweet and juicy Guijapur mangoes fresh from Pangasinan orchards.',
-    highlights: [
-      'Sweet and juicy variety',
-      'Locally grown in Pangasinan',
-      'Rich in Vitamin C',
-      'Perfect for juices and desserts',
-    ],
-    additionalInfo: [
-      { label: 'Weight',   value: '1 kg' },
-      { label: 'Color',    value: 'Yellow' },
-      { label: 'Type',     value: 'Organic' },
-      { label: 'Category', value: 'Fresh Fruit' },
-    ],
-    category: 'Fresh Fruit',
-    tags: ['Fruit', 'Mango', 'Sweet', 'Local'],
-    images: ['/images/products/mango.png', '/images/products/mango.png'],
-  },
-  {
-    id: 3,
-    name: 'Red Tomatoes',
-    rating: 4,
-    reviews: [
-      { id: 1, name: 'Pedro Cruz', rating: 4, comment: 'Perfect for cooking!', date: '1 day ago' },
-    ],
-    sku: 'SKU-003',
-    price: 15.00,
-    originalPrice: 20.00,
-    discount: 25,
-    brand: 'Bagsakan',
+    id: 1, name: 'Tomato', rating: 4, sku: 'SKU-001', price: 20.00, originalPrice: 25.00, discount: 20, brand: 'Bagsakan',
     description: 'Fresh red tomatoes perfect for cooking, salads, and sauces.',
-    highlights: [
-      'Freshly picked from local farms',
-      'Rich in lycopene and vitamins',
-      'Perfect for cooking and salads',
-      'No artificial coloring',
-    ],
-    additionalInfo: [
-      { label: 'Weight',   value: '500 g' },
-      { label: 'Color',    value: 'Red' },
-      { label: 'Type',     value: 'Organic' },
-      { label: 'Category', value: 'Vegetables' },
-    ],
-    category: 'Vegetables',
-    tags: ['Vegetable', 'Fresh', 'Organic'],
-    images: ['/images/products/tomatoes.png', '/images/products/tomatoes.png'],
+    highlights: ['Freshly picked from local farms', 'Rich in lycopene and vitamins', 'Perfect for cooking and salads', 'No artificial coloring'],
+    additionalInfo: [{ label: 'Weight', value: '500 g' }, { label: 'Color', value: 'Red' }, { label: 'Type', value: 'Organic' }, { label: 'Category', value: 'Vegetables' }],
+    category: 'Vegetables', tags: ['Vegetable', 'Fresh', 'Organic'],
+    reviews: [{ id: 1, name: 'Maria Santos', rating: 5, comment: 'Very fresh and delicious!', date: '2 hrs ago' }],
+    images: ['/images/products/vegetables/Tomato.png', '/images/products/vegetables/Tomato.png'],
   },
   {
-    id: 4,
-    name: 'Chinese Cabbage',
-    rating: 4,
-    reviews: [
-      { id: 1, name: 'Kristi Watson',  rating: 5, comment: 'Puls in dapimper nulla, eu dictum arcu.', date: '2 hrs ago' },
-      { id: 2, name: 'Jake Cooper',    rating: 4, comment: 'Amazing product for the freshest quality.', date: '1 day ago' },
-      { id: 3, name: 'Jacob Jones',    rating: 5, comment: 'Wow! Fresh and crispy.', date: '3 hrs ago' },
-    ],
-    sku: 'SKU-123/94',
-    price: 15.00,
-    originalPrice: 42.00,
-    discount: 64,
-    brand: 'Bagsakan',
-    description: 'Fresh Chinese cabbage sourced from local Urdaneta farmers. Perfect for stir fry and soups.',
-    highlights: [
-      '100 g of fresh leaves per serving',
-      'Rich in vitamins A, C and K',
-      'Perfect for stir fry and soups',
-      'Freshly harvested daily',
-    ],
-    additionalInfo: [
-      { label: 'Weight',   value: '1 kg' },
-      { label: 'Color',    value: 'Green' },
-      { label: 'Type',     value: 'Organic' },
-      { label: 'Category', value: 'Vegetables' },
-    ],
-    category: 'Vegetables',
-    tags: ['Vegetables', 'Healthy', 'Chinese', 'Cabbage'],
-    images: ['/images/products/chinese-cabbage.png', '/images/products/chinese-cabbage.png'],
-  },
-  {
-    id: 5,
-    name: 'Green Lettuce',
-    rating: 4,
-    reviews: [
-      { id: 1, name: 'Rosa Mendoza', rating: 4, comment: 'Very fresh and crispy!', date: '5 hrs ago' },
-    ],
-    sku: 'SKU-005',
-    price: 15.00,
-    originalPrice: 18.00,
-    discount: 17,
-    brand: 'Bagsakan',
-    description: 'Fresh green lettuce perfect for salads and sandwiches.',
-    highlights: [
-      'Crispy and fresh leaves',
-      'Low in calories',
-      'Perfect for salads',
-      'Locally grown',
-    ],
-    additionalInfo: [
-      { label: 'Weight',   value: '500 g' },
-      { label: 'Color',    value: 'Green' },
-      { label: 'Type',     value: 'Organic' },
-      { label: 'Category', value: 'Vegetables' },
-    ],
-    category: 'Vegetables',
-    tags: ['Vegetable', 'Salad', 'Fresh'],
-    images: ['/images/products/lettuce.png', '/images/products/lettuce.png'],
-  },
-  {
-    id: 6,
-    name: 'Eggplant',
-    rating: 4,
-    reviews: [
-      { id: 1, name: 'Carlos Reyes', rating: 4, comment: 'Fresh and perfect size!', date: '4 hrs ago' },
-    ],
-    sku: 'SKU-006',
-    price: 15.00,
-    originalPrice: 20.00,
-    discount: 25,
-    brand: 'Bagsakan',
+    id: 2, name: 'Eggplant', rating: 4, sku: 'SKU-002', price: 15.00, originalPrice: 20.00, discount: 25, brand: 'Bagsakan',
     description: 'Fresh eggplants perfect for adobo, tortang talong and other Filipino dishes.',
-    highlights: [
-      'Freshly harvested',
-      'Perfect for Filipino dishes',
-      'Rich in antioxidants',
-      'Locally sourced',
-    ],
-    additionalInfo: [
-      { label: 'Weight',   value: '500 g' },
-      { label: 'Color',    value: 'Purple' },
-      { label: 'Type',     value: 'Organic' },
-      { label: 'Category', value: 'Vegetables' },
-    ],
-    category: 'Vegetables',
-    tags: ['Vegetable', 'Fresh', 'Local'],
-    images: ['/images/products/eggplant.png', '/images/products/eggplant.png'],
+    highlights: ['Freshly harvested', 'Perfect for Filipino dishes', 'Rich in antioxidants', 'Locally sourced'],
+    additionalInfo: [{ label: 'Weight', value: '500 g' }, { label: 'Color', value: 'Purple' }, { label: 'Type', value: 'Organic' }, { label: 'Category', value: 'Vegetables' }],
+    category: 'Vegetables', tags: ['Vegetable', 'Fresh', 'Local'],
+    reviews: [{ id: 1, name: 'Carlos Reyes', rating: 4, comment: 'Fresh and perfect size!', date: '4 hrs ago' }],
+    images: ['/images/products/vegetables/eggplant.png', '/images/products/vegetables/eggplant.png'],
   },
   {
-    id: 7,
-    name: 'Green Chili',
-    rating: 4,
-    reviews: [
-      { id: 1, name: 'Nena Santos', rating: 5, comment: 'Very spicy and fresh!', date: '6 hrs ago' },
-    ],
-    sku: 'SKU-007',
-    price: 15.00,
-    originalPrice: 18.00,
-    discount: 17,
-    brand: 'Bagsakan',
-    description: 'Fresh green chili peppers perfect for adding spice to your dishes.',
-    highlights: [
-      'Freshly picked',
-      'Rich in Vitamin C',
-      'Perfect for spicy dishes',
-      'Locally grown',
-    ],
-    additionalInfo: [
-      { label: 'Weight',   value: '250 g' },
-      { label: 'Color',    value: 'Green' },
-      { label: 'Type',     value: 'Organic' },
-      { label: 'Category', value: 'Vegetables' },
-    ],
-    category: 'Vegetables',
-    tags: ['Vegetable', 'Spicy', 'Fresh'],
-    images: ['/images/products/green-chili.png', '/images/products/green-chili.png'],
+    id: 3, name: 'Bitter Gourd', rating: 4, sku: 'SKU-003', price: 18.00, originalPrice: 22.00, discount: 18, brand: 'Bagsakan',
+    description: 'Fresh bitter gourd perfect for pinakbet and other Filipino vegetable dishes.',
+    highlights: ['Freshly harvested', 'Rich in vitamins', 'Perfect for Filipino dishes', 'Locally grown'],
+    additionalInfo: [{ label: 'Weight', value: '500 g' }, { label: 'Color', value: 'Green' }, { label: 'Type', value: 'Organic' }, { label: 'Category', value: 'Vegetables' }],
+    category: 'Vegetables', tags: ['Vegetable', 'Fresh', 'Local'],
+    reviews: [{ id: 1, name: 'Aling Nena', rating: 4, comment: 'Perfect for pinakbet!', date: '1 day ago' }],
+    images: ['/images/products/vegetables/bitter_gourd.png', '/images/products/vegetables/bitter_gourd.png'],
   },
   {
-    id: 8,
-    name: 'Bangus',
-    rating: 4,
-    reviews: [
-      { id: 1, name: 'Mang Bert', rating: 5, comment: 'Very fresh from the fish pond!', date: '1 hr ago' },
-    ],
-    sku: 'SKU-008',
-    price: 85.00,
-    originalPrice: 100.00,
-    discount: 15,
-    brand: 'Bagsakan',
-    description: 'Fresh bangus (milkfish) sourced from local fish ponds in Pangasinan.',
-    highlights: [
-      'Fresh from local fish ponds',
-      'Rich in Omega-3',
-      'Perfect for sinigang and daing',
-      'Cleaned and ready to cook',
-    ],
-    additionalInfo: [
-      { label: 'Weight',   value: '1 kg' },
-      { label: 'Type',     value: 'Fresh Fish' },
-      { label: 'Category', value: 'Meat & Fish' },
-    ],
-    category: 'Meat & Fish',
-    tags: ['Fish', 'Fresh', 'Seafood', 'Local'],
-    images: ['/images/products/bangus.png', '/images/products/bangus.png'],
+    id: 4, name: 'Okra', rating: 4, sku: 'SKU-004', price: 12.00, originalPrice: 15.00, discount: 20, brand: 'Bagsakan',
+    description: 'Fresh okra perfect for sinigang and other Filipino dishes.',
+    highlights: ['Freshly harvested', 'Rich in fiber', 'Perfect for sinigang', 'Locally grown'],
+    additionalInfo: [{ label: 'Weight', value: '250 g' }, { label: 'Color', value: 'Green' }, { label: 'Type', value: 'Organic' }, { label: 'Category', value: 'Vegetables' }],
+    category: 'Vegetables', tags: ['Vegetable', 'Fresh', 'Local'],
+    reviews: [{ id: 1, name: 'Pedro Lim', rating: 4, comment: 'Fresh and tender!', date: '3 hrs ago' }],
+    images: ['/images/products/vegetables/okra.png', '/images/products/vegetables/okra.png'],
   },
   {
-    id: 9,
-    name: 'Pork Liempo',
-    rating: 5,
-    reviews: [
-      { id: 1, name: 'Aling Rosa', rating: 5, comment: 'Perfect for inihaw!', date: '2 hrs ago' },
-    ],
-    sku: 'SKU-009',
-    price: 220.00,
-    originalPrice: 260.00,
-    discount: 15,
-    brand: 'Bagsakan',
-    description: 'Fresh pork liempo (belly) perfect for inihaw, lechon kawali and adobo.',
-    highlights: [
-      'Fresh from local farms',
-      'Perfect for grilling',
-      'No preservatives',
-      'Cleaned and sliced',
-    ],
-    additionalInfo: [
-      { label: 'Weight',   value: '1 kg' },
-      { label: 'Type',     value: 'Fresh Pork' },
-      { label: 'Category', value: 'Meat & Fish' },
-    ],
-    category: 'Meat & Fish',
-    tags: ['Meat', 'Pork', 'Fresh', 'Local'],
-    images: ['/images/products/pork.png', '/images/products/pork.png'],
+    id: 5, name: 'Sitaw', rating: 4, sku: 'SKU-005', price: 15.00, originalPrice: 18.00, discount: 17, brand: 'Bagsakan',
+    description: 'Fresh string beans perfect for adobo and ginisang sitaw.',
+    highlights: ['Freshly harvested', 'Rich in protein', 'Perfect for Filipino dishes', 'Locally grown'],
+    additionalInfo: [{ label: 'Weight', value: '250 g' }, { label: 'Color', value: 'Green' }, { label: 'Type', value: 'Organic' }, { label: 'Category', value: 'Vegetables' }],
+    category: 'Vegetables', tags: ['Vegetable', 'Fresh', 'Local'],
+    reviews: [{ id: 1, name: 'Rosa Garcia', rating: 4, comment: 'Very fresh!', date: '5 hrs ago' }],
+    images: ['/images/products/vegetables/sitaw.png', '/images/products/vegetables/sitaw.png'],
   },
   {
-    id: 10,
-    name: 'Tilapia',
-    rating: 4,
-    reviews: [
-      { id: 1, name: 'Tatay Ben', rating: 4, comment: 'Good quality fish!', date: '3 hrs ago' },
-    ],
-    sku: 'SKU-010',
-    price: 95.00,
-    originalPrice: 110.00,
-    discount: 14,
-    brand: 'Bagsakan',
-    description: 'Fresh tilapia from local fish ponds. Perfect for sinigang and paksiw.',
-    highlights: [
-      'Fresh from fish ponds',
-      'High in protein',
-      'Perfect for Filipino dishes',
-      'Cleaned and ready to cook',
-    ],
-    additionalInfo: [
-      { label: 'Weight',   value: '1 kg' },
-      { label: 'Type',     value: 'Fresh Fish' },
-      { label: 'Category', value: 'Meat & Fish' },
-    ],
-    category: 'Meat & Fish',
-    tags: ['Fish', 'Fresh', 'Seafood'],
-    images: ['/images/products/tilapia.png', '/images/products/tilapia.png'],
+    id: 6, name: 'Kangkong', rating: 4, sku: 'SKU-006', price: 10.00, originalPrice: 12.00, discount: 17, brand: 'Bagsakan',
+    description: 'Fresh water spinach perfect for adobong kangkong and sinigang.',
+    highlights: ['Freshly harvested', 'Rich in iron', 'Perfect for Filipino dishes', 'Locally grown'],
+    additionalInfo: [{ label: 'Weight', value: '250 g' }, { label: 'Color', value: 'Green' }, { label: 'Type', value: 'Organic' }, { label: 'Category', value: 'Vegetables' }],
+    category: 'Vegetables', tags: ['Vegetable', 'Fresh', 'Local'],
+    reviews: [{ id: 1, name: 'Juan Santos', rating: 4, comment: 'Good quality!', date: '2 hrs ago' }],
+    images: ['/images/products/vegetables/kangkong.png', '/images/products/vegetables/kangkong.png'],
   },
   {
-    id: 11,
-    name: 'Chinese Cabbage',
-    rating: 4,
-    reviews: [
-      { id: 1, name: 'Lola Caring', rating: 4, comment: 'Very fresh!', date: '1 day ago' },
-    ],
-    sku: 'SKU-011',
-    price: 15.00,
-    originalPrice: 20.00,
-    discount: 25,
-    brand: 'Bagsakan',
-    description: 'Fresh Chinese cabbage perfect for soups and stir fry.',
-    highlights: [
-      'Freshly harvested',
-      'Perfect for soups',
-      'Rich in vitamins',
-      'Locally grown',
-    ],
-    additionalInfo: [
-      { label: 'Weight',   value: '1 kg' },
-      { label: 'Color',    value: 'Green' },
-      { label: 'Type',     value: 'Organic' },
-      { label: 'Category', value: 'Vegetables' },
-    ],
-    category: 'Vegetables',
-    tags: ['Vegetable', 'Fresh', 'Organic'],
-    images: ['/images/products/chinese-cabbage.png', '/images/products/chinese-cabbage.png'],
+    id: 7, name: 'Repolyo', rating: 4, sku: 'SKU-007', price: 25.00, originalPrice: 30.00, discount: 17, brand: 'Bagsakan',
+    description: 'Fresh cabbage perfect for soups, stir fry and salads.',
+    highlights: ['Freshly harvested', 'Rich in vitamins', 'Perfect for soups', 'Locally grown'],
+    additionalInfo: [{ label: 'Weight', value: '1 kg' }, { label: 'Color', value: 'Green' }, { label: 'Type', value: 'Organic' }, { label: 'Category', value: 'Vegetables' }],
+    category: 'Vegetables', tags: ['Vegetable', 'Fresh', 'Local'],
+    reviews: [{ id: 1, name: 'Ana Reyes', rating: 4, comment: 'Very fresh and crispy!', date: '1 day ago' }],
+    images: ['/images/products/vegetables/repolyo.png', '/images/products/vegetables/repolyo.png'],
   },
   {
-    id: 12,
-    name: 'Green Capsicum',
-    rating: 3,
-    reviews: [
-      { id: 1, name: 'Kuya Jun', rating: 3, comment: 'Good quality but a bit small.', date: '2 days ago' },
-    ],
-    sku: 'SKU-012',
-    price: 15.00,
-    originalPrice: 18.00,
-    discount: 17,
-    brand: 'Bagsakan',
-    description: 'Fresh green capsicum perfect for salads, stir fry and stuffed peppers.',
-    highlights: [
-      'Freshly harvested',
-      'Rich in Vitamin C',
-      'Perfect for stir fry',
-      'Locally sourced',
-    ],
-    additionalInfo: [
-      { label: 'Weight',   value: '500 g' },
-      { label: 'Color',    value: 'Green' },
-      { label: 'Type',     value: 'Organic' },
-      { label: 'Category', value: 'Vegetables' },
-    ],
-    category: 'Vegetables',
-    tags: ['Vegetable', 'Fresh', 'Organic'],
-    images: ['/images/products/capsicum.png', '/images/products/capsicum.png'],
+    id: 8, name: 'Carrot', rating: 4, sku: 'SKU-008', price: 25.00, originalPrice: 30.00, discount: 17, brand: 'Bagsakan',
+    description: 'Fresh carrots perfect for soups, salads and juicing.',
+    highlights: ['Freshly harvested', 'Rich in Vitamin A', 'Perfect for soups', 'Locally grown'],
+    additionalInfo: [{ label: 'Weight', value: '500 g' }, { label: 'Color', value: 'Orange' }, { label: 'Type', value: 'Organic' }, { label: 'Category', value: 'Vegetables' }],
+    category: 'Vegetables', tags: ['Vegetable', 'Fresh', 'Local'],
+    reviews: [{ id: 1, name: 'Mang Bert', rating: 5, comment: 'Very fresh and crunchy!', date: '3 hrs ago' }],
+    images: ['/images/products/vegetables/carrot.png', '/images/products/vegetables/carrot.png'],
+  },
+  {
+    id: 9, name: 'Mango', rating: 5, sku: 'SKU-009', price: 50.00, originalPrice: 60.00, discount: 17, brand: 'Bagsakan',
+    description: 'Sweet and juicy mangoes fresh from Pangasinan orchards.',
+    highlights: ['Sweet and juicy variety', 'Locally grown in Pangasinan', 'Rich in Vitamin C', 'Perfect for juices and desserts'],
+    additionalInfo: [{ label: 'Weight', value: '1 kg' }, { label: 'Color', value: 'Yellow' }, { label: 'Type', value: 'Organic' }, { label: 'Category', value: 'Fruits' }],
+    category: 'Fruits', tags: ['Fruit', 'Mango', 'Sweet', 'Local'],
+    reviews: [{ id: 1, name: 'Ana Reyes', rating: 5, comment: 'Sweetest mangoes ever!', date: '3 hrs ago' }],
+    images: ['/images/products/fruits/mango.png', '/images/products/fruits/mango.png'],
+  },
+  {
+    id: 10, name: 'Saging', rating: 4, sku: 'SKU-010', price: 30.00, originalPrice: 35.00, discount: 14, brand: 'Bagsakan',
+    description: 'Fresh bananas perfect for snacking, cooking and making desserts.',
+    highlights: ['Freshly harvested', 'Rich in potassium', 'Perfect for snacking', 'Locally grown'],
+    additionalInfo: [{ label: 'Weight', value: '1 kg' }, { label: 'Color', value: 'Yellow' }, { label: 'Type', value: 'Organic' }, { label: 'Category', value: 'Fruits' }],
+    category: 'Fruits', tags: ['Fruit', 'Fresh', 'Local'],
+    reviews: [{ id: 1, name: 'Lola Caring', rating: 4, comment: 'Very fresh!', date: '1 day ago' }],
+    images: ['/images/products/fruits/saging.png', '/images/products/fruits/saging.png'],
+  },
+  {
+    id: 11, name: 'Papaya', rating: 4, sku: 'SKU-011', price: 40.00, originalPrice: 50.00, discount: 20, brand: 'Bagsakan',
+    description: 'Fresh papaya perfect for eating fresh or cooking as a vegetable when unripe.',
+    highlights: ['Freshly harvested', 'Rich in Vitamin C', 'Perfect for fresh eating', 'Locally grown'],
+    additionalInfo: [{ label: 'Weight', value: '1 kg' }, { label: 'Color', value: 'Orange' }, { label: 'Type', value: 'Organic' }, { label: 'Category', value: 'Fruits' }],
+    category: 'Fruits', tags: ['Fruit', 'Fresh', 'Local'],
+    reviews: [{ id: 1, name: 'Maria Santos', rating: 4, comment: 'Very sweet!', date: '2 hrs ago' }],
+    images: ['/images/products/fruits/papaya.png', '/images/products/fruits/papaya.png'],
+  },
+  {
+    id: 12, name: 'Pakwan', rating: 4, sku: 'SKU-012', price: 80.00, originalPrice: 100.00, discount: 20, brand: 'Bagsakan',
+    description: 'Fresh watermelon perfect for beating the heat and staying hydrated.',
+    highlights: ['Freshly harvested', 'Rich in water content', 'Perfect for summer', 'Locally grown'],
+    additionalInfo: [{ label: 'Weight', value: '3 kg' }, { label: 'Color', value: 'Green/Red' }, { label: 'Type', value: 'Organic' }, { label: 'Category', value: 'Fruits' }],
+    category: 'Fruits', tags: ['Fruit', 'Fresh', 'Local'],
+    reviews: [{ id: 1, name: 'Pedro Cruz', rating: 4, comment: 'Very sweet and refreshing!', date: '1 day ago' }],
+    images: ['/images/products/fruits/pakwan.png', '/images/products/fruits/pakwan.png'],
+  },
+  {
+    id: 13, name: 'Pineapple', rating: 4, sku: 'SKU-013', price: 45.00, originalPrice: 55.00, discount: 18, brand: 'Bagsakan',
+    description: 'Fresh pineapple perfect for juicing, cooking and eating fresh.',
+    highlights: ['Freshly harvested', 'Rich in Vitamin C', 'Perfect for juicing', 'Locally grown'],
+    additionalInfo: [{ label: 'Weight', value: '1 kg' }, { label: 'Color', value: 'Yellow' }, { label: 'Type', value: 'Organic' }, { label: 'Category', value: 'Fruits' }],
+    category: 'Fruits', tags: ['Fruit', 'Fresh', 'Local'],
+    reviews: [{ id: 1, name: 'Juan dela Cruz', rating: 4, comment: 'Very sweet!', date: '3 hrs ago' }],
+    images: ['/images/products/fruits/Pineapple.png', '/images/products/fruits/Pineapple.png'],
+  },
+  {
+    id: 14, name: 'Avocado', rating: 4, sku: 'SKU-014', price: 60.00, originalPrice: 75.00, discount: 20, brand: 'Bagsakan',
+    description: 'Fresh avocado perfect for shakes, salads and spreads.',
+    highlights: ['Freshly harvested', 'Rich in healthy fats', 'Perfect for shakes', 'Locally grown'],
+    additionalInfo: [{ label: 'Weight', value: '500 g' }, { label: 'Color', value: 'Green' }, { label: 'Type', value: 'Organic' }, { label: 'Category', value: 'Fruits' }],
+    category: 'Fruits', tags: ['Fruit', 'Fresh', 'Local'],
+    reviews: [{ id: 1, name: 'Rosa Mendoza', rating: 5, comment: 'Perfect for shakes!', date: '5 hrs ago' }],
+    images: ['/images/products/fruits/Avocado.png', '/images/products/fruits/Avocado.png'],
+  },
+  {
+    id: 15, name: 'Chicken', rating: 4, sku: 'SKU-015', price: 180.00, originalPrice: 200.00, discount: 10, brand: 'Bagsakan',
+    description: 'Fresh native chicken from local farms. Perfect for adobo, tinola and lechon manok.',
+    highlights: ['Fresh from local farms', 'No hormones or antibiotics', 'Perfect for Filipino dishes', 'Cleaned and ready to cook'],
+    additionalInfo: [{ label: 'Weight', value: '1 kg' }, { label: 'Type', value: 'Native Chicken' }, { label: 'Category', value: 'Meat & Fish' }],
+    category: 'Meat & Fish', tags: ['Meat', 'Chicken', 'Fresh', 'Local'],
+    reviews: [{ id: 1, name: 'Aling Rosa', rating: 5, comment: 'Very tasty native chicken!', date: '2 hrs ago' }],
+    images: ['/images/products/meat/Chicken.png', '/images/products/meat/Chicken.png'],
+  },
+  {
+    id: 16, name: 'Pork Meat', rating: 4, sku: 'SKU-016', price: 220.00, originalPrice: 250.00, discount: 12, brand: 'Bagsakan',
+    description: 'Fresh pork meat perfect for adobo, sinigang and other Filipino dishes.',
+    highlights: ['Fresh from local farms', 'No preservatives', 'Perfect for Filipino dishes', 'Cleaned and sliced'],
+    additionalInfo: [{ label: 'Weight', value: '1 kg' }, { label: 'Type', value: 'Fresh Pork' }, { label: 'Category', value: 'Meat & Fish' }],
+    category: 'Meat & Fish', tags: ['Meat', 'Pork', 'Fresh', 'Local'],
+    reviews: [{ id: 1, name: 'Mang Bert', rating: 4, comment: 'Very fresh!', date: '1 day ago' }],
+    images: ['/images/products/meat/pork_meat.png', '/images/products/meat/pork_meat.png'],
+  },
+  {
+    id: 17, name: 'Egg', rating: 5, sku: 'SKU-017', price: 12.00, originalPrice: 14.00, discount: 14, brand: 'Bagsakan',
+    description: 'Fresh native eggs from free-range chickens. Perfect for any dish.',
+    highlights: ['Fresh from free-range chickens', 'Rich in protein', 'Perfect for any dish', 'Locally sourced'],
+    additionalInfo: [{ label: 'Count', value: '1 piece' }, { label: 'Type', value: 'Native Egg' }, { label: 'Category', value: 'Meat & Fish' }],
+    category: 'Meat & Fish', tags: ['Egg', 'Fresh', 'Local'],
+    reviews: [{ id: 1, name: 'Maria Santos', rating: 5, comment: 'Very fresh native eggs!', date: '3 hrs ago' }],
+    images: ['/images/products/meat/Egg.png', '/images/products/meat/Egg.png'],
+  },
+  {
+    id: 18, name: 'Rice', rating: 4, sku: 'SKU-018', price: 55.00, originalPrice: 60.00, discount: 8, brand: 'Bagsakan',
+    description: 'Premium quality rice from local Pangasinan farms.',
+    highlights: ['Freshly milled', 'Premium quality', 'From local farms', 'No additives'],
+    additionalInfo: [{ label: 'Weight', value: '1 kg' }, { label: 'Type', value: 'Local Rice' }, { label: 'Category', value: 'Meat & Fish' }],
+    category: 'Meat & Fish', tags: ['Rice', 'Local', 'Fresh'],
+    reviews: [{ id: 1, name: 'Juan dela Cruz', rating: 4, comment: 'Very good quality rice!', date: '1 day ago' }],
+    images: ['/images/products/meat/rice.png', '/images/products/meat/rice.png'],
   },
 ]
 
-// Find product by ID from URL
 const product = computed(() =>
   allProducts.find(p => p.id === productId) ?? allProducts[0]
 )
 
-// Related products — same category, exclude current
 const relatedProducts = computed(() =>
   allProducts
     .filter(p => p.category === product.value.category && p.id !== productId)
@@ -434,3 +220,10 @@ const relatedProducts = computed(() =>
     .map(p => ({ ...p, badge: undefined }))
 )
 </script>
+```
+
+---
+
+Save with `Ctrl+S` then go to:
+```
+localhost:3000/customer/products/1

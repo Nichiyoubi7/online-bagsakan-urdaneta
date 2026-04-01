@@ -12,7 +12,7 @@ useHead({
 })
 
 useSeoMeta({
-  title: 'Online Bagsakan Urdaneta',
+  title: 'OBRA',
   description: 'Fresh and healthy food delivery in Urdaneta City, Pangasinan.',
 })
 </script>

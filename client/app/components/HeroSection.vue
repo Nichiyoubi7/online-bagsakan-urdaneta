@@ -42,11 +42,14 @@
 
       </div>
 
+
 <!-- Right: Hero Image -->
 <div class="flex-1 flex justify-center items-center">
-  <div class="w-full max-w-md h-80 bg-green-100 rounded-2xl flex items-center justify-center text-green-400 text-sm">
-    🥦 Hero image here
-  </div>
+  <img
+    src="/fruits_and_vegetables.png"
+    alt="Fresh fruits and vegetables"
+    class="w-full max-w-xl object-contain drop-shadow-xl"
+  />
 </div>
 
     </div>

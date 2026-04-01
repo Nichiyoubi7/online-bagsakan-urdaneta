@@ -81,17 +81,17 @@ const cartGroups = ref([
     id: 1,
     name: "Mang Bert's Wet Market",
     items: [
-      { id: 1, name: 'Green Apple',   image: '/images/products/green-apple.png', price: 15.00, quantity: 1, variation: '1kg',  selected: true  },
-      { id: 2, name: 'Red Tomatoes',  image: '/images/products/tomatoes.png',    price: 15.00, quantity: 2, variation: '500g', selected: true  },
-      { id: 3, name: 'Green Lettuce', image: '/images/products/lettuce.png',     price: 15.00, quantity: 1, variation: '500g', selected: false },
+      { id: 1, name: 'Tomato',   image: '/images/products/vegetables/Tomato.png',   price: 20.00, quantity: 1, variation: '500g', selected: true  },
+      { id: 2, name: 'Eggplant', image: '/images/products/vegetables/eggplant.png', price: 15.00, quantity: 2, variation: '500g', selected: true  },
+      { id: 3, name: 'Kangkong', image: '/images/products/vegetables/kangkong.png', price: 10.00, quantity: 1, variation: '250g', selected: false },
     ],
   },
   {
     id: 2,
     name: "Aling Nena's Fish Hub",
     items: [
-      { id: 4, name: 'Bangus',  image: '/images/products/bangus.png',  price: 85.00, quantity: 1, variation: '1kg', selected: true  },
-      { id: 5, name: 'Tilapia', image: '/images/products/tilapia.png', price: 95.00, quantity: 1, variation: '1kg', selected: false },
+      { id: 4, name: 'Chicken',  image: '/images/products/meat/Chicken.png',   price: 180.00, quantity: 1, variation: '1kg', selected: true  },
+      { id: 5, name: 'Pork Meat',image: '/images/products/meat/pork_meat.png', price: 220.00, quantity: 1, variation: '1kg', selected: false },
     ],
   },
 ])

@@ -26,7 +26,7 @@
           <CheckoutAddress />
 
           <!-- Delivery Options -->
-          <CheckoutDelivery @change="handleDeliveryChange" />
+          <CheckoutDelivery :is-over-weight="isOverWeight" @change="handleDeliveryChange" />
 
           <!-- Personal Details -->
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-4">
@@ -47,9 +47,7 @@
           <!-- Tip Your Rider -->
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-4">
             <h3 class="text-base font-black text-gray-800 mb-1">Tip your rider</h3>
-            <p class="text-xs text-gray-400 mb-4">
-              100% of the tips go to your rider. We don't deduct anything from it.
-            </p>
+            <p class="text-xs text-gray-400 mb-4">100% of the tips go to your rider. We don't deduct anything from it.</p>
             <div class="flex items-center gap-2 flex-wrap mb-3">
               <button
                 v-for="tip in tipOptions"
@@ -66,8 +64,6 @@
               </button>
             </div>
             <p class="text-xs text-gray-400">Most common</p>
-
-            <!-- Save for next order -->
             <label class="flex items-center gap-2 mt-3 cursor-pointer">
               <input type="checkbox" v-model="saveForNext" class="accent-green-500" />
               <span class="text-sm text-gray-600">Save for your next order</span>
@@ -106,20 +102,23 @@ import CheckoutAddress from '../../components/customer/checkout/CheckoutAddress.
 import CheckoutDelivery from '../../components/customer/checkout/CheckoutDelivery.vue'
 import CheckoutPayment from '../../components/customer/checkout/CheckoutPayment.vue'
 import CheckoutOrderSummary from '../../components/customer/checkout/CheckoutOrderSummary.vue'
+import { navigateTo } from '#app'
 
 const selectedTip = ref(0)
 const saveForNext = ref(false)
 const tipOptions = [0, 5.00, 20.00, 40.00, 60.00]
 
-// Order data — replace with cart store later
 const orderData = ref({
-  sellerName: "McDonald's — Urdaneta Bypass",
+  sellerName: "Mang Bert's Wet Market",
+  totalWeight: 3.5,
   items: [
-    { id: 1, name: 'Green Apple',    price: 15.00, quantity: 2 },
-    { id: 2, name: 'Red Tomatoes',   price: 15.00, quantity: 2 },
-    { id: 3, name: 'Green Lettuce',  price: 15.00, quantity: 1 },
+    { id: 1, name: 'Tomato',   price: 20.00, quantity: 1 },
+    { id: 2, name: 'Eggplant', price: 15.00, quantity: 2 },
+    { id: 3, name: 'Kangkong', price: 10.00, quantity: 1 },
   ],
 })
+
+const isOverWeight = computed(() => orderData.value.totalWeight > 10)
 
 const orderTotal = computed(() =>
   orderData.value.items.reduce((sum, i) => sum + i.price * i.quantity, 0)
@@ -130,7 +129,6 @@ const handleDeliveryChange = (option: object) => {
 }
 
 const handlePlaceOrder = () => {
-  // TODO: connect to Laravel API
   alert('Order placed successfully! 🎉')
   navigateTo('/customer/orders')
 }

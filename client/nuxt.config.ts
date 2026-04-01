@@ -1,5 +1,13 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+    app: {
+    head: {
+      title: 'OBRA',
+      meta: [
+        { name: 'description', content: 'Online Bagsakan Urdaneta — Fresh products from local sellers in Urdaneta City, Pangasinan.' }
+      ]
+    }
+  },
   modules: [
     '@nuxt/eslint',
     '@nuxt/ui'
@@ -11,6 +19,12 @@ export default defineNuxtConfig({
     { path: '~/components/shared', pathPrefix: false },
     { path: '~/components',        pathPrefix: false },
   ],
+
+  vite: {
+  server: {
+    allowedHosts: ['nonconnectively-incised-neal.ngrok-free.dev']
+  }
+},
 
   devtools: {
     enabled: true

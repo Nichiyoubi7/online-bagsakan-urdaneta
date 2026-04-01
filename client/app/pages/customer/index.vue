@@ -1,12 +1,8 @@
 <template>
   <GuestLayout>
-
-    <!-- Hero Banner -->
     <div class="bg-gray-800">
       <div class="max-w-7xl mx-auto px-6 py-10">
-        <p class="text-green-400 text-xs font-semibold uppercase tracking-widest mb-1">
-          Online Bagsakan
-        </p>
+        <p class="text-green-400 text-xs font-semibold uppercase tracking-widest mb-1">Online Bagsakan</p>
         <h1 class="text-white text-3xl font-black mb-2">Shop Fresh Products</h1>
         <div class="flex items-center gap-2 text-sm text-gray-300">
           <NuxtLink to="/" class="hover:text-green-400 transition-colors">Home</NuxtLink>
@@ -16,11 +12,8 @@
       </div>
     </div>
 
-    <!-- Shop Content -->
     <div class="max-w-7xl mx-auto px-6 py-10">
       <div class="flex gap-8">
-
-        <!-- Sidebar -->
         <ShopSidebar
           :selected-category="selectedCategory"
           :selected-rating="selectedRating"
@@ -30,58 +23,26 @@
           @select-rating="handleRatingSelect"
           @select-tag="handleTagSelect"
         />
-
-        <!-- Main Content -->
         <div class="flex-1 min-w-0">
-
-          <!-- Top Bar -->
           <ShopTopBar
             :from="paginationFrom"
             :to="paginationTo"
             :total="filteredProducts.length"
             @sort="handleSort"
           />
-
-          <!-- Product Grid -->
-          <div
-            v-if="paginatedProducts.length > 0"
-            class="grid grid-cols-2 md:grid-cols-3 gap-5"
-          >
-            <ProductCard
-              v-for="product in paginatedProducts"
-              :key="product.id"
-              :product="product"
-            />
+          <div v-if="paginatedProducts.length > 0" class="grid grid-cols-2 md:grid-cols-3 gap-5">
+            <ProductCard v-for="product in paginatedProducts" :key="product.id" :product="product" />
           </div>
-
-          <!-- Empty State -->
-          <div
-            v-else
-            class="flex flex-col items-center justify-center py-20 text-center"
-          >
+          <div v-else class="flex flex-col items-center justify-center py-20 text-center">
             <span class="text-5xl mb-4">🥦</span>
             <h3 class="text-lg font-bold text-gray-700 mb-2">No products found</h3>
             <p class="text-sm text-gray-400 mb-4">Try adjusting your filters</p>
-            <button
-              @click="resetFilters"
-              class="px-5 py-2 bg-green-500 text-white text-sm font-semibold rounded-full hover:bg-green-600 transition-colors"
-            >
-              Reset Filters
-            </button>
+            <button @click="resetFilters" class="px-5 py-2 bg-green-500 text-white text-sm font-semibold rounded-full hover:bg-green-600 transition-colors">Reset Filters</button>
           </div>
-
-          <!-- Pagination -->
-          <ShopPagination
-            v-if="totalPages > 1"
-            :current-page="currentPage"
-            :total-pages="totalPages"
-            @change="handlePageChange"
-          />
-
+          <ShopPagination v-if="totalPages > 1" :current-page="currentPage" :total-pages="totalPages" @change="handlePageChange" />
         </div>
       </div>
     </div>
-
   </GuestLayout>
 </template>
 
@@ -106,18 +67,30 @@ const currentPage = ref(1)
 const perPage = 12
 
 const allProducts = [
-  { id: 1,  name: 'Green Apple',       price: 15.00,  image: '/images/products/green-apple.png',     rating: 4, badge: 'Sale 50%', category: 'Fresh Fruit' },
-  { id: 2,  name: 'Guijapur Mango',    price: 15.00,  image: '/images/products/mango.png',           rating: 4, category: 'Fresh Fruit' },
-  { id: 3,  name: 'Red Tomatoes',      price: 15.00,  image: '/images/products/tomatoes.png',        rating: 4, category: 'Vegetables' },
-  { id: 4,  name: 'Fresh Cauliflower', price: 15.00,  image: '/images/products/cauliflower.png',     rating: 4, category: 'Vegetables' },
-  { id: 5,  name: 'Green Lettuce',     price: 15.00,  image: '/images/products/lettuce.png',         rating: 4, category: 'Vegetables' },
-  { id: 6,  name: 'Eggplant',          price: 15.00,  image: '/images/products/eggplant.png',        rating: 4, category: 'Vegetables' },
-  { id: 7,  name: 'Green Chili',       price: 15.00,  image: '/images/products/green-chili.png',     rating: 4, category: 'Vegetables' },
-  { id: 8,  name: 'Bangus',            price: 85.00,  image: '/images/products/bangus.png',          rating: 4, category: 'Meat & Fish' },
-  { id: 9,  name: 'Pork Liempo',       price: 220.00, image: '/images/products/pork.png',            rating: 5, category: 'Meat & Fish' },
-  { id: 10, name: 'Tilapia',           price: 95.00,  image: '/images/products/tilapia.png',         rating: 4, category: 'Meat & Fish' },
-  { id: 11, name: 'Chinese Cabbage',   price: 15.00,  image: '/images/products/chinese-cabbage.png', rating: 4, category: 'Vegetables' },
-  { id: 12, name: 'Green Capsicum',    price: 15.00,  image: '/images/products/capsicum.png',        rating: 3, category: 'Vegetables' },
+  { id: 1,  name: 'Tomato',         price: 20.00,  image: '/images/products/vegetables/Tomato.png',          rating: 4, badge: 'Sale', category: 'Vegetables' },
+  { id: 2,  name: 'Eggplant',       price: 15.00,  image: '/images/products/vegetables/eggplant.png',        rating: 4, category: 'Vegetables' },
+  { id: 3,  name: 'Bitter Gourd',   price: 18.00,  image: '/images/products/vegetables/bitter_gourd.png',    rating: 4, category: 'Vegetables' },
+  { id: 4,  name: 'Okra',           price: 12.00,  image: '/images/products/vegetables/okra.png',            rating: 4, category: 'Vegetables' },
+  { id: 5,  name: 'Sitaw',          price: 15.00,  image: '/images/products/vegetables/sitaw.png',           rating: 4, category: 'Vegetables' },
+  { id: 6,  name: 'Kangkong',       price: 10.00,  image: '/images/products/vegetables/kangkong.png',        rating: 4, category: 'Vegetables' },
+  { id: 7,  name: 'Repolyo',        price: 25.00,  image: '/images/products/vegetables/repolyo.png',         rating: 4, category: 'Vegetables' },
+  { id: 8,  name: 'Carrot',         price: 25.00,  image: '/images/products/vegetables/carrot.png',          rating: 4, category: 'Vegetables' },
+  { id: 9,  name: 'Potato',         price: 30.00,  image: '/images/products/vegetables/potato.png',          rating: 4, category: 'Vegetables' },
+  { id: 10, name: 'Sibuyas',        price: 60.00,  image: '/images/products/vegetables/sibuyas.png',         rating: 4, category: 'Vegetables' },
+  { id: 11, name: 'Bawang',         price: 80.00,  image: '/images/products/vegetables/bawang.png',          rating: 4, category: 'Vegetables' },
+  { id: 12, name: 'Mais',           price: 15.00,  image: '/images/products/vegetables/mais.png',            rating: 4, category: 'Vegetables' },
+  { id: 13, name: 'Mango',          price: 50.00,  image: '/images/products/fruits/mango.png',               rating: 5, badge: 'Sale', category: 'Fruits' },
+  { id: 14, name: 'Saging',         price: 30.00,  image: '/images/products/fruits/saging.png',              rating: 4, category: 'Fruits' },
+  { id: 15, name: 'Papaya',         price: 40.00,  image: '/images/products/fruits/papaya.png',              rating: 4, category: 'Fruits' },
+  { id: 16, name: 'Pakwan',         price: 80.00,  image: '/images/products/fruits/pakwan.png',              rating: 4, category: 'Fruits' },
+  { id: 17, name: 'Pineapple',      price: 45.00,  image: '/images/products/fruits/Pineapple.png',           rating: 4, category: 'Fruits' },
+  { id: 18, name: 'Avocado',        price: 60.00,  image: '/images/products/fruits/Avocado.png',             rating: 4, category: 'Fruits' },
+  { id: 19, name: 'Guava',          price: 25.00,  image: '/images/products/fruits/Guava.png',               rating: 4, category: 'Fruits' },
+  { id: 20, name: 'Rambutan',       price: 35.00,  image: '/images/products/fruits/Rambutan.png',            rating: 4, category: 'Fruits' },
+  { id: 21, name: 'Chicken',        price: 180.00, image: '/images/products/meat/Chicken.png',               rating: 4, category: 'Meat & Fish' },
+  { id: 22, name: 'Pork Meat',      price: 220.00, image: '/images/products/meat/pork_meat.png',             rating: 4, category: 'Meat & Fish' },
+  { id: 23, name: 'Egg',            price: 12.00,  image: '/images/products/meat/Egg.png',                   rating: 5, category: 'Meat & Fish' },
+  { id: 24, name: 'Rice',           price: 55.00,  image: '/images/products/meat/rice.png',                  rating: 4, category: 'Meat & Fish' },
 ]
 
 const filteredProducts = computed(() => {
@@ -126,9 +99,7 @@ const filteredProducts = computed(() => {
     result = result.filter(p => p.category === selectedCategory.value)
   }
   result = result.filter(p => p.price <= priceMax.value)
-  if (selectedRating.value > 0) {
-    result = result.filter(p => p.rating >= selectedRating.value)
-  }
+  if (selectedRating.value > 0) result = result.filter(p => p.rating >= selectedRating.value)
   if (sortBy.value === 'price_asc')  result.sort((a, b) => a.price - b.price)
   if (sortBy.value === 'price_desc') result.sort((a, b) => b.price - a.price)
   if (sortBy.value === 'rating')     result.sort((a, b) => b.rating - a.rating)
@@ -148,10 +119,7 @@ const handlePriceChange = (val: number) => { priceMax.value = val; currentPage.v
 const handleRatingSelect = (rating: number) => { selectedRating.value = rating; currentPage.value = 1 }
 const handleTagSelect = (tag: string) => { selectedTag.value = tag; currentPage.value = 1 }
 const handleSort = (val: string) => { sortBy.value = val; currentPage.value = 1 }
-const handlePageChange = (page: number) => {
-  currentPage.value = page
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
+const handlePageChange = (page: number) => { currentPage.value = page; window.scrollTo({ top: 0, behavior: 'smooth' }) }
 const resetFilters = () => {
   selectedCategory.value = 'All Categories'
   selectedRating.value = 0

@@ -1,5 +1,5 @@
 <template>
-  <section class="py-16 bg-white">
+  <<section id="how-it-works" class="py-16 bg-white">
     <div class="max-w-7xl mx-auto px-6">
 
       <!-- Section Label -->
