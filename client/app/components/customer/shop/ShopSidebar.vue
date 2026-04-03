@@ -94,9 +94,7 @@
 
     <!-- Discount Banner -->
     <div class="bg-green-500 rounded-2xl p-4 text-white">
-      <p class="text-xs font-semibold uppercase tracking-widest mb-1 text-green-100">
-        Special Offer
-      </p>
+      <p class="text-xs font-semibold uppercase tracking-widest mb-1 text-green-100">Special Offer</p>
       <p class="text-3xl font-black mb-1">75%</p>
       <p class="text-sm font-semibold mb-3">Discount on your first order</p>
       <NuxtLink
@@ -162,13 +160,10 @@ defineEmits<{
 const priceMax = ref(500)
 
 const categories = [
-  { name: 'All Categories',  count: 56 },
-  { name: 'Fresh Fruit',     count: 12 },
-  { name: 'Vegetables',      count: 15 },
-  { name: 'Cooking',         count: 8  },
-  { name: 'Snacks',          count: 6  },
-  { name: 'Beverages',       count: 10 },
-  { name: 'Beauty & Health', count: 5  },
+  { name: 'All Categories', count: 39 },
+  { name: 'Vegetables',     count: 21 },
+  { name: 'Fruits',         count: 14 },
+  { name: 'Meat & Fish',    count: 4  },
 ]
 
 const ratings = [
@@ -180,14 +175,13 @@ const ratings = [
 ]
 
 const popularTags = [
-  'Seeding', 'Organic', 'Vegetarian',
-  'Kid Friendly', 'Fresh', 'Spicy',
-  'Frozen', 'Wheat', 'Local',
+  'Organic', 'Vegetarian', 'Fresh',
+  'Local', 'Spicy', 'Kid Friendly',
 ]
 
 const saleProducts = [
-  { id: 1, name: 'Chinese Cabbage', price: 15.00, rating: 4, image: '/images/products/chinese-cabbage.png' },
-  { id: 2, name: 'Green Capsicum',  price: 15.00, rating: 4, image: '/images/products/capsicum.png' },
-  { id: 3, name: 'Green Chili',     price: 15.00, rating: 4, image: '/images/products/green-chili.png' },
+  { id: 1, name: 'Mango',     price: 50.00, rating: 5, image: '/images/products/fruits/mango.png' },
+  { id: 2, name: 'Tomato',    price: 20.00, rating: 4, image: '/images/products/vegetables/Tomato.png' },
+  { id: 3, name: 'Chicken',   price: 180.00, rating: 4, image: '/images/products/meat/Chicken.png' },
 ]
 </script>
