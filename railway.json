@@ -5,14 +5,14 @@
     "nixpacksPlan": {
       "phases": {
         "setup": {
-          "nixPkgs": ["php82", "php82Extensions.pdo", "php82Extensions.pdo_pgsql", "php82Extensions.mbstring", "php82Extensions.xml", "php82Extensions.curl", "php82Extensions.zip", "composer"]
+          "nixPkgs": ["php82", "php82Extensions.pdo", "php82Extensions.pdo_pgsql", "php82Extensions.mbstring", "php82Extensions.xml", "php82Extensions.curl", "php82Extensions.zip", "php82Packages.composer"]
         },
         "build": {
           "cmds": ["cd api && composer install --no-dev --optimize-autoloader"]
         }
       },
       "start": {
-        "cmd": "cd api && php artisan migrate --force && php artisan config:cache && php -S 0.0.0.0:$PORT -t api/public"
+        "cmd": "cd api && php artisan migrate --force && php artisan config:cache && php -S 0.0.0.0:$PORT -t public"
       }
     }
   }
