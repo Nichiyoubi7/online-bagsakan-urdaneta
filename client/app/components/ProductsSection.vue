@@ -89,21 +89,61 @@ const handleTabChange = async (tab: { label: string, categoryName: string }) => 
   await loadProducts(catId)
 }
 
-const getCategoryFolder = (cat: string) => {
-  if (cat === 'Fruits') return 'fruits'
-  if (cat === 'Meat & Fish') return 'meat'
-  return 'vegetables'
+const imageMap: Record<string, string> = {
+  'Tomato': '/images/products/vegetables/Tomato.png',
+  'Eggplant': '/images/products/vegetables/eggplant.png',
+  'Bitter Gourd': '/images/products/vegetables/bitter_gourd.png',
+  'Okra': '/images/products/vegetables/okra.png',
+  'Sitaw': '/images/products/vegetables/sitaw.png',
+  'Kangkong': '/images/products/vegetables/kangkong.png',
+  'Repolyo': '/images/products/vegetables/repolyo.png',
+  'Carrot': '/images/products/vegetables/carrot.png',
+  'Potato': '/images/products/vegetables/potato.png',
+  'Sibuyas': '/images/products/vegetables/sibuyas.png',
+  'Bawang': '/images/products/vegetables/bawang.png',
+  'Luya': '/images/products/vegetables/luya.png',
+  'Mais': '/images/products/vegetables/mais.png',
+  'Siling Haba': '/images/products/vegetables/siling_haba.png',
+  'Siling Labuyo': '/images/products/vegetables/siling_labuyo.png',
+  'Upo': '/images/products/vegetables/upo.png',
+  'Patola': '/images/products/vegetables/patola.png',
+  'Sigarilyas': '/images/products/vegetables/sigarilyas.png',
+  'Labanos': '/images/products/vegetables/labanos.png',
+  'Gabi': '/images/products/vegetables/gabi.png',
+  'Kamote': '/images/products/vegetables/kamote.png',
+  'Mango': '/images/products/fruits/mango.png',
+  'Saging': '/images/products/fruits/saging.png',
+  'Papaya': '/images/products/fruits/papaya.png',
+  'Pakwan': '/images/products/fruits/pakwan.png',
+  'Melon': '/images/products/fruits/melon.png',
+  'Pineapple': '/images/products/fruits/Pineapple.png',
+  'Avocado': '/images/products/fruits/Avocado.png',
+  'Guava': '/images/products/fruits/Guava.png',
+  'Rambutan': '/images/products/fruits/Rambutan.png',
+  'Lanzones': '/images/products/fruits/Lanzones.jpg',
+  'Calamansi': '/images/products/fruits/Calamansi.png',
+  'Orange': '/images/products/fruits/Orange.png',
+  'Apple': '/images/products/fruits/Apple.png',
+  'Grapes': '/images/products/fruits/Grapes.png',
+  'Chicken': '/images/products/meat/Chicken.png',
+  'Pork Meat': '/images/products/meat/pork_meat.png',
+  'Egg': '/images/products/meat/Egg.png',
+  'Rice': '/images/products/meat/rice.png',
+  'Bangus': '/images/products/meat/rice.png',
+  'Tilapia': '/images/products/meat/rice.png',
+  'Hipon': '/images/products/meat/rice.png',
 }
 
 const mapProduct = (p: any) => ({
   id: p.id,
   name: p.name,
   price: p.price,
-  image: p.image || `/images/products/${getCategoryFolder(p.category?.name)}/${p.name.toLowerCase().replace(/ /g, '_')}.png`,
+  image: imageMap[p.name] || '/images/products/vegetables/Tomato.png',
   rating: 4,
   category: p.category?.name || '',
   badge: p.original_price && p.original_price > p.price ? 'Sale' : undefined,
 })
+
 
 onMounted(async () => {
   await loadCategories()
