@@ -129,9 +129,6 @@ const imageMap: Record<string, string> = {
   'Pork Meat': '/images/products/meat/pork_meat.png',
   'Egg': '/images/products/meat/Egg.png',
   'Rice': '/images/products/meat/rice.png',
-  'Bangus': '/images/products/meat/rice.png',
-  'Tilapia': '/images/products/meat/rice.png',
-  'Hipon': '/images/products/meat/rice.png',
 }
 
 const mapProduct = (p: any) => ({
