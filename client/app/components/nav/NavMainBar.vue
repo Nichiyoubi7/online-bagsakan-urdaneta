@@ -40,11 +40,7 @@
             class="flex items-center gap-3 px-4 py-3 hover:bg-green-50 transition-colors cursor-pointer"
             @click="selectSuggestion(product.name)"
           >
-            <img
-              :src="product.image"
-              :alt="product.name"
-              class="w-10 h-10 object-contain rounded-lg bg-gray-50"
-            />
+            <img :src="product.image" :alt="product.name" class="w-10 h-10 object-contain rounded-lg bg-gray-50" />
             <div>
               <p class="text-sm font-medium text-gray-800">{{ product.name }}</p>
               <p class="text-xs text-gray-400">{{ product.category }} · ₱{{ product.price.toFixed(2) }}</p>
@@ -85,21 +81,74 @@
         <!-- Divider -->
         <div class="w-px h-8 bg-gray-200" />
 
-        <!-- Log In Button -->
-        <button
-          @click="showAuthModal = true"
-          class="px-4 py-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-full hover:border-green-500 hover:text-green-600 transition-all duration-200"
-        >
-          Log In
-        </button>
+        <!-- Guest: Log In / Sign Up -->
+        <template v-if="!authStore.isLoggedIn">
+          <button
+            @click="showAuthModal = true"
+            class="px-4 py-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-full hover:border-green-500 hover:text-green-600 transition-all duration-200"
+          >
+            Log In
+          </button>
+          <button
+            @click="showAuthModal = true"
+            class="px-4 py-2 text-sm font-semibold text-white bg-green-500 hover:bg-green-600 rounded-full transition-all duration-200 shadow-sm"
+          >
+            Sign Up
+          </button>
+        </template>
 
-        <!-- Sign Up Button -->
-        <button
-          @click="showAuthModal = true"
-          class="px-4 py-2 text-sm font-semibold text-white bg-green-500 hover:bg-green-600 rounded-full transition-all duration-200 shadow-sm"
-        >
-          Sign Up
-        </button>
+        <!-- Logged In: User Dropdown -->
+        <div v-else class="relative" ref="dropdownRef">
+          <button
+            @click="showDropdown = !showDropdown"
+            class="flex items-center gap-2 px-3 py-2 rounded-full border border-gray-200 hover:border-green-400 transition-all duration-200"
+          >
+            <div class="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center text-white text-xs font-bold">
+              {{ authStore.user?.name?.charAt(0).toUpperCase() }}
+            </div>
+            <span class="text-sm font-semibold text-gray-700 max-w-[100px] truncate">{{ authStore.user?.name }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div
+            v-if="showDropdown"
+            class="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-xl shadow-lg z-50 py-1 overflow-hidden"
+          >
+            <div class="px-4 py-3 border-b border-gray-100">
+              <p class="text-xs font-semibold text-gray-800 truncate">{{ authStore.user?.name }}</p>
+              <p class="text-xs text-gray-400 truncate">{{ authStore.user?.email }}</p>
+            </div>
+            <NuxtLink to="/customer/orders" @click="showDropdown = false" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              </svg>
+              Orders & Reordering
+            </NuxtLink>
+            <NuxtLink to="/customer/profile" @click="showDropdown = false" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+              Profile
+            </NuxtLink>
+            <NuxtLink to="/contact" @click="showDropdown = false" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              Contact Us
+            </NuxtLink>
+            <div class="border-t border-gray-100 mt-1">
+              <button @click="handleLogout" class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Log Out
+              </button>
+            </div>
+          </div>
+        </div>
 
       </div>
     </div>
@@ -107,12 +156,38 @@
 
   <!-- Auth Modal -->
   <AuthModal v-model="showAuthModal" />
+
+  <!-- Logout Confirmation Modal -->
+  <Transition name="fade">
+    <div v-if="showLogoutModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" @click.self="showLogoutModal = false">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-gray-900">Logging out?</h3>
+          <button @click="showLogoutModal = false" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <p class="text-sm text-gray-500 mb-6">Are you sure you want to log out of your OBRA account?</p>
+        <div class="flex gap-3 justify-end">
+          <button @click="showLogoutModal = false" class="px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-full hover:border-gray-400 transition-colors">
+            Cancel
+          </button>
+          <button @click="confirmLogout" class="px-5 py-2 text-sm font-semibold text-white bg-green-500 hover:bg-green-600 rounded-full transition-colors">
+            Log Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { navigateTo } from '#app'
 import AuthModal from '../auth/AuthModal.vue'
+
+const authStore = useAuthStore()
 
 const searchQuery = ref('')
 const wishlistCount = ref(0)
@@ -120,6 +195,29 @@ const cartCount = ref(2)
 const cartTotal = ref(570.00)
 const showAuthModal = ref(false)
 const showSuggestions = ref(false)
+const showDropdown = ref(false)
+const showLogoutModal = ref(false)
+const dropdownRef = ref<HTMLElement | null>(null)
+
+onMounted(() => {
+  authStore.loadFromStorage()
+  document.addEventListener('click', (e) => {
+    if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
+      showDropdown.value = false
+    }
+  })
+})
+
+const handleLogout = () => {
+  showDropdown.value = false
+  showLogoutModal.value = true
+}
+
+const confirmLogout = async () => {
+  showLogoutModal.value = false
+  await authStore.logout()
+  navigateTo('/')
+}
 
 const allProducts = [
   { id: 1,  name: 'Tomato',       price: 20.00,  image: '/images/products/vegetables/Tomato.png',       category: 'Vegetables' },
@@ -155,21 +253,16 @@ const filteredSuggestions = computed(() => {
     .slice(0, 6)
 })
 
-const handleInput = () => {
-  showSuggestions.value = true
-}
-
+const handleInput = () => { showSuggestions.value = true }
 const handleSearch = () => {
   if (!searchQuery.value.trim()) return
   showSuggestions.value = false
   navigateTo(`/customer?search=${searchQuery.value}`)
 }
-
 const selectSuggestion = (name: string) => {
   searchQuery.value = name
   showSuggestions.value = false
 }
-
 const hideSuggestions = () => {
   setTimeout(() => { showSuggestions.value = false }, 200)
 }

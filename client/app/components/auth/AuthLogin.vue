@@ -13,7 +13,7 @@
     </button>
 
     <h2 class="text-2xl font-black text-gray-900 mb-1">Welcome back!</h2>
-    <p class="text-gray-400 text-sm mb-6">Log in to your Bagsakan account</p>
+    <p class="text-gray-400 text-sm mb-6">Log in to your OBRA account</p>
 
     <form @submit.prevent="handleLogin" class="flex flex-col gap-4">
 
@@ -98,14 +98,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-
 const emit = defineEmits<{
   (e: 'back'): void
   (e: 'close'): void
   (e: 'goto', step: string): void
   (e: 'success'): void
 }>()
+
+const authStore = useAuthStore()
 
 const form = ref({ email: '', password: '' })
 const showPassword = ref(false)
@@ -116,10 +116,10 @@ const handleLogin = async () => {
   loading.value = true
   error.value = ''
   try {
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await authStore.login(form.value.email, form.value.password)
     emit('success')
-  } catch (e) {
-    error.value = 'Invalid email or password. Please try again.'
+  } catch (e: any) {
+    error.value = e?.data?.message || 'Invalid email or password. Please try again.'
   } finally {
     loading.value = false
   }

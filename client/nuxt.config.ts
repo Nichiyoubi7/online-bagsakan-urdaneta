@@ -1,48 +1,44 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-    app: {
+  app: {
     head: {
-      title: 'OBRA',
+      title: "OBRA",
       meta: [
-        { name: 'description', content: 'Online Bagsakan Urdaneta — Fresh products from local sellers in Urdaneta City, Pangasinan.' }
+        { name: "description", content: "Online Bagsakan Urdaneta - Fresh products from local sellers in Urdaneta City, Pangasinan." }
       ]
     }
   },
   modules: [
-    '@nuxt/eslint',
-    '@nuxt/ui'
+    "@nuxt/eslint",
+    "@nuxt/ui",
+    "@pinia/nuxt",
   ],
-
   components: [
-    { path: '~/components/layout', pathPrefix: false },
-    { path: '~/components/nav',    pathPrefix: false },
-    { path: '~/components/shared', pathPrefix: false },
-    { path: '~/components',        pathPrefix: false },
+    { path: "~/components/layout", pathPrefix: false },
+    { path: "~/components/nav",    pathPrefix: false },
+    { path: "~/components/shared", pathPrefix: false },
+    { path: "~/components",        pathPrefix: false },
   ],
-
+  runtimeConfig: {
+    public: {
+      apiBase: "http://127.0.0.1:8000/api",
+    }
+  },
   vite: {
-  server: {
-    allowedHosts: ['nonconnectively-incised-neal.ngrok-free.dev']
-  }
-},
-
-  devtools: {
-    enabled: true
+    server: {
+      allowedHosts: ["nonconnectively-incised-neal.ngrok-free.dev"]
+    }
   },
-
-  css: ['~/assets/css/main.css'],
-
+  devtools: { enabled: true },
+  css: ["~/assets/css/main.css"],
   routeRules: {
-    '/': { prerender: true }
+    "/": { prerender: true }
   },
-
-  compatibilityDate: '2025-01-15',
-
+  compatibilityDate: "2025-01-15",
   eslint: {
     config: {
       stylistic: {
-        commaDangle: 'never',
-        braceStyle: '1tbs'
+        commaDangle: "never",
+        braceStyle: "1tbs"
       }
     }
   }

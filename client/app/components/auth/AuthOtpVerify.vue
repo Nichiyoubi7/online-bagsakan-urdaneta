@@ -1,7 +1,6 @@
 <template>
   <div class="px-6 py-8">
 
-    <!-- Back -->
     <button
       @click="$emit('back')"
       class="flex items-center gap-2 text-gray-500 hover:text-gray-700 text-sm mb-6 transition-colors"
@@ -12,14 +11,12 @@
       Back
     </button>
 
-    <!-- Icon -->
-    <div class="text-5xl mb-4">📱</div>
+    <div class="text-5xl mb-4">📧</div>
 
-    <h2 class="text-2xl font-black text-gray-900 mb-1">Enter OTP Code</h2>
+    <h2 class="text-2xl font-black text-gray-900 mb-1">Check your email</h2>
     <p class="text-gray-400 text-sm mb-1">We sent a 6-digit code to</p>
-    <p class="text-green-600 font-semibold text-sm mb-6">{{ phone }}</p>
+    <p class="text-green-600 font-semibold text-sm mb-6">{{ payload.email }}</p>
 
-    <!-- OTP Boxes -->
     <div class="flex items-center gap-2 justify-center mb-6">
       <input
         v-for="(digit, index) in otp"
@@ -34,12 +31,8 @@
       />
     </div>
 
-    <!-- Error -->
-    <p v-if="error" class="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg mb-4 text-center">
-      {{ error }}
-    </p>
+    <p v-if="error" class="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg mb-4 text-center">{{ error }}</p>
 
-    <!-- Verify Button -->
     <button
       @click="handleVerify"
       :disabled="otp.join('').length < 6 || loading"
@@ -52,33 +45,35 @@
       {{ loading ? 'Verifying...' : 'Verify & Create Account' }}
     </button>
 
-    <!-- Resend -->
     <div class="text-center">
       <p class="text-xs text-gray-400 mb-1">Didn't receive the code?</p>
-      <button
-        v-if="resendTimer === 0"
-        @click="handleResend"
-        class="text-sm text-green-500 font-semibold hover:underline"
-      >
-        Resend OTP
+      <button v-if="resendTimer === 0" @click="handleResend" class="text-sm text-green-500 font-semibold hover:underline">
+        Resend Code
       </button>
-      <p v-else class="text-sm text-gray-400">
-        Resend in {{ resendTimer }} seconds
-      </p>
+      <p v-else class="text-sm text-gray-400">Resend in {{ resendTimer }} seconds</p>
     </div>
 
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-
-defineProps<{ phone: string }>()
+const props = defineProps<{
+  payload: {
+    email: string
+    name: string
+    phone: string
+    password: string
+    password_confirmation: string
+  }
+}>()
 
 const emit = defineEmits<{
   (e: 'back'): void
   (e: 'success'): void
 }>()
+
+const config = useRuntimeConfig()
+const authStore = useAuthStore()
 
 const otp = ref(['', '', '', '', '', ''])
 const inputs = ref<HTMLInputElement[]>([])
@@ -88,14 +83,19 @@ const resendTimer = ref(60)
 let countdown: ReturnType<typeof setInterval>
 
 onMounted(() => {
-  countdown = setInterval(() => {
-    if (resendTimer.value > 0) resendTimer.value--
-    else clearInterval(countdown)
-  }, 1000)
+  startCountdown()
   setTimeout(() => inputs.value[0]?.focus(), 100)
 })
 
 onUnmounted(() => clearInterval(countdown))
+
+const startCountdown = () => {
+  resendTimer.value = 60
+  countdown = setInterval(() => {
+    if (resendTimer.value > 0) resendTimer.value--
+    else clearInterval(countdown)
+  }, 1000)
+}
 
 const handleInput = (index: number) => {
   if (otp.value[index].length === 1 && index < 5) {
@@ -109,22 +109,53 @@ const handleBackspace = (index: number) => {
   }
 }
 
-const handleResend = () => {
-  resendTimer.value = 60
-  countdown = setInterval(() => {
-    if (resendTimer.value > 0) resendTimer.value--
-    else clearInterval(countdown)
-  }, 1000)
+const handleResend = async () => {
+  await $fetch('/otp/send', {
+    baseURL: config.public.apiBase,
+    method: 'POST',
+    body: { email: props.payload.email },
+    headers: { Accept: 'application/json' },
+  })
+  startCountdown()
 }
 
 const handleVerify = async () => {
   loading.value = true
   error.value = ''
   try {
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await $fetch('/otp/verify', {
+      baseURL: config.public.apiBase,
+      method: 'POST',
+      body: { email: props.payload.email, code: otp.value.join('') },
+      headers: { Accept: 'application/json' },
+    })
+
+    const res: any = await $fetch('/register', {
+      baseURL: config.public.apiBase,
+      method: 'POST',
+      body: {
+        name: props.payload.name,
+        email: props.payload.email,
+        phone: '+63' + props.payload.phone,
+        password: props.payload.password,
+        password_confirmation: props.payload.password_confirmation,
+        role: 'customer',
+      },
+      headers: { Accept: 'application/json' },
+    })
+
+    authStore.token = res.token
+    authStore.user = res.user
+    authStore.role = res.role
+    if (import.meta.client) {
+      localStorage.setItem('obra_token', res.token)
+      localStorage.setItem('obra_user', JSON.stringify(res.user))
+      localStorage.setItem('obra_role', res.role)
+    }
+
     emit('success')
-  } catch (e) {
-    error.value = 'Invalid OTP code. Please try again.'
+  } catch (e: any) {
+    error.value = e?.data?.message || 'Invalid or expired code. Please try again.'
     otp.value = ['', '', '', '', '', '']
     inputs.value[0]?.focus()
   } finally {

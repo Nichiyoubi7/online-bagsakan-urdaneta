@@ -27,18 +27,28 @@
           <ShopTopBar
             :from="paginationFrom"
             :to="paginationTo"
-            :total="filteredProducts.length"
+            :total="totalProducts"
             @sort="handleSort"
           />
-          <div v-if="paginatedProducts.length > 0" class="grid grid-cols-2 md:grid-cols-3 gap-5">
-            <ProductCard v-for="product in paginatedProducts" :key="product.id" :product="product" />
+
+          <!-- Loading -->
+          <div v-if="loading" class="grid grid-cols-2 md:grid-cols-3 gap-5">
+            <div v-for="n in 6" :key="n" class="bg-gray-100 rounded-2xl h-64 animate-pulse" />
           </div>
+
+          <!-- Products -->
+          <div v-else-if="products.length > 0" class="grid grid-cols-2 md:grid-cols-3 gap-5">
+            <ProductCard v-for="product in products" :key="product.id" :product="mapProduct(product)" />
+          </div>
+
+          <!-- Empty -->
           <div v-else class="flex flex-col items-center justify-center py-20 text-center">
             <span class="text-5xl mb-4">🥦</span>
             <h3 class="text-lg font-bold text-gray-700 mb-2">No products found</h3>
             <p class="text-sm text-gray-400 mb-4">Try adjusting your filters</p>
             <button @click="resetFilters" class="px-5 py-2 bg-green-500 text-white text-sm font-semibold rounded-full hover:bg-green-600 transition-colors">Reset Filters</button>
           </div>
+
           <ShopPagination v-if="totalPages > 1" :current-page="currentPage" :total-pages="totalPages" @change="handlePageChange" />
         </div>
       </div>
@@ -47,7 +57,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import GuestLayout from '../../components/layout/GuestLayout.vue'
 import ShopSidebar from '../../components/customer/shop/ShopSidebar.vue'
@@ -56,8 +65,10 @@ import ShopPagination from '../../components/customer/shop/ShopPagination.vue'
 import ProductCard from '../../components/customer/products/ProductCard.vue'
 
 const route = useRoute()
+const { get } = useApi()
+
 const selectedCategory = ref(
-  route.query.category ? decodeURIComponent(route.query.category as string) : 'All Categories'
+  route.query.category ? decodeURIComponent(route.query.category as string) : ''
 )
 const selectedRating = ref(0)
 const selectedTag = ref('')
@@ -66,66 +77,93 @@ const sortBy = ref('default')
 const currentPage = ref(1)
 const perPage = 12
 
-const allProducts = [
-  { id: 1,  name: 'Tomato',         price: 20.00,  image: '/images/products/vegetables/Tomato.png',          rating: 4, badge: 'Sale', category: 'Vegetables' },
-  { id: 2,  name: 'Eggplant',       price: 15.00,  image: '/images/products/vegetables/eggplant.png',        rating: 4, category: 'Vegetables' },
-  { id: 3,  name: 'Bitter Gourd',   price: 18.00,  image: '/images/products/vegetables/bitter_gourd.png',    rating: 4, category: 'Vegetables' },
-  { id: 4,  name: 'Okra',           price: 12.00,  image: '/images/products/vegetables/okra.png',            rating: 4, category: 'Vegetables' },
-  { id: 5,  name: 'Sitaw',          price: 15.00,  image: '/images/products/vegetables/sitaw.png',           rating: 4, category: 'Vegetables' },
-  { id: 6,  name: 'Kangkong',       price: 10.00,  image: '/images/products/vegetables/kangkong.png',        rating: 4, category: 'Vegetables' },
-  { id: 7,  name: 'Repolyo',        price: 25.00,  image: '/images/products/vegetables/repolyo.png',         rating: 4, category: 'Vegetables' },
-  { id: 8,  name: 'Carrot',         price: 25.00,  image: '/images/products/vegetables/carrot.png',          rating: 4, category: 'Vegetables' },
-  { id: 9,  name: 'Potato',         price: 30.00,  image: '/images/products/vegetables/potato.png',          rating: 4, category: 'Vegetables' },
-  { id: 10, name: 'Sibuyas',        price: 60.00,  image: '/images/products/vegetables/sibuyas.png',         rating: 4, category: 'Vegetables' },
-  { id: 11, name: 'Bawang',         price: 80.00,  image: '/images/products/vegetables/bawang.png',          rating: 4, category: 'Vegetables' },
-  { id: 12, name: 'Mais',           price: 15.00,  image: '/images/products/vegetables/mais.png',            rating: 4, category: 'Vegetables' },
-  { id: 13, name: 'Mango',          price: 50.00,  image: '/images/products/fruits/mango.png',               rating: 5, badge: 'Sale', category: 'Fruits' },
-  { id: 14, name: 'Saging',         price: 30.00,  image: '/images/products/fruits/saging.png',              rating: 4, category: 'Fruits' },
-  { id: 15, name: 'Papaya',         price: 40.00,  image: '/images/products/fruits/papaya.png',              rating: 4, category: 'Fruits' },
-  { id: 16, name: 'Pakwan',         price: 80.00,  image: '/images/products/fruits/pakwan.png',              rating: 4, category: 'Fruits' },
-  { id: 17, name: 'Pineapple',      price: 45.00,  image: '/images/products/fruits/Pineapple.png',           rating: 4, category: 'Fruits' },
-  { id: 18, name: 'Avocado',        price: 60.00,  image: '/images/products/fruits/Avocado.png',             rating: 4, category: 'Fruits' },
-  { id: 19, name: 'Guava',          price: 25.00,  image: '/images/products/fruits/Guava.png',               rating: 4, category: 'Fruits' },
-  { id: 20, name: 'Rambutan',       price: 35.00,  image: '/images/products/fruits/Rambutan.png',            rating: 4, category: 'Fruits' },
-  { id: 21, name: 'Chicken',        price: 180.00, image: '/images/products/meat/Chicken.png',               rating: 4, category: 'Meat & Fish' },
-  { id: 22, name: 'Pork Meat',      price: 220.00, image: '/images/products/meat/pork_meat.png',             rating: 4, category: 'Meat & Fish' },
-  { id: 23, name: 'Egg',            price: 12.00,  image: '/images/products/meat/Egg.png',                   rating: 5, category: 'Meat & Fish' },
-  { id: 24, name: 'Rice',           price: 55.00,  image: '/images/products/meat/rice.png',                  rating: 4, category: 'Meat & Fish' },
-]
+const products = ref<any[]>([])
+const totalProducts = ref(0)
+const totalPages = ref(1)
+const loading = ref(false)
 
-const filteredProducts = computed(() => {
-  let result = [...allProducts]
-  if (selectedCategory.value && selectedCategory.value !== 'All Categories') {
-    result = result.filter(p => p.category === selectedCategory.value)
+const categoryMap = ref<Record<string, number>>({})
+
+const loadCategories = async () => {
+  const res: any = await get('/categories')
+  res.forEach((cat: any) => {
+    categoryMap.value[cat.name] = cat.id
+  })
+}
+
+const loadProducts = async () => {
+  loading.value = true
+  try {
+    const params: Record<string, any> = {
+      page: currentPage.value,
+    }
+    if (selectedCategory.value && selectedCategory.value !== 'All Categories') {
+      const catId = categoryMap.value[selectedCategory.value]
+      if (catId) params.category_id = catId
+    }
+    if (sortBy.value === 'price_asc') params.sort = 'price_asc'
+    if (sortBy.value === 'price_desc') params.sort = 'price_desc'
+
+    const res: any = await get('/products', params)
+    products.value = res.data
+    totalProducts.value = res.total
+    totalPages.value = res.last_page
+  } catch (e) {
+    console.error('Failed to load products', e)
+  } finally {
+    loading.value = false
   }
-  result = result.filter(p => p.price <= priceMax.value)
-  if (selectedRating.value > 0) result = result.filter(p => p.rating >= selectedRating.value)
-  if (sortBy.value === 'price_asc')  result.sort((a, b) => a.price - b.price)
-  if (sortBy.value === 'price_desc') result.sort((a, b) => b.price - a.price)
-  if (sortBy.value === 'rating')     result.sort((a, b) => b.rating - a.rating)
-  return result
+}
+
+const mapProduct = (p: any) => ({
+  id: p.id,
+  name: p.name,
+  price: p.price,
+  image: p.image || `/images/products/${getCategoryFolder(p.category?.name)}/${p.name.toLowerCase().replace(/ /g, '_')}.png`,
+  rating: 4,
+  category: p.category?.name || '',
+  badge: p.original_price && p.original_price > p.price ? 'Sale' : undefined,
 })
 
-const totalPages = computed(() => Math.ceil(filteredProducts.value.length / perPage))
-const paginationFrom = computed(() => (currentPage.value - 1) * perPage + 1)
-const paginationTo = computed(() => Math.min(currentPage.value * perPage, filteredProducts.value.length))
-const paginatedProducts = computed(() => {
-  const start = (currentPage.value - 1) * perPage
-  return filteredProducts.value.slice(start, start + perPage)
+const getCategoryFolder = (cat: string) => {
+  if (cat === 'Fruits') return 'fruits'
+  if (cat === 'Meat & Fish') return 'meat'
+  return 'vegetables'
+}
+
+onMounted(async () => {
+  await loadCategories()
+  await loadProducts()
 })
 
-const handleCategorySelect = (cat: string) => { selectedCategory.value = cat; currentPage.value = 1 }
-const handlePriceChange = (val: number) => { priceMax.value = val; currentPage.value = 1 }
-const handleRatingSelect = (rating: number) => { selectedRating.value = rating; currentPage.value = 1 }
-const handleTagSelect = (tag: string) => { selectedTag.value = tag; currentPage.value = 1 }
-const handleSort = (val: string) => { sortBy.value = val; currentPage.value = 1 }
-const handlePageChange = (page: number) => { currentPage.value = page; window.scrollTo({ top: 0, behavior: 'smooth' }) }
-const resetFilters = () => {
-  selectedCategory.value = 'All Categories'
+const paginationFrom = computed(() => totalProducts.value === 0 ? 0 : (currentPage.value - 1) * perPage + 1)
+const paginationTo = computed(() => Math.min(currentPage.value * perPage, totalProducts.value))
+
+const handleCategorySelect = async (cat: string) => {
+  selectedCategory.value = cat
+  currentPage.value = 1
+  await loadProducts()
+}
+const handlePriceChange = (val: number) => { priceMax.value = val }
+const handleRatingSelect = (rating: number) => { selectedRating.value = rating }
+const handleTagSelect = (tag: string) => { selectedTag.value = tag }
+const handleSort = async (val: string) => {
+  sortBy.value = val
+  currentPage.value = 1
+  await loadProducts()
+}
+const handlePageChange = async (page: number) => {
+  currentPage.value = page
+  await loadProducts()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+const resetFilters = async () => {
+  selectedCategory.value = ''
   selectedRating.value = 0
   selectedTag.value = ''
   priceMax.value = 500
   sortBy.value = 'default'
   currentPage.value = 1
+  await loadProducts()
 }
 </script>
