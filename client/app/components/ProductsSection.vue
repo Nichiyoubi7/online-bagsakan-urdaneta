@@ -56,7 +56,7 @@ const products = ref<any[]>([])
 const loading = ref(false)
 const categoryMap = ref<Record<string, number>>({})
 
-const API = 'http://127.0.0.1:8000/api'
+const API = 'https://online-bagsakan-urdaneta-production.up.railway.app/api'
 
 const loadCategories = async () => {
   try {
