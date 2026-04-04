@@ -20,7 +20,7 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     public: {
-      apiBase: "https://online-bagsakan-urdaneta-production.up.railway.app/api",
+      apiBase: "https://api.obra-ur.xyz/api",
     }
   },
   vite: {

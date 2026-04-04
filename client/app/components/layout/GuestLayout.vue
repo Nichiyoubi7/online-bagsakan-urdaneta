@@ -5,10 +5,12 @@
       <slot />
     </main>
     <TheFooter />
+    <ToastNotification />
   </div>
 </template>
 
 <script setup lang="ts">
 import TheNavbar from '~/components/nav/TheNavbar.vue'
 import TheFooter from '~/components/TheFooter.vue'
+import ToastNotification from '~/components/ui/ToastNotification.vue'
 </script>
