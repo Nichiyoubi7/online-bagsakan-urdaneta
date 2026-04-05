@@ -13,7 +13,7 @@ class ProductController extends Controller
             ->when($request->category_id, fn($q) => $q->where('category_id', $request->category_id))
             ->when($request->search, fn($q) => $q->where('name', 'like', '%' . $request->search . '%'))
             ->when($request->status, fn($q) => $q->where('status', $request->status))
-            ->orderBy('created_at', 'desc')
+            ->orderBy('category_id', 'asc')->orderBy('name', 'asc')
             ->paginate(12);
 
         return response()->json($products);
