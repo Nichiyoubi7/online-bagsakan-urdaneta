@@ -44,6 +44,9 @@
 <script setup lang="ts">
 import ProductCard from './customer/products/ProductCard.vue'
 
+const config = useRuntimeConfig()
+const API = config.public.apiBase
+
 const activeTab = ref('All')
 const tabs = [
   { label: 'All', categoryName: '' },
@@ -55,39 +58,6 @@ const tabs = [
 const products = ref<any[]>([])
 const loading = ref(false)
 const categoryMap = ref<Record<string, number>>({})
-
-const API = 'https://online-bagsakan-urdaneta-production.up.railway.app/api'
-
-const loadCategories = async () => {
-  try {
-    const res: any = await $fetch(`${API}/categories`)
-    res.forEach((cat: any) => {
-      categoryMap.value[cat.name] = cat.id
-    })
-  } catch (e) {
-    console.error('Failed to load categories', e)
-  }
-}
-
-const loadProducts = async (categoryId?: number) => {
-  loading.value = true
-  try {
-    const params: Record<string, any> = { per_page: 8 }
-    if (categoryId) params.category_id = categoryId
-    const res: any = await $fetch(`${API}/products`, { params })
-    products.value = res.data
-  } catch (e) {
-    console.error('Failed to load products', e)
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleTabChange = async (tab: { label: string, categoryName: string }) => {
-  activeTab.value = tab.label
-  const catId = tab.categoryName ? categoryMap.value[tab.categoryName] : undefined
-  await loadProducts(catId)
-}
 
 const imageMap: Record<string, string> = {
   'Tomato': '/images/products/vegetables/Tomato.png',
@@ -141,6 +111,36 @@ const mapProduct = (p: any) => ({
   badge: p.original_price && p.original_price > p.price ? 'Sale' : undefined,
 })
 
+const loadCategories = async () => {
+  try {
+    const res: any = await $fetch(`${API}/categories`)
+    res.forEach((cat: any) => {
+      categoryMap.value[cat.name] = cat.id
+    })
+  } catch (e) {
+    console.error('Failed to load categories', e)
+  }
+}
+
+const loadProducts = async (categoryId?: number) => {
+  loading.value = true
+  try {
+    const params: Record<string, any> = { per_page: 8 }
+    if (categoryId) params.category_id = categoryId
+    const res: any = await $fetch(`${API}/products`, { params })
+    products.value = res.data
+  } catch (e) {
+    console.error('Failed to load products', e)
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleTabChange = async (tab: { label: string, categoryName: string }) => {
+  activeTab.value = tab.label
+  const catId = tab.categoryName ? categoryMap.value[tab.categoryName] : undefined
+  await loadProducts(catId)
+}
 
 onMounted(async () => {
   await loadCategories()

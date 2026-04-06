@@ -3,9 +3,9 @@
     <div
       v-if="modelValue"
       class="fixed inset-0 z-50 flex items-center justify-center p-4"
-      @click.self="closeModal"
+      
     >
-      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="closeModal" />
+      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"  />
 
       <Transition name="slide-up">
         <div
@@ -27,8 +27,7 @@
             <AuthWelcome
               v-if="step === 'welcome'"
               :key="'welcome'"
-              @login="step = 'login'"
-              @register="step = 'register'"
+              @goto="step = $event"
               @close="closeModal"
             />
 
@@ -55,7 +54,15 @@
               :key="'otp'"
               :payload="otpPayload"
               @back="step = 'register'"
-              @success="handleRegisterSuccess"
+              @success="handleOtpSuccess"
+            />
+
+            <!-- Shop Setup Step for Sellers -->
+            <AuthShopSetup
+              v-else-if="step === 'shop'"
+              :key="'shop'"
+              :user-data="registeredUser"
+              @success="handleShopSuccess"
             />
 
             <div v-else-if="step === 'success'" :key="'success'" class="p-8 text-center">
@@ -65,17 +72,16 @@
                 </svg>
               </div>
               <h3 class="text-xl font-black text-gray-900 mb-2">You're in! 🎉</h3>
-              <p class="text-sm text-gray-500 mb-6">Your account has been successfully created. You are now logged in.</p>
+              <p class="text-sm text-gray-500 mb-6">Your account has been successfully created.</p>
               <button
                 @click="closeAndRedirect"
                 class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition-colors duration-200"
               >
-                Start Shopping
+                {{ authStore.role === 'seller' ? 'Go to Dashboard' : 'Start Shopping' }}
               </button>
             </div>
 
           </Transition>
-
         </div>
       </Transition>
     </div>
@@ -89,6 +95,7 @@ import AuthWelcome from './AuthWelcome.vue'
 import AuthLogin from './AuthLogin.vue'
 import AuthRegister from './AuthRegister.vue'
 import AuthOtpVerify from './AuthOtpVerify.vue'
+import AuthShopSetup from './AuthShopSetup.vue'
 import { useAuthGate } from '~/composables/useAuthGate'
 
 defineProps<{ modelValue: boolean }>()
@@ -100,8 +107,8 @@ const emit = defineEmits<{
 const authStore = useAuthStore()
 const { completePendingAction } = useAuthGate()
 const step = ref('welcome')
-const otpPhone = ref('')
 const otpPayload = ref<any>(null)
+const registeredUser = ref<any>(null)
 
 const closeModal = () => {
   emit('update:modelValue', false)
@@ -110,7 +117,11 @@ const closeModal = () => {
 
 const closeAndRedirect = () => {
   closeModal()
-  navigateTo('/')
+  const role = authStore.role
+  if (role === 'seller') navigateTo('/seller/dashboard')
+  else if (role === 'driver') navigateTo('/driver/dashboard')
+  else if (role === 'admin') navigateTo('/admin/dashboard')
+  else navigateTo('/')
 }
 
 const handleOtp = (payload: any) => {
@@ -118,24 +129,44 @@ const handleOtp = (payload: any) => {
   step.value = 'otp'
 }
 
-const handleLoginSuccess = () => {
-  closeModal()
-  completePendingAction()
-  const role = authStore.role
-  if (role === 'admin') {
-    navigateTo('/admin/dashboard')
-  } else if (role === 'seller') {
-    navigateTo('/seller/dashboard')
-  } else if (role === 'driver') {
-    navigateTo('/driver/dashboard')
-  } else if (role === 'staff') {
-    navigateTo('/staff/dashboard')
+const handleOtpSuccess = (user: any) => {
+  registeredUser.value = user
+  // If seller, go to shop setup — otherwise go to success
+  if (otpPayload.value?.role === 'seller') {
+    step.value = 'shop'
   } else {
-    navigateTo('/')
+    step.value = 'success'
   }
 }
 
-const handleRegisterSuccess = () => {
+const handleShopSuccess = () => {
   step.value = 'success'
+}
+
+const handleLoginSuccess = async () => {
+  completePendingAction()
+  const role = authStore.role
+  if (role === 'seller') {
+    // Check if seller has a shop
+    try {
+      const { get } = useApi()
+      await get('/seller/shop')
+      // Has shop — go to dashboard
+      closeModal()
+      navigateTo('/seller/dashboard')
+    } catch (e) {
+      // No shop yet — show shop setup
+      step.value = 'shop'
+    }
+  } else if (role === 'admin') {
+    closeModal()
+    navigateTo('/admin/dashboard')
+  } else if (role === 'driver') {
+    closeModal()
+    navigateTo('/driver/dashboard')
+  } else {
+    closeModal()
+    navigateTo('/')
+  }
 }
 </script>

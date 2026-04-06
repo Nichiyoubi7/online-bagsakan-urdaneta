@@ -29,7 +29,7 @@
 
       <!-- Empty Cart -->
       <div
-        v-if="cartGroups.length === 0"
+        v-if="cartStore.items.length === 0"
         class="flex flex-col items-center justify-center py-24 text-center"
       >
         <span class="text-6xl mb-4">🛒</span>
@@ -43,29 +43,121 @@
         </NuxtLink>
       </div>
 
-      <!-- Cart Groups -->
-      <CartSellerGroup
-        v-for="group in cartGroups"
-        :key="group.id"
-        :seller="group"
-        @toggle-all="toggleSellerAll(group.id)"
-        @toggle-item="toggleItem"
-        @increase="increaseQty"
-        @decrease="decreaseQty"
-        @remove="removeItem"
-      />
+      <!-- Cart Items -->
+      <div v-else>
+        <div
+          v-for="item in cartStore.items"
+          :key="item.id"
+          class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-3 px-5 py-4 flex items-center gap-4"
+        >
+          <!-- Checkbox -->
+          <input
+            type="checkbox"
+            v-model="selectedIds"
+            :value="item.id"
+            class="w-4 h-4 accent-green-500 cursor-pointer shrink-0"
+          />
+
+          <!-- Image -->
+          <div class="w-20 h-20 bg-gray-50 rounded-xl overflow-hidden shrink-0">
+            <img :src="item.image" :alt="item.name" class="w-full h-full object-contain p-1" />
+          </div>
+
+          <!-- Name -->
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-gray-800 truncate">{{ item.name }}</p>
+            <p class="text-xs text-gray-400 mt-0.5">{{ item.category }}</p>
+          </div>
+
+          <!-- Unit Price -->
+          <div class="w-24 text-center">
+            <p class="text-sm font-semibold text-gray-700">₱{{ item.price.toFixed(2) }}</p>
+          </div>
+
+          <!-- Quantity -->
+          <div class="w-32 flex items-center justify-center">
+            <div class="flex items-center border border-gray-200 rounded-full overflow-hidden">
+              <button
+                @click="cartStore.decreaseQty(item.id)"
+                class="px-3 py-1.5 text-gray-600 hover:bg-gray-50 transition-colors font-bold text-sm"
+              >-</button>
+              <span class="px-3 py-1.5 text-sm font-semibold text-gray-800 min-w-[32px] text-center">
+                {{ item.quantity }}
+              </span>
+              <button
+                @click="cartStore.increaseQty(item.id)"
+                class="px-3 py-1.5 text-gray-600 hover:bg-gray-50 transition-colors font-bold text-sm"
+              >+</button>
+            </div>
+          </div>
+
+          <!-- Total Price -->
+          <div class="w-24 text-center">
+            <p class="text-sm font-bold text-green-600">₱{{ (item.price * item.quantity).toFixed(2) }}</p>
+          </div>
+
+          <!-- Remove -->
+          <div class="w-24 text-center">
+            <button
+              @click="cartStore.removeItem(item.id)"
+              class="text-red-400 hover:text-red-600 transition-colors text-xs font-semibold"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
 
     </div>
 
     <!-- Bottom Summary Bar -->
-    <CartSummary
-      :all-selected="allSelected"
-      :total-items="totalItems"
-      :selected-items="selectedItemsCount"
-      :total="selectedTotal"
-      @toggle-all="toggleAll"
-      @delete-selected="deleteSelected"
-    />
+    <div v-if="cartStore.items.length > 0" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-30">
+      <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+
+        <!-- Left: Select All + Delete -->
+        <div class="flex items-center gap-4">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              :checked="allSelected"
+              @change="toggleAll"
+              class="w-4 h-4 accent-green-500"
+            />
+            <span class="text-sm font-medium text-gray-700">
+              Select All ({{ cartStore.items.length }})
+            </span>
+          </label>
+          <button
+            @click="deleteSelected"
+            class="text-sm text-gray-500 hover:text-red-500 transition-colors"
+          >
+            Delete
+          </button>
+        </div>
+
+        <!-- Right: Total + Checkout -->
+        <div class="flex items-center gap-6">
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-gray-600">
+              Total ({{ selectedIds.length }} item{{ selectedIds.length !== 1 ? 's' : '' }}):
+            </span>
+            <span class="text-xl font-black text-green-600">
+              ₱{{ selectedTotal.toFixed(2) }}
+            </span>
+          </div>
+
+          <NuxtLink
+            to="/customer/checkout"
+            :class="[
+              'bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-3 rounded-xl transition-colors shadow-md',
+              selectedIds.length === 0 ? 'opacity-50 pointer-events-none' : ''
+            ]"
+          >
+            Check Out
+          </NuxtLink>
+        </div>
+      </div>
+    </div>
 
   </GuestLayout>
 </template>
@@ -73,81 +165,46 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import GuestLayout from '../../components/layout/GuestLayout.vue'
-import CartSellerGroup from '../../components/customer/cart/CartSellerGroup.vue'
-import CartSummary from '../../components/customer/cart/CartSummary.vue'
 
-const cartGroups = ref([
-  {
-    id: 1,
-    name: "Mang Bert's Wet Market",
-    items: [
-      { id: 1, name: 'Tomato',   image: '/images/products/vegetables/Tomato.png',   price: 20.00, quantity: 1, variation: '500g', selected: true  },
-      { id: 2, name: 'Eggplant', image: '/images/products/vegetables/eggplant.png', price: 15.00, quantity: 2, variation: '500g', selected: true  },
-      { id: 3, name: 'Kangkong', image: '/images/products/vegetables/kangkong.png', price: 10.00, quantity: 1, variation: '250g', selected: false },
-    ],
-  },
-  {
-    id: 2,
-    name: "Aling Nena's Fish Hub",
-    items: [
-      { id: 4, name: 'Chicken',  image: '/images/products/meat/Chicken.png',   price: 180.00, quantity: 1, variation: '1kg', selected: true  },
-      { id: 5, name: 'Pork Meat',image: '/images/products/meat/pork_meat.png', price: 220.00, quantity: 1, variation: '1kg', selected: false },
-    ],
-  },
-])
+const cartStore = useCartStore()
 
-const allItems       = computed(() => cartGroups.value.flatMap(g => g.items))
-const totalItems     = computed(() => allItems.value.length)
-const allSelected    = computed(() => allItems.value.every(i => i.selected))
-const selectedItemsCount = computed(() => allItems.value.filter(i => i.selected).length)
-const selectedTotal  = computed(() =>
-  allItems.value.filter(i => i.selected).reduce((sum, i) => sum + i.price * i.quantity, 0)
+const selectedIds = ref<number[]>(cartStore.items.map(i => i.id))
+
+// Keep selectedIds in sync when items change
+watch(() => cartStore.items, (newItems) => {
+  selectedIds.value = selectedIds.value.filter(id => newItems.some(i => i.id === id))
+  newItems.forEach(item => {
+    if (!selectedIds.value.includes(item.id)) {
+      selectedIds.value.push(item.id)
+    }
+  })
+}, { deep: true })
+
+const allSelected = computed(() =>
+  cartStore.items.length > 0 && cartStore.items.every(i => selectedIds.value.includes(i.id))
 )
 
-const toggleItem = (itemId: number) => {
-  cartGroups.value.forEach(g => {
-    const item = g.items.find(i => i.id === itemId)
-    if (item) item.selected = !item.selected
-  })
-}
-
-const toggleSellerAll = (sellerId: number) => {
-  const group = cartGroups.value.find(g => g.id === sellerId)
-  if (!group) return
-  const allSel = group.items.every(i => i.selected)
-  group.items.forEach(i => i.selected = !allSel)
-}
+const selectedTotal = computed(() =>
+  cartStore.items
+    .filter(i => selectedIds.value.includes(i.id))
+    .reduce((sum, i) => sum + i.price * i.quantity, 0)
+)
 
 const toggleAll = () => {
-  const allSel = allSelected.value
-  cartGroups.value.forEach(g => g.items.forEach(i => i.selected = !allSel))
-}
-
-const increaseQty = (itemId: number) => {
-  cartGroups.value.forEach(g => {
-    const item = g.items.find(i => i.id === itemId)
-    if (item) item.quantity++
-  })
-}
-
-const decreaseQty = (itemId: number) => {
-  cartGroups.value.forEach(g => {
-    const item = g.items.find(i => i.id === itemId)
-    if (item && item.quantity > 1) item.quantity--
-  })
-}
-
-const removeItem = (itemId: number) => {
-  cartGroups.value.forEach(g => {
-    g.items = g.items.filter(i => i.id !== itemId)
-  })
-  cartGroups.value = cartGroups.value.filter(g => g.items.length > 0)
+  if (allSelected.value) {
+    selectedIds.value = []
+  } else {
+    selectedIds.value = cartStore.items.map(i => i.id)
+  }
 }
 
 const deleteSelected = () => {
-  cartGroups.value.forEach(g => {
-    g.items = g.items.filter(i => !i.selected)
-  })
-  cartGroups.value = cartGroups.value.filter(g => g.items.length > 0)
+  selectedIds.value.forEach(id => cartStore.removeItem(id))
+  selectedIds.value = []
 }
+
+onMounted(() => {
+  cartStore.loadFromStorage()
+  selectedIds.value = cartStore.items.map(i => i.id)
+})
 </script>

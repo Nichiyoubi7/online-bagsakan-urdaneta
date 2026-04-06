@@ -34,29 +34,27 @@
 
     <!-- Role Quick Links -->
     <div class="flex flex-col gap-2 w-full">
-      <NuxtLink
-        to="/auth/register?role=seller"
-        @click="$emit('close')"
-        class="flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 hover:border-green-400 hover:bg-green-50 transition-all duration-200"
+            <button
+        @click="$emit('goto', 'register')"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 hover:border-green-400 hover:bg-green-50 transition-all duration-200 w-full"
       >
         <span class="text-xl">🏪</span>
         <div class="text-left">
           <p class="text-sm font-semibold text-gray-800">Register as Seller</p>
           <p class="text-xs text-gray-400">List your products on Bagsakan</p>
         </div>
-      </NuxtLink>
+      </button>
 
-      <NuxtLink
-        to="/auth/register?role=driver"
-        @click="$emit('close')"
-        class="flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 hover:border-green-400 hover:bg-green-50 transition-all duration-200"
+            <button
+        @click="$emit('goto', 'register')"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 hover:border-green-400 hover:bg-green-50 transition-all duration-200 w-full"
       >
         <span class="text-xl">🛵</span>
         <div class="text-left">
           <p class="text-sm font-semibold text-gray-800">Register as Driver</p>
           <p class="text-xs text-gray-400">Deliver orders and earn money</p>
         </div>
-      </NuxtLink>
+      </button>
     </div>
 
     <!-- Terms -->

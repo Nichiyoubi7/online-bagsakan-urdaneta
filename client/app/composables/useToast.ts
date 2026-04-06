@@ -6,22 +6,24 @@ interface Toast {
   id: number
   message: string
   type: ToastType
+  image?: string
 }
 
 const toasts = ref<Toast[]>([])
+let nextId = 0
 
-export const useToast = () => {
-  const show = (message: string, type: ToastType = 'success', duration = 3000) => {
-    const id = Date.now()
-    toasts.value.push({ id, message, type })
+export const useAppToast = () => {
+  const add = (message: string, type: ToastType = 'success', image?: string) => {
+    const id = nextId++
+    toasts.value.push({ id, message, type, image })
     setTimeout(() => {
       toasts.value = toasts.value.filter(t => t.id !== id)
-    }, duration)
+    }, 3000)
   }
 
-  const success = (message: string) => show(message, 'success')
-  const error = (message: string) => show(message, 'error')
-  const info = (message: string) => show(message, 'info')
+  const remove = (id: number) => {
+    toasts.value = toasts.value.filter(t => t.id !== id)
+  }
 
-  return { toasts, show, success, error, info }
+  return { toasts, add, remove }
 }

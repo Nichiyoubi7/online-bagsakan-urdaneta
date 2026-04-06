@@ -1,7 +1,7 @@
 <template>
   <header class="sticky top-0 z-50 w-full shadow-sm">
     <NavTopBar @open-auth="showAuthModal = true" />
-    <NavMainBar />
+    <NavMainBar @open-auth="showAuthModal = true" />
     <NavMenuBar />
     <AuthModal v-model="showAuthModal" />
   </header>

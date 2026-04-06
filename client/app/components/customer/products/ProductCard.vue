@@ -1,5 +1,6 @@
 <template>
   <div class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 group relative overflow-hidden">
+
     <!-- Sale Badge -->
     <span
       v-if="product.badge"
@@ -9,10 +10,7 @@
     </span>
 
     <!-- Wishlist Button -->
-    <button
-      @click="handleWishlist"
-      class="absolute top-3 right-3 z-10 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center text-gray-400 hover:text-red-400 transition-colors"
-    >
+    <button class="absolute top-3 right-3 z-10 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center text-gray-400 hover:text-red-400 transition-colors">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
       </svg>
@@ -63,17 +61,11 @@
         </svg>
       </button>
     </div>
-
-    <AuthModal v-model="showAuthModal" />
   </div>
 </template>
 
 <script setup lang="ts">
-import AuthModal from '~/components/auth/AuthModal.vue'
-import { useAuthGate } from '~/composables/useAuthGate'
-import { useToast } from '~/composables/useToast'
-
-defineProps<{
+const props = defineProps<{
   product: {
     id: number
     name: string
@@ -82,21 +74,33 @@ defineProps<{
     images?: string[]
     rating: number
     badge?: string
+    category?: string
   }
 }>()
 
-const { requireAuth, showAuthModal } = useAuthGate()
-const { success } = useToast()
+const cartStore = useCartStore()
+const authStore = useAuthStore()
+const toast = useAppToast()
+const showAuthModal = inject<Ref<boolean>>('showAuthModal', ref(false))
 
 const handleAddToCart = () => {
-  requireAuth(() => {
-    success('Item added to cart!')
+  if (!authStore.isLoggedIn) {
+    showAuthModal.value = true
+    return
+  }
+  cartStore.addItem({
+    productId: props.product.id,
+    name: props.product.name,
+    price: props.product.price,
+    image: props.product.image || (props.product.images?.[0] ?? ''),
+    category: props.product.category || '',
+    sellerId: 3,
+    sellerName: 'Bagsakan Seller',
   })
-}
-
-const handleWishlist = () => {
-  requireAuth(() => {
-    success('Added to wishlist!')
-  })
+  toast.add(
+    `${props.product.name}`,
+    'success',
+    props.product.image || props.product.images?.[0] || ''
+  )
 }
 </script>

@@ -12,5 +12,5 @@
 <script setup lang="ts">
 import TheNavbar from '~/components/nav/TheNavbar.vue'
 import TheFooter from '~/components/TheFooter.vue'
-import ToastNotification from '~/components/ui/ToastNotification.vue'
+import ToastNotification from '~/components/ToastNotification.vue'
 </script>

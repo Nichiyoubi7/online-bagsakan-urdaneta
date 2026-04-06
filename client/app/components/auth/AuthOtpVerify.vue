@@ -64,12 +64,13 @@ const props = defineProps<{
     phone: string
     password: string
     password_confirmation: string
+    role: string
   }
 }>()
 
 const emit = defineEmits<{
   (e: 'back'): void
-  (e: 'success'): void
+  (e: 'success', user: any): void
 }>()
 
 const config = useRuntimeConfig()
@@ -110,19 +111,24 @@ const handleBackspace = (index: number) => {
 }
 
 const handleResend = async () => {
-  await $fetch('/otp/send', {
-    baseURL: config.public.apiBase,
-    method: 'POST',
-    body: { email: props.payload.email },
-    headers: { Accept: 'application/json' },
-  })
-  startCountdown()
+  try {
+    await $fetch('/otp/send', {
+      baseURL: config.public.apiBase,
+      method: 'POST',
+      body: { email: props.payload.email },
+      headers: { Accept: 'application/json' },
+    })
+    startCountdown()
+  } catch (e: any) {
+    error.value = 'Failed to resend OTP. Please try again.'
+  }
 }
 
 const handleVerify = async () => {
   loading.value = true
   error.value = ''
   try {
+    // Step 1: Verify OTP
     await $fetch('/otp/verify', {
       baseURL: config.public.apiBase,
       method: 'POST',
@@ -130,20 +136,22 @@ const handleVerify = async () => {
       headers: { Accept: 'application/json' },
     })
 
+    // Step 2: Register user with correct role
     const res: any = await $fetch('/register', {
       baseURL: config.public.apiBase,
       method: 'POST',
       body: {
         name: props.payload.name,
         email: props.payload.email,
-        phone: '+63' + props.payload.phone,
+        phone: props.payload.phone ? '+63' + props.payload.phone : null,
         password: props.payload.password,
         password_confirmation: props.payload.password_confirmation,
-        role: 'customer',
+        role: props.payload.role,
       },
       headers: { Accept: 'application/json' },
     })
 
+    // Step 3: Save to store and localStorage
     authStore.token = res.token
     authStore.user = res.user
     authStore.role = res.role
@@ -153,7 +161,7 @@ const handleVerify = async () => {
       localStorage.setItem('obra_role', res.role)
     }
 
-    emit('success')
+    emit('success', res)
   } catch (e: any) {
     error.value = e?.data?.message || 'Invalid or expired code. Please try again.'
     otp.value = ['', '', '', '', '', '']

@@ -16,6 +16,28 @@
 
     <form @submit.prevent="handleRegister" class="flex flex-col gap-4">
 
+      <!-- Role Selector -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">I am registering as</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button
+            v-for="r in roles"
+            :key="r.value"
+            type="button"
+            @click="form.role = r.value"
+            :class="[
+              'flex flex-col items-center gap-1 py-2 px-1 rounded-xl border text-xs font-semibold transition-all',
+              form.role === r.value
+                ? 'border-green-500 bg-green-50 text-green-600'
+                : 'border-gray-200 text-gray-500 hover:border-green-300'
+            ]"
+          >
+            <span class="text-xl">{{ r.icon }}</span>
+            {{ r.label }}
+          </button>
+        </div>
+      </div>
+
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
         <input
@@ -118,10 +140,23 @@
 const emit = defineEmits<{
   (e: 'back'): void
   (e: 'goto', step: string): void
-  (e: 'otp', payload: { email: string, name: string, phone: string, password: string, password_confirmation: string }): void
+  (e: 'otp', payload: {
+    email: string
+    name: string
+    phone: string
+    password: string
+    password_confirmation: string
+    role: string
+  }): void
 }>()
 
 const config = useRuntimeConfig()
+
+const roles = [
+  { value: 'customer', label: 'Buyer', icon: '🛒' },
+  { value: 'seller', label: 'Seller', icon: '🪙' },
+  { value: 'driver', label: 'Driver', icon: '🛵' },
+]
 
 const form = ref({
   name: '',
@@ -129,6 +164,7 @@ const form = ref({
   phone: '',
   password: '',
   password_confirmation: '',
+  role: 'customer',
 })
 const showPassword = ref(false)
 const loading = ref(false)
@@ -158,6 +194,7 @@ const handleRegister = async () => {
       phone: form.value.phone,
       password: form.value.password,
       password_confirmation: form.value.password_confirmation,
+      role: form.value.role,
     })
   } catch (e: any) {
     const errors = e?.data?.errors

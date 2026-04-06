@@ -5,7 +5,7 @@
         <div class="flex items-center gap-2 text-sm text-gray-300">
           <NuxtLink to="/" class="hover:text-green-400 transition-colors">Home</NuxtLink>
           <span>/</span>
-          <NuxtLink to="/customer" class="hover:text-green-400 transition-colors">Categories</NuxtLink>
+          <NuxtLink to="/customer" class="hover:text-green-400 transition-colors">Shop</NuxtLink>
           <span>/</span>
           <span class="text-white">{{ product?.name }}</span>
         </div>
@@ -53,24 +53,60 @@ import ProductTabs from '~/components/customer/products/ProductTabs.vue'
 import ProductCard from '~/components/customer/products/ProductCard.vue'
 
 const route = useRoute()
+const config = useRuntimeConfig()
+const API = config.public.apiBase
+
 const productId = route.params.id
-const API = 'https://online-bagsakan-urdaneta-production.up.railway.app/api'
 
 const product = ref<any>(null)
 const relatedProducts = ref<any[]>([])
 const loading = ref(true)
 
-const getCategoryFolder = (cat: string) => {
-  if (cat === 'Fruits') return 'fruits'
-  if (cat === 'Meat & Fish') return 'meat'
-  return 'vegetables'
+const imageMap: Record<string, string> = {
+  'Tomato': '/images/products/vegetables/Tomato.png',
+  'Eggplant': '/images/products/vegetables/eggplant.png',
+  'Bitter Gourd': '/images/products/vegetables/bitter_gourd.png',
+  'Okra': '/images/products/vegetables/okra.png',
+  'Sitaw': '/images/products/vegetables/sitaw.png',
+  'Kangkong': '/images/products/vegetables/kangkong.png',
+  'Repolyo': '/images/products/vegetables/repolyo.png',
+  'Carrot': '/images/products/vegetables/carrot.png',
+  'Potato': '/images/products/vegetables/potato.png',
+  'Sibuyas': '/images/products/vegetables/sibuyas.png',
+  'Bawang': '/images/products/vegetables/bawang.png',
+  'Luya': '/images/products/vegetables/luya.png',
+  'Mais': '/images/products/vegetables/mais.png',
+  'Siling Haba': '/images/products/vegetables/siling_haba.png',
+  'Siling Labuyo': '/images/products/vegetables/siling_labuyo.png',
+  'Upo': '/images/products/vegetables/upo.png',
+  'Patola': '/images/products/vegetables/patola.png',
+  'Sigarilyas': '/images/products/vegetables/sigarilyas.png',
+  'Labanos': '/images/products/vegetables/labanos.png',
+  'Gabi': '/images/products/vegetables/gabi.png',
+  'Kamote': '/images/products/vegetables/kamote.png',
+  'Mango': '/images/products/fruits/mango.png',
+  'Saging': '/images/products/fruits/saging.png',
+  'Papaya': '/images/products/fruits/papaya.png',
+  'Pakwan': '/images/products/fruits/pakwan.png',
+  'Melon': '/images/products/fruits/melon.png',
+  'Pineapple': '/images/products/fruits/Pineapple.png',
+  'Avocado': '/images/products/fruits/Avocado.png',
+  'Guava': '/images/products/fruits/Guava.png',
+  'Rambutan': '/images/products/fruits/Rambutan.png',
+  'Lanzones': '/images/products/fruits/Lanzones.jpg',
+  'Calamansi': '/images/products/fruits/Calamansi.png',
+  'Orange': '/images/products/fruits/Orange.png',
+  'Apple': '/images/products/fruits/Apple.png',
+  'Grapes': '/images/products/fruits/Grapes.png',
+  'Chicken': '/images/products/meat/Chicken.png',
+  'Pork Meat': '/images/products/meat/pork_meat.png',
+  'Egg': '/images/products/meat/Egg.png',
+  'Rice': '/images/products/meat/rice.png',
 }
 
 const productImages = computed(() => {
   if (!product.value) return []
-  const folder = getCategoryFolder(product.value.category?.name || '')
-  const imageName = product.value.name.toLowerCase().replace(/ /g, '_')
-  return [`/images/products/${folder}/${imageName}.png`]
+  return [imageMap[product.value.name] || '/images/products/vegetables/Tomato.png']
 })
 
 const mappedProduct = computed(() => {
@@ -111,7 +147,7 @@ onMounted(async () => {
       const related: any = await $fetch(`${API}/products`, {
         params: { category_id: product.value.category_id, per_page: 4 }
       })
-      relatedProducts.value = related.data
+      relatedProducts.value = (related.data || [])
         .filter((p: any) => p.id !== product.value.id)
         .slice(0, 4)
         .map((p: any) => ({
@@ -121,7 +157,7 @@ onMounted(async () => {
           rating: 4,
           category: p.category?.name || '',
           badge: p.original_price && p.original_price > p.price ? 'Sale' : undefined,
-          image: `/images/products/${getCategoryFolder(p.category?.name || '')}/${p.name.toLowerCase().replace(/ /g, '_')}.png`,
+          image: imageMap[p.name] || '/images/products/vegetables/Tomato.png',
         }))
     }
   } catch (e) {
