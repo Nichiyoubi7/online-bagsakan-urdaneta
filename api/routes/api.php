@@ -47,5 +47,28 @@ Route::middleware("auth:sanctum")->group(function () {
         Route::get("/users/{id}",     [UserController::class, "show"]);
         Route::put("/users/{id}",     [UserController::class, "update"]);
         Route::delete("/users/{id}",  [UserController::class, "destroy"]);
+
+        // Seller shop setup
+Route::post('/seller/shop', function(\Illuminate\Http\Request $request) {
+    $user = $request->user();
+    $user->update([
+        'store_name'        => $request->store_name ?? $request->name,
+        'store_description' => $request->store_description ?? $request->description,
+    ]);
+    return response()->json([
+        'message' => 'Shop created successfully!',
+        'user'    => $user,
+    ]);
+});
+
+Route::get('/seller/shop', function(\Illuminate\Http\Request $request) {
+    $user = $request->user();
+    if (!$user->store_name) {
+        return response()->json(['message' => 'No shop found.'], 404);
+    }
+    return response()->json($user);
+});
+
+
     });
 });

@@ -146,26 +146,14 @@ const handleShopSuccess = () => {
 const handleLoginSuccess = async () => {
   completePendingAction()
   const role = authStore.role
+  closeModal()
   if (role === 'seller') {
-    // Check if seller has a shop
-    try {
-      const { get } = useApi()
-      await get('/seller/shop')
-      // Has shop — go to dashboard
-      closeModal()
-      navigateTo('/seller/dashboard')
-    } catch (e) {
-      // No shop yet — show shop setup
-      step.value = 'shop'
-    }
+    navigateTo('/seller/dashboard')
   } else if (role === 'admin') {
-    closeModal()
     navigateTo('/admin/dashboard')
   } else if (role === 'driver') {
-    closeModal()
     navigateTo('/driver/dashboard')
   } else {
-    closeModal()
     navigateTo('/')
   }
 }
