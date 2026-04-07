@@ -1,52 +1,40 @@
 <template>
-  <<section id="how-it-works" class="py-16 bg-white">
-    <div class="max-w-7xl mx-auto px-6">
+  <section id="how-it-works" class="py-12 md:py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
 
-      <!-- Section Label -->
       <p class="text-green-500 font-semibold text-xs tracking-widest uppercase text-center mb-2">
         How It Works
       </p>
-
-      <!-- Section Title -->
       <h2 class="text-2xl font-black text-gray-900 text-center mb-4">
         Order in 4 Easy Steps
       </h2>
-      <p class="text-gray-400 text-sm text-center max-w-md mx-auto mb-12">
+      <p class="text-gray-400 text-sm text-center max-w-md mx-auto mb-10 md:mb-12">
         Fresh food from Urdaneta's local sellers delivered straight to your door.
       </p>
 
       <!-- Steps -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
         <div
           v-for="(step, index) in steps"
           :key="step.title"
           class="flex flex-col items-center text-center"
         >
-          <!-- Icon Circle -->
           <div
-            class="relative w-20 h-20 rounded-full flex items-center justify-center mb-5 shadow-md"
+            class="relative w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-4 shadow-md"
             :class="step.bgColor"
           >
-            <span class="text-3xl">{{ step.emoji }}</span>
-            <span class="absolute -top-1 -right-1 w-6 h-6 bg-green-500 text-white text-xs font-black rounded-full flex items-center justify-center">
+            <span class="text-2xl md:text-3xl">{{ step.emoji }}</span>
+            <span class="absolute -top-1 -right-1 w-5 h-5 md:w-6 md:h-6 bg-green-500 text-white text-[10px] md:text-xs font-black rounded-full flex items-center justify-center">
               {{ index + 1 }}
             </span>
           </div>
-
-          <!-- Title -->
-          <h3 class="text-base font-bold text-gray-800 mb-2">
-            {{ step.title }}
-          </h3>
-
-          <!-- Description -->
-          <p class="text-sm text-gray-400 leading-relaxed">
-            {{ step.description }}
-          </p>
+          <h3 class="text-sm md:text-base font-bold text-gray-800 mb-2">{{ step.title }}</h3>
+          <p class="text-xs md:text-sm text-gray-400 leading-relaxed">{{ step.description }}</p>
         </div>
       </div>
 
-      <!-- CTA Button -->
-      <div class="flex justify-center mt-12">
+      <!-- CTA -->
+      <div class="flex justify-center mt-10 md:mt-12">
         <NuxtLink
           to="/customer"
           class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-3 rounded-full transition-colors duration-200 shadow-md"
