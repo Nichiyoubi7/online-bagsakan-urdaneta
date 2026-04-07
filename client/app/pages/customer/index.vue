@@ -16,9 +16,9 @@
 
     <div class="max-w-7xl mx-auto px-4 py-6 md:py-10">
 
-      <!-- Mobile Filter Toggle Button -->
+      <!-- Mobile Filter Toggle -->
       <button
-        class="md:hidden flex items-center gap-2 mb-4 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 shadow-sm w-full justify-center"
+        class="md:hidden flex items-center justify-center gap-2 mb-4 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 shadow-sm w-full"
         @click="showMobileSidebar = !showMobileSidebar"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -51,7 +51,7 @@
             @sort="handleSort"
           />
 
-          <!-- Loading Skeleton -->
+          <!-- Loading -->
           <div v-if="loading" class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
             <div v-for="n in 6" :key="n" class="bg-gray-100 rounded-2xl h-64 animate-pulse" />
           </div>
@@ -65,7 +65,7 @@
             />
           </div>
 
-          <!-- Empty State -->
+          <!-- Empty -->
           <div v-else class="flex flex-col items-center justify-center py-20 text-center">
             <span class="text-5xl mb-4">🥦</span>
             <h3 class="text-lg font-bold text-gray-700 mb-2">No products found</h3>
@@ -104,10 +104,8 @@ import ProductCard from '../../components/customer/products/ProductCard.vue'
 const route = useRoute()
 const { get } = useApi()
 
-// Mobile sidebar toggle
 const showMobileSidebar = ref(false)
 
-// Filters
 const selectedCategory = ref(
   route.query.category ? String(route.query.category) : ''
 )
@@ -116,55 +114,62 @@ const selectedTag = ref('')
 const priceMax = ref(500)
 const sortBy = ref('default')
 
-// Pagination
 const currentPage = ref(1)
 const perPage = 12
 const totalProducts = ref(0)
 const totalPages = ref(1)
 
-// Products
 const products = ref<any[]>([])
 const loading = ref(false)
 const categoryMap = ref<Record<string, number>>({})
 
 const imageMap: Record<string, string> = {
-  'Ampalaya':    '/images/products/vegetables/Ampalaya.png',
-  'Bawang':      '/images/products/vegetables/Bawang.png',
-  'Bitter Gourd':'/images/products/vegetables/Ampalaya.png',
-  'Carrot':      '/images/products/vegetables/Carrot.png',
-  'Eggplant':    '/images/products/vegetables/eggplant.png',
-  'Gabi':        '/images/products/vegetables/Gabi.png',
-  'Kamote':      '/images/products/vegetables/Kamote.png',
-  'Kangkong':    '/images/products/vegetables/kangkong.png',
-  'Labanos':     '/images/products/vegetables/Labanos.png',
-  'Luya':        '/images/products/vegetables/Luya.png',
-  'Mais':        '/images/products/vegetables/Mais.png',
-  'Okra':        '/images/products/vegetables/Okra.png',
-  'Patola':      '/images/products/vegetables/Patola.png',
-  'Pechay':      '/images/products/vegetables/Pechay.png',
-  'Pepper':      '/images/products/vegetables/Pepper.png',
-  'Repolyo':     '/images/products/vegetables/Repolyo.png',
-  'Sitaw':       '/images/products/vegetables/Sitaw.png',
-  'Talong':      '/images/products/vegetables/eggplant.png',
-  'Tomato':      '/images/products/vegetables/Tomato.png',
-  'Upo':         '/images/products/vegetables/Upo.png',
-  'Banana':      '/images/products/fruits/Banana.png',
-  'Bayabas':     '/images/products/fruits/Bayabas.png',
-  'Calamansi':   '/images/products/fruits/Calamansi.png',
-  'Dalandan':    '/images/products/fruits/Dalandan.png',
-  'Dalanghita':  '/images/products/fruits/Dalanghita.png',
-  'Guyabano':    '/images/products/fruits/Guyabano.png',
-  'Kaimito':     '/images/products/fruits/Kaimito.png',
-  'Langka':      '/images/products/fruits/Langka.png',
-  'Mango':       '/images/products/fruits/Mango.png',
-  'Melon':       '/images/products/fruits/Melon.png',
-  'Papaya':      '/images/products/fruits/Papaya.png',
-  'Pinya':       '/images/products/fruits/Pinya.png',
-  'Pakwan':      '/images/products/fruits/Pakwan.png',
-  'Chicken':     '/images/products/meat/Chicken.png',
-  'Pork Meat':   '/images/products/meat/pork_meat.png',
-  'Galunggong':  '/images/products/meat/Galunggong.png',
-  'Tilapia':     '/images/products/meat/Tilapia.png',
+  // Vegetables
+  'Tomato':        '/images/products/vegetables/Tomato.png',
+  'Eggplant':      '/images/products/vegetables/eggplant.png',
+  'Bitter Gourd':  '/images/products/vegetables/Ampalaya.png',
+  'Okra':          '/images/products/vegetables/Okra.png',
+  'Sitaw':         '/images/products/vegetables/Sitaw.png',
+  'Kangkong':      '/images/products/vegetables/kangkong.png',
+  'Repolyo':       '/images/products/vegetables/Repolyo.png',
+  'Carrot':        '/images/products/vegetables/Carrot.png',
+  'Potato':        '/images/products/vegetables/Potato.png',
+  'Sibuyas':       '/images/products/vegetables/Sibuyas.png',
+  'Bawang':        '/images/products/vegetables/Bawang.png',
+  'Luya':          '/images/products/vegetables/Luya.png',
+  'Mais':          '/images/products/vegetables/Mais.png',
+  'Siling Haba':   '/images/products/vegetables/Siling_Haba.png',
+  'Siling Labuyo': '/images/products/vegetables/Siling_Labuyo.png',
+  'Upo':           '/images/products/vegetables/Upo.png',
+  'Patola':        '/images/products/vegetables/Patola.png',
+  'Sigarilyas':    '/images/products/vegetables/Sigarilyas.png',
+  'Gabi':          '/images/products/vegetables/Gabi.png',
+  'Kamote':        '/images/products/vegetables/Kamote.png',
+  'Labanos':       '/images/products/vegetables/Labanos.png',
+  // Fruits
+  'Banana':        '/images/products/fruits/Banana.png',
+  'Mango':         '/images/products/fruits/Mango.png',
+  'Papaya':        '/images/products/fruits/Papaya.png',
+  'Pakwan':        '/images/products/fruits/Pakwan.png',
+  'Bayabas':       '/images/products/fruits/Bayabas.png',
+  'Melon':         '/images/products/fruits/Melon.png',
+  'Pineapple':     '/images/products/fruits/Pinya.png',
+  'Avocado':       '/images/products/fruits/Avocado.png',
+  'Guava':         '/images/products/fruits/Guava.png',
+  'Rambutan':      '/images/products/fruits/Rambutan.png',
+  'Lanzones':      '/images/products/fruits/Lanzones.png',
+  'Calamansi':     '/images/products/fruits/Calamansi.png',
+  'Orange':        '/images/products/fruits/Orange.png',
+  'Apple':         '/images/products/fruits/Apple.png',
+  'Grapes':        '/images/products/fruits/Grapes.png',
+  // Meat & Fish
+  'Chicken':       '/images/products/meat/Chicken.png',
+  'Pork Meat':     '/images/products/meat/pork_meat.png',
+  'Egg':           '/images/products/meat/Egg.png',
+  'Rice':          '/images/products/meat/rice.png',
+  'Bangus':        '/images/products/meat/Bangus.png',
+  'Tilapia':       '/images/products/meat/Tilapia.png',
+  'Hipon':         '/images/products/meat/Hipon.png',
 }
 
 const mapProduct = (p: any) => ({

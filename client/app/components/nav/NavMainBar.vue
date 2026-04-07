@@ -17,7 +17,7 @@
         <span class="text-xl md:text-2xl font-black text-gray-800 tracking-tight">OBRA</span>
       </NuxtLink>
 
-      <!-- Desktop Search Bar (hidden on mobile) -->
+      <!-- Desktop Search Bar -->
       <div class="hidden md:flex flex-1 flex-col max-w-2xl relative">
         <div class="flex items-center border border-gray-200 rounded-md overflow-hidden">
           <input
@@ -37,7 +37,7 @@
             Search
           </button>
         </div>
-        <!-- Suggestions Dropdown -->
+        <!-- Desktop Suggestions -->
         <div
           v-if="showSuggestions && filteredSuggestions.length > 0"
           class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-50 max-h-72 overflow-y-auto"
@@ -58,7 +58,7 @@
         </div>
       </div>
 
-      <!-- Spacer (mobile only, pushes icons to right) -->
+      <!-- Spacer on mobile -->
       <div class="flex-1 md:hidden" />
 
       <!-- Right Icons -->
@@ -103,20 +103,38 @@
         <!-- Divider (desktop only) -->
         <div class="hidden md:block w-px h-8 bg-gray-200" />
 
-        <!-- Guest buttons -->
+        <!-- Guest: Log In + Sign Up -->
         <template v-if="!authStore.isLoggedIn">
-          <button
-            @click="showAuthModal = true"
-            class="hidden md:block px-4 py-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-full hover:border-green-500 hover:text-green-600 transition-all"
-          >
-            Log In
-          </button>
-          <button
-            @click="showAuthModal = true"
-            class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-white bg-green-500 hover:bg-green-600 rounded-full transition-all shadow-sm"
-          >
-            Sign Up
-          </button>
+          <!-- Mobile -->
+          <div class="flex items-center gap-1.5 md:hidden">
+            <button
+              @click="showAuthModal = true"
+              class="px-3 py-1.5 text-xs font-semibold text-gray-700 border border-gray-300 rounded-full hover:border-green-500 hover:text-green-600 transition-all"
+            >
+              Log In
+            </button>
+            <button
+              @click="showAuthModal = true"
+              class="px-3 py-1.5 text-xs font-semibold text-white bg-green-500 hover:bg-green-600 rounded-full transition-all shadow-sm"
+            >
+              Sign Up
+            </button>
+          </div>
+          <!-- Desktop -->
+          <div class="hidden md:flex items-center gap-2">
+            <button
+              @click="showAuthModal = true"
+              class="px-4 py-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-full hover:border-green-500 hover:text-green-600 transition-all"
+            >
+              Log In
+            </button>
+            <button
+              @click="showAuthModal = true"
+              class="px-4 py-2 text-sm font-semibold text-white bg-green-500 hover:bg-green-600 rounded-full transition-all shadow-sm"
+            >
+              Sign Up
+            </button>
+          </div>
         </template>
 
         <!-- Logged In: User Dropdown -->
@@ -128,12 +146,15 @@
             <div class="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center text-white text-xs font-bold">
               {{ authStore.user?.name?.charAt(0).toUpperCase() }}
             </div>
-            <span class="hidden md:block text-sm font-semibold text-gray-700 max-w-[100px] truncate">{{ authStore.user?.name }}</span>
+            <span class="hidden md:block text-sm font-semibold text-gray-700 max-w-[100px] truncate">
+              {{ authStore.user?.name }}
+            </span>
             <svg xmlns="http://www.w3.org/2000/svg" class="hidden md:block w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
           </button>
 
+          <!-- Dropdown Menu -->
           <div
             v-if="showDropdown"
             class="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-100 rounded-xl shadow-lg z-50 py-1 overflow-hidden"
@@ -142,19 +163,22 @@
               <p class="text-xs font-semibold text-gray-800 truncate">{{ authStore.user?.name }}</p>
               <p class="text-xs text-gray-400 truncate">{{ authStore.user?.email }}</p>
             </div>
-            <NuxtLink to="/customer/orders" @click="showDropdown = false" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
+            <NuxtLink to="/customer/orders" @click="showDropdown = false"
+              class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
               </svg>
               Orders & Reordering
             </NuxtLink>
-            <NuxtLink to="/customer/profile" @click="showDropdown = false" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
+            <NuxtLink to="/customer/profile" @click="showDropdown = false"
+              class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
               </svg>
               Profile
             </NuxtLink>
-            <button @click="handleLogout" class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors">
+            <button @click="handleLogout"
+              class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
               </svg>
@@ -182,7 +206,7 @@
             @blur="hideSuggestions"
           />
           <button
-            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2.5 text-sm font-medium transition-colors"
+            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2.5 transition-colors"
             @click="handleSearch"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -239,42 +263,52 @@ const cartTotal = ref(0)
 const wishlistCount = ref(0)
 
 const imageMap: Record<string, string> = {
-  'Ampalaya': '/images/products/vegetables/Ampalaya.png',
-  'Bawang': '/images/products/vegetables/Bawang.png',
-  'Bitter Gourd': '/images/products/vegetables/Ampalaya.png',
-  'Carrot': '/images/products/vegetables/Carrot.png',
-  'Eggplant': '/images/products/vegetables/eggplant.png',
-  'Gabi': '/images/products/vegetables/Gabi.png',
-  'Kamote': '/images/products/vegetables/Kamote.png',
-  'Kangkong': '/images/products/vegetables/kangkong.png',
-  'Labanos': '/images/products/vegetables/Labanos.png',
-  'Luya': '/images/products/vegetables/Luya.png',
-  'Mais': '/images/products/vegetables/Mais.png',
-  'Okra': '/images/products/vegetables/Okra.png',
-  'Patola': '/images/products/vegetables/Patola.png',
-  'Pechay': '/images/products/vegetables/Pechay.png',
-  'Pepper': '/images/products/vegetables/Pepper.png',
-  'Repolyo': '/images/products/vegetables/Repolyo.png',
-  'Sitaw': '/images/products/vegetables/Sitaw.png',
-  'Tomato': '/images/products/vegetables/Tomato.png',
-  'Upo': '/images/products/vegetables/Upo.png',
-  'Banana': '/images/products/fruits/Banana.png',
-  'Bayabas': '/images/products/fruits/Bayabas.png',
-  'Calamansi': '/images/products/fruits/Calamansi.png',
-  'Dalandan': '/images/products/fruits/Dalandan.png',
-  'Dalanghita': '/images/products/fruits/Dalanghita.png',
-  'Guyabano': '/images/products/fruits/Guyabano.png',
-  'Kaimito': '/images/products/fruits/Kaimito.png',
-  'Langka': '/images/products/fruits/Langka.png',
-  'Mango': '/images/products/fruits/Mango.png',
-  'Melon': '/images/products/fruits/Melon.png',
-  'Papaya': '/images/products/fruits/Papaya.png',
-  'Pinya': '/images/products/fruits/Pinya.png',
-  'Pakwan': '/images/products/fruits/Pakwan.png',
-  'Chicken': '/images/products/meat/Chicken.png',
-  'Pork Meat': '/images/products/meat/pork_meat.png',
-  'Galunggong': '/images/products/meat/Galunggong.png',
-  'Tilapia': '/images/products/meat/Tilapia.png',
+  // Vegetables
+  'Tomato':        '/images/products/vegetables/Tomato.png',
+  'Eggplant':      '/images/products/vegetables/eggplant.png',
+  'Bitter Gourd':  '/images/products/vegetables/Ampalaya.png',
+  'Okra':          '/images/products/vegetables/Okra.png',
+  'Sitaw':         '/images/products/vegetables/Sitaw.png',
+  'Kangkong':      '/images/products/vegetables/kangkong.png',
+  'Repolyo':       '/images/products/vegetables/Repolyo.png',
+  'Carrot':        '/images/products/vegetables/Carrot.png',
+  'Potato':        '/images/products/vegetables/Potato.png',
+  'Sibuyas':       '/images/products/vegetables/Sibuyas.png',
+  'Bawang':        '/images/products/vegetables/Bawang.png',
+  'Luya':          '/images/products/vegetables/Luya.png',
+  'Mais':          '/images/products/vegetables/Mais.png',
+  'Siling Haba':   '/images/products/vegetables/Siling_Haba.png',
+  'Siling Labuyo': '/images/products/vegetables/Siling_Labuyo.png',
+  'Upo':           '/images/products/vegetables/Upo.png',
+  'Patola':        '/images/products/vegetables/Patola.png',
+  'Sigarilyas':    '/images/products/vegetables/Sigarilyas.png',
+  'Gabi':          '/images/products/vegetables/Gabi.png',
+  'Kamote':        '/images/products/vegetables/Kamote.png',
+  'Labanos':       '/images/products/vegetables/Labanos.png',
+  // Fruits
+  'Banana':        '/images/products/fruits/Banana.png',
+  'Mango':         '/images/products/fruits/Mango.png',
+  'Papaya':        '/images/products/fruits/Papaya.png',
+  'Pakwan':        '/images/products/fruits/Pakwan.png',
+  'Bayabas':       '/images/products/fruits/Bayabas.png',
+  'Melon':         '/images/products/fruits/Melon.png',
+  'Pineapple':     '/images/products/fruits/Pinya.png',
+  'Avocado':       '/images/products/fruits/Avocado.png',
+  'Guava':         '/images/products/fruits/Guava.png',
+  'Rambutan':      '/images/products/fruits/Rambutan.png',
+  'Lanzones':      '/images/products/fruits/Lanzones.png',
+  'Calamansi':     '/images/products/fruits/Calamansi.png',
+  'Orange':        '/images/products/fruits/Orange.png',
+  'Apple':         '/images/products/fruits/Apple.png',
+  'Grapes':        '/images/products/fruits/Grapes.png',
+  // Meat & Fish
+  'Chicken':       '/images/products/meat/Chicken.png',
+  'Pork Meat':     '/images/products/meat/pork_meat.png',
+  'Egg':           '/images/products/meat/Egg.png',
+  'Rice':          '/images/products/meat/rice.png',
+  'Bangus':        '/images/products/meat/Bangus.png',
+  'Tilapia':       '/images/products/meat/Tilapia.png',
+  'Hipon':         '/images/products/meat/Hipon.png',
 }
 
 let debounceTimer: ReturnType<typeof setTimeout>
@@ -325,7 +359,6 @@ const handleLogout = async () => {
   navigateTo('/')
 }
 
-// Auto-focus mobile search input when opened
 watch(mobileSearchOpen, async (val) => {
   if (val) {
     await nextTick()
