@@ -1,27 +1,29 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 
 export interface CartItem {
   id: number
   productId: number
   name: string
-  price: number
   image: string
+  price: number
+  originalPrice?: number
   quantity: number
   category: string
   sellerId: number
   sellerName: string
+  selected: boolean
 }
 
 export const useCartStore = defineStore('cart', () => {
   const items = ref<CartItem[]>([])
 
-  const totalItems = computed(() => items.value.reduce((sum, i) => sum + i.quantity, 0))
-  const totalPrice = computed(() => items.value.reduce((sum, i) => sum + i.price * i.quantity, 0))
-
   const loadFromStorage = () => {
     if (import.meta.client) {
       const stored = localStorage.getItem('obra_cart')
-      items.value = stored ? JSON.parse(stored) : []
+      if (stored) {
+        try { items.value = JSON.parse(stored) } catch { items.value = [] }
+      }
     }
   }
 
@@ -31,12 +33,12 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  const addItem = (product: Omit<CartItem, 'id' | 'quantity'>) => {
-    const existing = items.value.find(i => i.productId === product.productId)
+  const addItem = (item: Omit<CartItem, 'id' | 'selected'>) => {
+    const existing = items.value.find(i => i.productId === item.productId)
     if (existing) {
-      existing.quantity++
+      existing.quantity += item.quantity
     } else {
-      items.value.push({ ...product, id: Date.now(), quantity: 1 })
+      items.value.push({ ...item, id: Date.now(), selected: true })
     }
     saveToStorage()
   }
@@ -54,7 +56,21 @@ export const useCartStore = defineStore('cart', () => {
   const decreaseQty = (id: number) => {
     const item = items.value.find(i => i.id === id)
     if (item && item.quantity > 1) { item.quantity--; saveToStorage() }
-    else if (item && item.quantity === 1) { removeItem(id) }
+  }
+
+  const toggleSelected = (id: number) => {
+    const item = items.value.find(i => i.id === id)
+    if (item) { item.selected = !item.selected; saveToStorage() }
+  }
+
+  const toggleAll = (selected: boolean) => {
+    items.value.forEach(i => i.selected = selected)
+    saveToStorage()
+  }
+
+  const deleteSelected = () => {
+    items.value = items.value.filter(i => !i.selected)
+    saveToStorage()
   }
 
   const clearCart = () => {
@@ -62,28 +78,54 @@ export const useCartStore = defineStore('cart', () => {
     saveToStorage()
   }
 
-  // Group items by seller for display
-  const cartGroups = computed(() => {
-    const groups: Record<number, { id: number; name: string; items: (CartItem & { selected: boolean })[] }> = {}
+  const totalCount = computed(() =>
+    items.value.reduce((sum, i) => sum + i.quantity, 0)
+  )
+
+  const totalPrice = computed(() =>
+    items.value.reduce((sum, i) => sum + i.price * i.quantity, 0)
+  )
+
+  const selectedTotal = computed(() =>
+    items.value.filter(i => i.selected).reduce((sum, i) => sum + i.price * i.quantity, 0)
+  )
+
+  const selectedCount = computed(() =>
+    items.value.filter(i => i.selected).length
+  )
+
+  const allSelected = computed(() =>
+    items.value.length > 0 && items.value.every(i => i.selected)
+  )
+
+  const groupedBySeller = computed(() => {
+    const groups: Record<number, { id: number; name: string; items: CartItem[] }> = {}
     items.value.forEach(item => {
       if (!groups[item.sellerId]) {
         groups[item.sellerId] = { id: item.sellerId, name: item.sellerName, items: [] }
       }
-      groups[item.sellerId].items.push({ ...item, selected: true })
+      groups[item.sellerId].items.push(item)
     })
     return Object.values(groups)
   })
 
   return {
     items,
-    totalItems,
-    totalPrice,
-    cartGroups,
-    loadFromStorage,
     addItem,
     removeItem,
     increaseQty,
     decreaseQty,
+    toggleSelected,
+    toggleAll,
+    deleteSelected,
     clearCart,
+    loadFromStorage,
+    saveToStorage,
+    totalCount,
+    totalPrice,
+    selectedTotal,
+    selectedCount,
+    allSelected,
+    groupedBySeller,
   }
 })

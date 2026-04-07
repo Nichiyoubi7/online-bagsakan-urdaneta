@@ -241,7 +241,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import AuthModal from '~/components/auth/AuthModal.vue'
 
 defineEmits(['toggle-menu'])
@@ -258,9 +258,14 @@ const filteredSuggestions = ref<any[]>([])
 const dropdownRef = ref<HTMLElement | null>(null)
 const mobileSearchInput = ref<HTMLInputElement | null>(null)
 
-const cartCount = ref(0)
-const cartTotal = ref(0)
+const cartStore = useCartStore()
+const cartCount = computed(() => cartStore.totalCount)
+const cartTotal = computed(() => cartStore.totalPrice)
 const wishlistCount = ref(0)
+
+onMounted(() => {
+  cartStore.loadFromStorage()
+})
 
 const imageMap: Record<string, string> = {
   // Vegetables
