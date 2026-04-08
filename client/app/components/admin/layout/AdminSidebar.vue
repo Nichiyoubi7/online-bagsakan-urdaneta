@@ -17,10 +17,10 @@
     <div v-if="!collapsed" class="px-4 py-4 border-b border-gray-700">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
-          A
+          {{ authStore.user?.name?.charAt(0)?.toUpperCase() || 'A' }}
         </div>
         <div class="min-w-0">
-          <p class="text-sm font-semibold text-white truncate">Super Admin</p>
+          <p class="text-sm font-semibold text-white truncate">{{ authStore.user?.name || 'Admin' }}</p>
           <p class="text-xs text-red-400">Administrator</p>
         </div>
       </div>
@@ -40,7 +40,7 @@
           :to="item.to"
           :class="[
             'flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200',
-            $route.path === item.to
+            $route.path.startsWith(item.to)
               ? 'bg-green-500 text-white'
               : 'text-gray-400 hover:bg-gray-800 hover:text-white'
           ]"
@@ -62,14 +62,14 @@
     <div class="px-2 py-4 border-t border-gray-700">
       <button
         @click="toggleCollapse"
-        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition-colors mb-1"
       >
         <span class="text-lg">{{ collapsed ? '→' : '←' }}</span>
         <span v-if="!collapsed" class="text-sm font-medium">Collapse</span>
       </button>
       <button
-        @click="navigateTo('/')"
-        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:bg-red-500/20 hover:text-red-400 transition-colors mt-1"
+        @click="handleLogout"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:bg-red-500/20 hover:text-red-400 transition-colors"
       >
         <span class="text-lg">🚪</span>
         <span v-if="!collapsed" class="text-sm font-medium">Logout</span>
@@ -84,6 +84,7 @@ import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
+const authStore = useAuthStore()
 const collapsed = ref(false)
 
 const emit = defineEmits<{
@@ -95,20 +96,25 @@ const toggleCollapse = () => {
   emit('collapse', collapsed.value)
 }
 
+const handleLogout = async () => {
+  await authStore.logout()
+  navigateTo('/')
+}
+
 const navGroups = [
   {
     label: 'Overview',
     items: [
-      { icon: '📊', label: 'Dashboard',  to: '/admin/dashboard', badge: null },
-      { icon: '📦', label: 'Orders',     to: '/admin/orders',    badge: '12' },
+      { icon: '📊', label: 'Dashboard', to: '/admin/dashboard', badge: null },
+      { icon: '📦', label: 'Orders',    to: '/admin/orders',    badge: null },
     ],
   },
   {
     label: 'User Management',
     items: [
-      { icon: '👥', label: 'All Users',  to: '/admin/users',    badge: null },
-      { icon: '🏪', label: 'Sellers',    to: '/admin/sellers',  badge: '3'  },
-      { icon: '🛵', label: 'Drivers',    to: '/admin/drivers',  badge: null },
+      { icon: '👥', label: 'All Users', to: '/admin/users',   badge: null },
+      { icon: '🏪', label: 'Sellers',   to: '/admin/sellers', badge: null },
+      { icon: '🛵', label: 'Drivers',   to: '/admin/drivers', badge: null },
     ],
   },
   {
@@ -121,8 +127,8 @@ const navGroups = [
   {
     label: 'System',
     items: [
-      { icon: '📈', label: 'Reports',   to: '/admin/reports',  badge: null },
-      { icon: '⚙️', label: 'Settings',  to: '/admin/settings', badge: null },
+      { icon: '📈', label: 'Reports',  to: '/admin/reports',  badge: null },
+      { icon: '⚙️', label: 'Settings', to: '/admin/settings', badge: null },
     ],
   },
 ]
