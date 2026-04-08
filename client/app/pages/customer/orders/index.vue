@@ -248,11 +248,11 @@
             <div class="border-t border-gray-100 pt-4 flex flex-col gap-2 text-sm">
               <div class="flex justify-between text-gray-600">
                 <span>Subtotal</span>
-                <span>₱{{ Number(selectedOrder.subtotal).toFixed(2) }}</span>
+                <span>₱{{ Number(selectedOrder.subtotal || selectedOrder.total).toFixed(2) }}</span>
               </div>
               <div class="flex justify-between text-gray-600">
                 <span>Delivery fee</span>
-                <span>₱{{ Number(selectedOrder.delivery_fee).toFixed(2) }}</span>
+                <span>₱{{ Number(selectedOrder.delivery_fee || 0).toFixed(2) }}</span>
               </div>
               <div v-if="Number(selectedOrder.tip) > 0" class="flex justify-between text-gray-600">
                 <span>Rider tip</span>
@@ -275,7 +275,7 @@
 import { ref, computed, onMounted } from 'vue'
 import GuestLayout from '../../../components/layout/GuestLayout.vue'
 
-const { get, post } = useApi()
+const { get, put } = useApi()
 
 const orders = ref<any[]>([])
 const loading = ref(true)
@@ -307,9 +307,9 @@ onMounted(() => loadOrders())
 
 const stats = computed(() => [
   { icon: '📦', label: 'Total Orders', value: orders.value.length, filter: 'all' },
-  { icon: '🚀', label: 'Active', value: orders.value.filter(o => ['pending','confirmed','preparing','ready','in_transit'].includes(o.status)).length, filter: 'active' },
-  { icon: '✅', label: 'Delivered', value: orders.value.filter(o => o.status === 'delivered').length, filter: 'delivered' },
-  { icon: '❌', label: 'Cancelled', value: orders.value.filter(o => o.status === 'cancelled').length, filter: 'cancelled' },
+  { icon: '🚀', label: 'Active',       value: orders.value.filter(o => ['pending','confirmed','preparing','ready','in_transit'].includes(o.status)).length, filter: 'active' },
+  { icon: '✅', label: 'Delivered',    value: orders.value.filter(o => o.status === 'delivered').length, filter: 'delivered' },
+  { icon: '❌', label: 'Cancelled',    value: orders.value.filter(o => o.status === 'cancelled').length, filter: 'cancelled' },
 ])
 
 const filteredOrders = computed(() => {
@@ -332,14 +332,13 @@ const statusClass = (status: string) => {
 }
 
 const isStepCompleted = (status: string, stepIndex: number) => {
-  const order = ['confirmed','preparing','ready','in_transit','delivered']
+  const order = ['confirmed', 'preparing', 'ready', 'in_transit', 'delivered']
   return order.indexOf(status) >= stepIndex
 }
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return ''
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('en-PH', {
+  return new Date(dateStr).toLocaleDateString('en-PH', {
     year: 'numeric', month: 'short', day: 'numeric',
     hour: '2-digit', minute: '2-digit'
   })
@@ -348,7 +347,7 @@ const formatDate = (dateStr: string) => {
 const cancelOrder = async (id: number) => {
   if (!confirm('Are you sure you want to cancel this order?')) return
   try {
-    await post(`/orders/${id}/status`, { status: 'cancelled' })
+    await put(`/orders/${id}/status`, { status: 'cancelled' })
     const order = orders.value.find(o => o.id === id)
     if (order) order.status = 'cancelled'
   } catch (e) {
