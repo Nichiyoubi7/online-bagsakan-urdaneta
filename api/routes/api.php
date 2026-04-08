@@ -21,9 +21,13 @@ Route::get("/products/{id}",     [ProductController::class, "show"]);
 
 // Protected routes
 Route::middleware("auth:sanctum")->group(function () {
+
     // Auth
     Route::post("/logout", [AuthController::class, "logout"]);
     Route::get("/me",      [AuthController::class, "me"]);
+
+    // Self profile update (any authenticated user)
+    Route::put("/profile", [UserController::class, "updateSelf"]);
 
     // Products
     Route::post("/products",          [ProductController::class, "store"]);
@@ -49,26 +53,26 @@ Route::middleware("auth:sanctum")->group(function () {
         Route::delete("/users/{id}",  [UserController::class, "destroy"]);
 
         // Seller shop setup
-Route::post('/seller/shop', function(\Illuminate\Http\Request $request) {
-    $user = $request->user();
-    $user->update([
-        'store_name'        => $request->store_name ?? $request->name,
-        'store_description' => $request->store_description ?? $request->description,
-    ]);
-    return response()->json([
-        'message' => 'Shop created successfully!',
-        'user'    => $user,
-    ]);
-});
+        Route::post('/seller/shop', function(\Illuminate\Http\Request $request) {
+            $user = $request->user();
+            $user->update([
+                'store_name'        => $request->store_name ?? $request->name,
+                'store_description' => $request->store_description ?? $request->description,
+            ]);
+            return response()->json([
+                'message' => 'Shop created successfully!',
+                'user'    => $user,
+            ]);
+        });
 
-Route::get('/seller/shop', function(\Illuminate\Http\Request $request) {
-    $user = $request->user();
-    if (!$user->store_name) {
-        return response()->json(['message' => 'No shop found.'], 404);
-    }
-    return response()->json($user);
-});
-
+        Route::get('/seller/shop', function(\Illuminate\Http\Request $request) {
+            $user = $request->user();
+            if (!$user->store_name) {
+                return response()->json(['message' => 'No shop found.'], 404);
+            }
+            return response()->json($user);
+        });
 
     });
+
 });

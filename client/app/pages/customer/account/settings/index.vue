@@ -180,7 +180,7 @@ const saveProfile = async () => {
   profileSuccess.value = false
   try {
     const fullName = `${form.value.firstName} ${form.value.lastName}`.trim()
-    await put(`/users/${authStore.user?.id}`, {
+    await put(`/profile`, {
       name:  fullName,
       email: form.value.email,
       phone: form.value.phone,
