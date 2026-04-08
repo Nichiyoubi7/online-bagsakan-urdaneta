@@ -52,22 +52,21 @@
 import { ref, onMounted } from 'vue'
 import ProductCard from './customer/products/ProductCard.vue'
 
+const { get } = useApi()
+
 const activeTab = ref('All')
 const tabs = [
-  { label: 'All',          categoryName: '' },
-  { label: 'Vegetable',    categoryName: 'Vegetables' },
-  { label: 'Fruit',        categoryName: 'Fruits' },
-  { label: 'Meat & Fish',  categoryName: 'Meat & Fish' },
+  { label: 'All',         categoryName: '' },
+  { label: 'Vegetable',   categoryName: 'Vegetables' },
+  { label: 'Fruit',       categoryName: 'Fruits' },
+  { label: 'Meat & Fish', categoryName: 'Meat & Fish' },
 ]
 
 const products = ref<any[]>([])
 const loading = ref(false)
 const categoryMap = ref<Record<string, number>>({})
 
-const API = 'https://api.obra-ur.xyz/api'
-
 const imageMap: Record<string, string> = {
-  // Vegetables
   'Tomato':        '/images/products/vegetables/Tomato.png',
   'Eggplant':      '/images/products/vegetables/eggplant.png',
   'Bitter Gourd':  '/images/products/vegetables/bitter_gourd.png',
@@ -89,7 +88,6 @@ const imageMap: Record<string, string> = {
   'Gabi':          '/images/products/vegetables/gabi.png',
   'Kamote':        '/images/products/vegetables/kamote.png',
   'Labanos':       '/images/products/vegetables/labanos.png',
-  // Fruits
   'Banana':        '/images/products/fruits/saging.png',
   'Mango':         '/images/products/fruits/mango.png',
   'Papaya':        '/images/products/fruits/papaya.png',
@@ -105,7 +103,6 @@ const imageMap: Record<string, string> = {
   'Orange':        '/images/products/fruits/Orange.png',
   'Apple':         '/images/products/fruits/Apple.png',
   'Grapes':        '/images/products/fruits/Grapes.png',
-  // Meat & Fish
   'Chicken':       '/images/products/meat/Chicken.png',
   'Pork Meat':     '/images/products/meat/pork_meat.png',
   'Egg':           '/images/products/meat/Egg.png',
@@ -120,7 +117,7 @@ const mapProduct = (p: any) => ({
   name: p.name,
   price: Number(p.price),
   originalPrice: p.original_price ? Number(p.original_price) : undefined,
-  image: imageMap[p.name] || '/images/products/placeholder.png',
+  image: imageMap[p.name] || '/images/products/vegetables/Tomato.png',
   category: p.category?.name || '',
   rating: 4,
   badge: p.original_price && Number(p.original_price) > Number(p.price) ? 'Sale' : undefined,
@@ -128,7 +125,7 @@ const mapProduct = (p: any) => ({
 
 const loadCategories = async () => {
   try {
-    const res: any = await $fetch(`${API}/categories`)
+    const res: any = await get('/categories')
     res.forEach((cat: any) => {
       categoryMap.value[cat.name] = cat.id
     })
@@ -142,7 +139,7 @@ const loadProducts = async (categoryId?: number) => {
   try {
     const params: Record<string, any> = { per_page: 8 }
     if (categoryId) params.category_id = categoryId
-    const res: any = await $fetch(`${API}/products`, { params })
+    const res: any = await get('/products', params)
     products.value = res.data
   } catch (e) {
     console.error('Failed to load products', e)
