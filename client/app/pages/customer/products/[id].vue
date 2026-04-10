@@ -92,7 +92,6 @@ const loading = ref(true)
 const showToast = ref(false)
 
 const imageMap: Record<string, string> = {
-  // Vegetables
   'Tomato':        '/images/products/vegetables/Tomato.png',
   'Eggplant':      '/images/products/vegetables/eggplant.png',
   'Bitter Gourd':  '/images/products/vegetables/bitter_gourd.png',
@@ -114,7 +113,6 @@ const imageMap: Record<string, string> = {
   'Gabi':          '/images/products/vegetables/gabi.png',
   'Kamote':        '/images/products/vegetables/kamote.png',
   'Labanos':       '/images/products/vegetables/labanos.png',
-  // Fruits
   'Banana':        '/images/products/fruits/saging.png',
   'Mango':         '/images/products/fruits/mango.png',
   'Papaya':        '/images/products/fruits/papaya.png',
@@ -130,7 +128,6 @@ const imageMap: Record<string, string> = {
   'Orange':        '/images/products/fruits/Orange.png',
   'Apple':         '/images/products/fruits/Apple.png',
   'Grapes':        '/images/products/fruits/Grapes.png',
-  // Meat & Fish
   'Chicken':       '/images/products/meat/Chicken.png',
   'Pork Meat':     '/images/products/meat/pork_meat.png',
   'Egg':           '/images/products/meat/Egg.png',
@@ -142,8 +139,7 @@ const imageMap: Record<string, string> = {
 
 const productImages = computed(() => {
   if (!product.value) return []
-  const image = imageMap[product.value.name]
-  return image ? [image] : ['/images/products/placeholder.png']
+  return [imageMap[product.value.name] || '/images/products/placeholder.png']
 })
 
 const mappedProduct = computed(() => {
@@ -157,7 +153,7 @@ const mappedProduct = computed(() => {
   return {
     id: product.value.id,
     name: product.value.name,
-    sku: product.value.sku,
+    sku: product.value.sku || '—',
     price: Number(product.value.price),
     originalPrice: hasDiscount ? Number(product.value.original_price) : undefined,
     discount,
@@ -166,11 +162,11 @@ const mappedProduct = computed(() => {
     brand: 'OBRA Local',
     description: product.value.description || 'Fresh local product from Urdaneta City, Pangasinan.',
     category: catName,
-    stock: product.value.stock,
-    tags: [catName, 'Fresh', 'Local', 'Urdaneta'],
+    stock: product.value.stock ?? 0,
+    tags: [catName, 'Fresh', 'Local', 'Urdaneta'].filter(Boolean),
     image: imageMap[product.value.name] || '/images/products/placeholder.png',
-    sellerId: product.value.user_id || 1,
-    sellerName: 'OBRA Store',
+    sellerId: product.value.user_id ?? 1,
+    sellerName: product.value.seller?.name || product.value.user?.name || 'OBRA Store',
   }
 })
 
@@ -183,11 +179,10 @@ const loadProduct = async () => {
     })
     product.value = res
 
-    // Load related products (same category)
     if (res.category_id) {
       const relRes: any = await $fetch('/products', {
         baseURL: config.public.apiBase,
-        params: { category_id: res.category_id, per_page: 4 },
+        params: { category_id: res.category_id, per_page: 5 },
         headers: { Accept: 'application/json' },
       })
       relatedProducts.value = (relRes.data || [])
@@ -202,10 +197,13 @@ const loadProduct = async () => {
           category: p.category?.name || '',
           rating: 4,
           badge: p.original_price && Number(p.original_price) > Number(p.price) ? 'Sale' : undefined,
+          sellerId: p.user_id ?? 1,
+          sellerName: p.seller?.name || p.user?.name || 'OBRA Store',
         }))
     }
   } catch (e) {
     console.error('Failed to load product', e)
+    product.value = null
   } finally {
     loading.value = false
   }
@@ -213,7 +211,7 @@ const loadProduct = async () => {
 
 const handleAddToCart = (quantity: number) => {
   if (!authStore.isLoggedIn) {
-    navigateTo('/')
+    navigateTo('/?login=true')
     return
   }
   if (!mappedProduct.value) return
