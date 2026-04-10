@@ -16,7 +16,7 @@
       </div>
     </div>
 
-    <!-- Search + Filter Bar -->
+    <!-- Search + Filter + Add -->
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
       <div class="flex flex-col md:flex-row md:items-center justify-between px-5 py-4 gap-3 border-b border-gray-100">
         <h3 class="text-base font-black text-gray-800">All Products</h3>
@@ -36,6 +36,12 @@
             <option value="Fruits">Fruits</option>
             <option value="Meat & Fish">Meat & Fish</option>
           </select>
+          <button
+            @click="openAdd"
+            class="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+          >
+            <span>+</span> Add Product
+          </button>
         </div>
       </div>
 
@@ -58,6 +64,9 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50">
+            <tr v-if="filteredProducts.length === 0">
+              <td colspan="6" class="text-center text-sm text-gray-400 py-12">No products found</td>
+            </tr>
             <tr
               v-for="product in filteredProducts"
               :key="product.id"
@@ -66,12 +75,14 @@
               <!-- Product -->
               <td class="px-5 py-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-12 h-12 bg-gray-100 rounded-xl overflow-hidden shrink-0">
+                  <div class="w-10 h-10 bg-gray-100 rounded-xl overflow-hidden shrink-0 flex items-center justify-center">
                     <img
-                      :src="imageMap[product.name] || '/images/products/vegetables/Tomato.png'"
+                      v-if="imageMap[product.name]"
+                      :src="imageMap[product.name]"
                       :alt="product.name"
                       class="w-full h-full object-contain p-1"
                     />
+                    <span v-else class="text-lg">🥬</span>
                   </div>
                   <div>
                     <p class="text-sm font-semibold text-gray-800">{{ product.name }}</p>
@@ -79,45 +90,39 @@
                   </div>
                 </div>
               </td>
-
               <!-- Category -->
-              <td class="px-5 py-4">
-                <span class="text-xs bg-green-100 text-green-700 font-semibold px-2.5 py-1 rounded-full">
-                  {{ product.category?.name || '—' }}
-                </span>
-              </td>
-
+              <td class="px-5 py-4 text-sm text-gray-600">{{ product.category?.name || '—' }}</td>
               <!-- Price -->
               <td class="px-5 py-4">
                 <p class="text-sm font-bold text-gray-800">₱{{ Number(product.price).toFixed(2) }}</p>
-                <p v-if="product.original_price" class="text-xs text-gray-400 line-through">
-                  ₱{{ Number(product.original_price).toFixed(2) }}
-                </p>
+                <p v-if="product.original_price" class="text-xs text-gray-400 line-through">₱{{ Number(product.original_price).toFixed(2) }}</p>
               </td>
-
               <!-- Stock -->
               <td class="px-5 py-4">
                 <span :class="[
-                  'text-sm font-semibold',
-                  product.stock <= 5 ? 'text-red-500' :
-                  product.stock <= 20 ? 'text-yellow-500' : 'text-gray-800'
+                  'text-sm font-bold',
+                  product.stock <= 5 ? 'text-red-500' : product.stock <= 20 ? 'text-yellow-500' : 'text-gray-800'
                 ]">{{ product.stock }}</span>
-                <p class="text-xs text-gray-400">units</p>
+                <span class="text-xs text-gray-400 ml-1">units</span>
               </td>
-
               <!-- Status -->
               <td class="px-5 py-4">
                 <span :class="[
-                  'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold',
-                  product.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                  'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize',
+                  product.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
                 ]">
-                  {{ product.status === 'active' ? 'Active' : 'Inactive' }}
+                  {{ product.status }}
                 </span>
               </td>
-
               <!-- Actions -->
               <td class="px-5 py-4">
                 <div class="flex items-center gap-2">
+                  <button
+                    @click="openEdit(product)"
+                    class="text-xs bg-blue-100 hover:bg-blue-200 text-blue-600 font-semibold px-3 py-1.5 rounded-full transition-colors"
+                  >
+                    Edit
+                  </button>
                   <button
                     @click="handleToggle(product)"
                     :class="[
@@ -143,43 +148,41 @@
       </div>
 
       <!-- Mobile Cards -->
-      <div v-if="!loading" class="md:hidden flex flex-col divide-y divide-gray-100">
+      <div class="md:hidden p-4 flex flex-col gap-3">
+        <div v-if="filteredProducts.length === 0" class="text-center text-sm text-gray-400 py-8">No products found</div>
         <div
           v-for="product in filteredProducts"
           :key="product.id"
-          class="px-4 py-4 flex items-center gap-3"
+          class="border border-gray-100 rounded-xl p-4 flex items-center gap-3"
         >
-          <div class="w-12 h-12 bg-gray-100 rounded-xl overflow-hidden shrink-0">
-            <img
-              :src="imageMap[product.name] || '/images/products/vegetables/Tomato.png'"
-              :alt="product.name"
-              class="w-full h-full object-contain p-1"
-            />
+          <div class="w-12 h-12 bg-gray-100 rounded-xl shrink-0 flex items-center justify-center overflow-hidden">
+            <img v-if="imageMap[product.name]" :src="imageMap[product.name]" :alt="product.name" class="w-full h-full object-contain p-1" />
+            <span v-else class="text-xl">🥬</span>
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-sm font-semibold text-gray-800 truncate">{{ product.name }}</p>
             <p class="text-xs text-gray-400">₱{{ Number(product.price).toFixed(2) }} · Stock: {{ product.stock }}</p>
+            <span :class="['text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize', product.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500']">
+              {{ product.status }}
+            </span>
           </div>
-          <span :class="[
-            'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold shrink-0',
-            product.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-          ]">
-            {{ product.status === 'active' ? 'Active' : 'Inactive' }}
-          </span>
+          <div class="flex flex-col gap-1 shrink-0">
+            <button @click="openEdit(product)" class="text-xs bg-blue-100 text-blue-600 font-semibold px-3 py-1 rounded-full">Edit</button>
+            <button @click="handleDelete(product.id)" class="text-xs bg-red-100 text-red-600 font-semibold px-3 py-1 rounded-full">Delete</button>
+          </div>
         </div>
       </div>
 
-      <!-- Empty State -->
-      <div
-        v-if="!loading && filteredProducts.length === 0"
-        class="flex flex-col items-center justify-center py-16 text-center"
-      >
-        <span class="text-5xl mb-3">🛍️</span>
-        <h3 class="text-base font-bold text-gray-700 mb-1">No products found</h3>
-        <p class="text-sm text-gray-400">Try adjusting your search or filters</p>
-      </div>
-
     </div>
+
+    <!-- Product Form Modal -->
+    <ProductFormModal
+      :show="showModal"
+      :product="editingProduct"
+      :categories="categories"
+      @close="closeModal"
+      @saved="handleSaved"
+    />
 
   </SellerLayout>
 </template>
@@ -187,13 +190,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import SellerLayout from '../../../components/seller/layout/SellerLayout.vue'
+import ProductFormModal from '../../../components/seller/products/ProductFormModal.vue'
 
 const { get, put, destroy } = useApi()
 
-const loading = ref(true)
 const products = ref<any[]>([])
+const categories = ref<any[]>([])
+const loading = ref(false)
 const search = ref('')
 const categoryFilter = ref('all')
+const showModal = ref(false)
+const editingProduct = ref<any>(null)
 
 const imageMap: Record<string, string> = {
   'Tomato':        '/images/products/vegetables/Tomato.png',
@@ -253,7 +260,19 @@ const loadProducts = async () => {
   }
 }
 
-onMounted(() => loadProducts())
+const loadCategories = async () => {
+  try {
+    const res: any = await get('/categories')
+    categories.value = res || []
+  } catch (e) {
+    console.error('Failed to load categories', e)
+  }
+}
+
+onMounted(() => {
+  loadProducts()
+  loadCategories()
+})
 
 const productStats = computed(() => [
   { icon: '🛍️', label: 'Total Products', value: products.value.length },
@@ -275,6 +294,31 @@ const filteredProducts = computed(() => {
   }
   return result
 })
+
+const openAdd = () => {
+  editingProduct.value = null
+  showModal.value = true
+}
+
+const openEdit = (product: any) => {
+  editingProduct.value = product
+  showModal.value = true
+}
+
+const closeModal = () => {
+  showModal.value = false
+  editingProduct.value = null
+}
+
+const handleSaved = (savedProduct: any) => {
+  const index = products.value.findIndex(p => p.id === savedProduct.id)
+  if (index !== -1) {
+    products.value[index] = savedProduct
+  } else {
+    products.value.unshift(savedProduct)
+  }
+  closeModal()
+}
 
 const handleToggle = async (product: any) => {
   const newStatus = product.status === 'active' ? 'inactive' : 'active'
