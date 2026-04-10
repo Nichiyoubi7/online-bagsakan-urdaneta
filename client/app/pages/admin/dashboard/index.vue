@@ -11,7 +11,7 @@
       >
         <span class="text-2xl">{{ stat.icon }}</span>
         <div>
-          <p class="text-lg md:text-xl font-black text-gray-800">{{ stat.value }}</p>
+          <p class="text-lg md:text-xl font-black text-gray-800">{{ loading ? '...' : stat.value }}</p>
           <p class="text-xs text-gray-500">{{ stat.label }}</p>
         </div>
       </div>
@@ -101,14 +101,17 @@
           <div v-if="loadingUsers" v-for="n in 5" :key="n" class="h-10 bg-gray-100 rounded-lg animate-pulse" />
           <div v-else-if="recentUsers.length === 0" class="text-center py-6 text-sm text-gray-400">No users yet</div>
           <div v-else v-for="user in recentUsers" :key="user.id" class="flex items-center gap-3">
-            <div class="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold text-sm shrink-0">
-              {{ user.name?.charAt(0) }}
+            <div
+              class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0"
+              :style="{ backgroundColor: avatarColor(user.name) }"
+            >
+              {{ user.name?.charAt(0)?.toUpperCase() }}
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-sm font-semibold text-gray-800 truncate">{{ user.name }}</p>
               <p class="text-xs text-gray-400 truncate">{{ user.email }}</p>
             </div>
-            <span class="text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full capitalize shrink-0">
+            <span :class="['text-xs font-semibold px-2 py-0.5 rounded-full capitalize shrink-0', roleClass(user.roles?.[0]?.name)]">
               {{ user.roles?.[0]?.name || 'user' }}
             </span>
           </div>
@@ -132,8 +135,9 @@ const loadingUsers = ref(true)
 const allOrders = ref<any[]>([])
 const recentOrders = ref<any[]>([])
 const recentUsers = ref<any[]>([])
+const allUsers = ref<any[]>([])
+const totalProducts = ref(0)
 
-// --- Stats computed from real data ---
 const stats = computed(() => [
   {
     icon: '💰',
@@ -151,15 +155,15 @@ const stats = computed(() => [
     bgColor: '#dbeafe',
   },
   {
-    icon: '🕐',
-    label: 'Pending Orders',
-    value: String(allOrders.value.filter(o => o.status === 'pending').length),
+    icon: '👥',
+    label: 'Total Users',
+    value: allUsers.value.length.toLocaleString(),
     bgColor: '#fef9c3',
   },
   {
-    icon: '✅',
-    label: 'Delivered',
-    value: String(allOrders.value.filter(o => o.status === 'delivered').length),
+    icon: '🛍️',
+    label: 'Total Products',
+    value: totalProducts.value.toLocaleString(),
     bgColor: '#fce7f3',
   },
 ])
@@ -167,13 +171,15 @@ const stats = computed(() => [
 const platformStats = computed(() => {
   const total = allOrders.value.length || 1
   const delivered = allOrders.value.filter(o => o.status === 'delivered').length
-  const pending = allOrders.value.filter(o => o.status === 'pending').length
+  const pending   = allOrders.value.filter(o => o.status === 'pending').length
   const cancelled = allOrders.value.filter(o => o.status === 'cancelled').length
+  const totalU    = allUsers.value.length
+  const customers = allUsers.value.filter(u => u.roles?.[0]?.name === 'customer').length
   return [
-    { label: 'Orders Completed', value: String(delivered), percent: Math.round(delivered / total * 100), color: '#22c55e' },
-    { label: 'Orders Pending',   value: String(pending),   percent: Math.round(pending / total * 100),   color: '#f59e0b' },
-    { label: 'Orders Cancelled', value: String(cancelled), percent: Math.round(cancelled / total * 100), color: '#ef4444' },
-    { label: 'Total Users',      value: String(recentUsers.value.length), percent: 75, color: '#3b82f6' },
+    { label: 'Orders Completed', value: String(delivered),  percent: Math.round(delivered / total * 100),   color: '#22c55e' },
+    { label: 'Orders Pending',   value: String(pending),    percent: Math.round(pending / total * 100),     color: '#f59e0b' },
+    { label: 'Orders Cancelled', value: String(cancelled),  percent: Math.round(cancelled / total * 100),   color: '#ef4444' },
+    { label: 'Customers',        value: String(customers),  percent: totalU ? Math.round(customers / totalU * 100) : 0, color: '#3b82f6' },
   ]
 })
 
@@ -196,10 +202,26 @@ const quickActions = [
   { icon: '🛍️', label: 'Products',       to: '/admin/products' },
 ]
 
+const roleClass = (role: string) => {
+  const map: Record<string, string> = {
+    customer: 'bg-blue-100 text-blue-700',
+    seller:   'bg-green-100 text-green-700',
+    driver:   'bg-orange-100 text-orange-700',
+    staff:    'bg-purple-100 text-purple-700',
+    admin:    'bg-red-100 text-red-700',
+  }
+  return map[role] ?? 'bg-gray-100 text-gray-700'
+}
+
+const avatarColor = (name: string) => {
+  const colors = ['#22c55e', '#3b82f6', '#f97316', '#8b5cf6', '#ec4899']
+  return colors[(name?.charCodeAt(0) || 0) % colors.length]
+}
+
 const loadOrders = async () => {
   loading.value = true
   try {
-    const res: any = await get('/orders')
+    const res: any = await get('/orders', { per_page: 100 })
     allOrders.value = res.data || []
     recentOrders.value = (res.data || []).slice(0, 5)
   } catch (e) {
@@ -212,7 +234,8 @@ const loadOrders = async () => {
 const loadUsers = async () => {
   loadingUsers.value = true
   try {
-    const res: any = await get('/users')
+    const res: any = await get('/users', { per_page: 100 })
+    allUsers.value = res.data || []
     recentUsers.value = (res.data || []).slice(0, 5)
   } catch (e) {
     console.error('Failed to load users', e)
@@ -221,7 +244,16 @@ const loadUsers = async () => {
   }
 }
 
+const loadProducts = async () => {
+  try {
+    const res: any = await get('/products', { per_page: 1 })
+    totalProducts.value = res.total || 0
+  } catch (e) {
+    console.error('Failed to load products count', e)
+  }
+}
+
 onMounted(async () => {
-  await Promise.all([loadOrders(), loadUsers()])
+  await Promise.all([loadOrders(), loadUsers(), loadProducts()])
 })
 </script>
