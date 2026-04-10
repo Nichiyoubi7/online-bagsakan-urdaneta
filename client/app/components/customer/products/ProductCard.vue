@@ -92,6 +92,8 @@ const props = defineProps<{
     rating: number
     badge?: string
     category?: string
+    sellerId?: number
+    sellerName?: string
   }
 }>()
 
@@ -101,8 +103,6 @@ const added = ref(false)
 
 const handleAddToCart = () => {
   if (!authStore.isLoggedIn) {
-    // Will trigger auth modal via useAuthGate if available
-    // For now navigate to login
     navigateTo('/?login=true')
     return
   }
@@ -115,8 +115,8 @@ const handleAddToCart = () => {
     originalPrice: props.product.originalPrice,
     quantity: 1,
     category: props.product.category || '',
-    sellerId: 1, // default seller — will be dynamic when seller data is available
-    sellerName: 'OBRA Store',
+    sellerId: props.product.sellerId ?? 1,
+    sellerName: props.product.sellerName || 'OBRA Store',
   })
 
   added.value = true

@@ -62,12 +62,6 @@
                   class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 transition-colors"
                 />
               </div>
-              <textarea
-                v-model="form.note"
-                placeholder="Delivery note (optional) — e.g. Leave at gate"
-                rows="2"
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 transition-colors resize-none"
-              />
             </div>
           </div>
 
@@ -75,19 +69,15 @@
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:p-6">
             <h3 class="text-base font-black text-gray-800 mb-4">Delivery Option</h3>
             <div class="flex flex-col gap-3">
-              <label
-                :class="['flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all', form.deliveryType === 'delivery' ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-gray-200']"
-              >
+              <label :class="['flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all', form.deliveryType === 'delivery' ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-gray-200']">
                 <input type="radio" v-model="form.deliveryType" value="delivery" class="accent-green-500" />
                 <div>
                   <p class="text-sm font-semibold text-gray-800">Home Delivery</p>
-                  <p class="text-xs text-gray-400">Delivered to your address — ₱50.00 fee</p>
+                  <p class="text-xs text-gray-400">Delivered to your address — ₱50 fee</p>
                 </div>
                 <span class="ml-auto text-sm font-bold text-gray-700">₱50.00</span>
               </label>
-              <label
-                :class="['flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all', form.deliveryType === 'pickup' ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-gray-200']"
-              >
+              <label :class="['flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all', form.deliveryType === 'pickup' ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-gray-200']">
                 <input type="radio" v-model="form.deliveryType" value="pickup" class="accent-green-500" />
                 <div>
                   <p class="text-sm font-semibold text-gray-800">Store Pickup</p>
@@ -112,9 +102,7 @@
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:p-6">
             <h3 class="text-base font-black text-gray-800 mb-4">Payment Method</h3>
             <div class="flex flex-col gap-3">
-              <label
-                :class="['flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all', form.paymentMethod === 'cod' ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-gray-200']"
-              >
+              <label :class="['flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all', form.paymentMethod === 'cod' ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-gray-200']">
                 <input type="radio" v-model="form.paymentMethod" value="cod" class="accent-green-500" />
                 <div class="w-10 h-7 rounded flex items-center justify-center bg-green-500 text-white text-xs font-black shrink-0">₱</div>
                 <div>
@@ -123,9 +111,7 @@
                 </div>
                 <span class="ml-auto text-xs bg-green-100 text-green-600 font-semibold px-2 py-0.5 rounded-full">Recommended</span>
               </label>
-              <label
-                :class="['flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all', form.paymentMethod === 'gcash' ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-gray-200']"
-              >
+              <label :class="['flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all', form.paymentMethod === 'gcash' ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-gray-200']">
                 <input type="radio" v-model="form.paymentMethod" value="gcash" class="accent-green-500" />
                 <div class="w-10 h-7 rounded flex items-center justify-center bg-blue-500 text-white text-xs font-black shrink-0">G</div>
                 <div>
@@ -136,130 +122,118 @@
             </div>
           </div>
 
-          <!-- Tip Your Rider -->
+          <!-- Order Note -->
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:p-6">
-            <h3 class="text-base font-black text-gray-800 mb-1">Tip your rider</h3>
-            <p class="text-xs text-gray-400 mb-4">100% of the tips go to your rider.</p>
-            <div class="flex items-center gap-2 flex-wrap">
-              <button
-                v-for="tip in tipOptions"
-                :key="tip"
-                @click="form.tip = tip"
-                :class="[
-                  'px-4 py-2 rounded-full text-sm font-medium border transition-colors',
-                  form.tip === tip
-                    ? 'bg-green-500 text-white border-green-500'
-                    : 'border-gray-200 text-gray-600 hover:border-green-400'
-                ]"
-              >
-                {{ tip === 0 ? 'No tip' : '₱' + tip.toFixed(2) }}
-              </button>
-            </div>
+            <h3 class="text-base font-black text-gray-800 mb-3">Order Note <span class="text-gray-400 font-normal text-sm">(optional)</span></h3>
+            <textarea
+              v-model="form.note"
+              rows="3"
+              placeholder="Special instructions for your order..."
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 transition-colors resize-none"
+            />
           </div>
-
-          <!-- Error Message -->
-          <div v-if="error" class="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl">
-            {{ error }}
-          </div>
-
-          <!-- Place Order Button (mobile) -->
-          <button
-            @click="handlePlaceOrder"
-            :disabled="loading"
-            class="lg:hidden w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white font-bold py-4 rounded-xl transition-colors shadow-md flex items-center justify-center gap-2"
-          >
-            <svg v-if="loading" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-            </svg>
-            {{ loading ? 'Placing Order...' : `Place Order — ₱${orderTotal.toFixed(2)}` }}
-          </button>
 
         </div>
 
         <!-- Right: Order Summary -->
-        <div class="lg:col-span-1">
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:p-6 lg:sticky lg:top-24">
+        <div class="flex flex-col gap-4">
 
-            <h3 class="text-base font-black text-gray-800 mb-4">Order Summary</h3>
-
-            <!-- Items -->
-            <div class="flex flex-col gap-3 mb-4">
-              <div
-                v-for="item in selectedItems"
-                :key="item.id"
-                class="flex items-center gap-3"
-              >
-                <img :src="item.image" :alt="item.name" class="w-10 h-10 object-contain bg-gray-50 rounded-lg shrink-0" />
+          <!-- Items per Seller -->
+          <div
+            v-for="group in sellerGroups"
+            :key="group.sellerId"
+            class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+          >
+            <div class="flex items-center gap-2 px-5 py-3 bg-gray-50 border-b border-gray-100">
+              <span class="text-base">🏪</span>
+              <span class="text-sm font-bold text-gray-800">{{ group.sellerName }}</span>
+            </div>
+            <div class="p-4 flex flex-col gap-3">
+              <div v-for="item in group.items" :key="item.id" class="flex items-center gap-3">
+                <img :src="item.image" :alt="item.name" class="w-12 h-12 object-contain rounded-lg bg-gray-50 shrink-0" />
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-gray-800 truncate">{{ item.name }}</p>
-                  <p class="text-xs text-gray-400">{{ item.quantity }}x ₱{{ item.price.toFixed(2) }}</p>
+                  <p class="text-sm font-semibold text-gray-800 truncate">{{ item.name }}</p>
+                  <p class="text-xs text-gray-400">x{{ item.quantity }}</p>
                 </div>
-                <span class="text-sm font-bold text-gray-800 shrink-0">₱{{ (item.price * item.quantity).toFixed(2) }}</span>
+                <p class="text-sm font-bold text-green-600 shrink-0">₱{{ (item.price * item.quantity).toFixed(2) }}</p>
               </div>
             </div>
+          </div>
 
-            <!-- Price Breakdown -->
-            <div class="flex flex-col gap-2 py-3 border-t border-gray-100 text-sm">
-              <div class="flex items-center justify-between text-gray-600">
-                <span>Subtotal</span>
+          <!-- Tip -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h3 class="text-sm font-black text-gray-800 mb-3">Add a Tip for Driver</h3>
+            <div class="flex gap-2 flex-wrap">
+              <button
+                v-for="t in tipOptions"
+                :key="t"
+                @click="form.tip = t"
+                :class="[
+                  'px-3 py-1.5 rounded-full text-xs font-semibold border transition-all',
+                  form.tip === t ? 'bg-green-500 text-white border-green-500' : 'border-gray-200 text-gray-600 hover:border-green-400'
+                ]"
+              >
+                {{ t === 0 ? 'No tip' : '₱' + t }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Price Summary -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h3 class="text-base font-black text-gray-800 mb-4">Order Summary</h3>
+            <div class="flex flex-col gap-2 text-sm">
+              <div class="flex justify-between text-gray-600">
+                <span>Subtotal ({{ selectedItems.length }} items)</span>
                 <span>₱{{ subtotal.toFixed(2) }}</span>
               </div>
-              <div class="flex items-center justify-between text-gray-600">
-                <span>Delivery fee</span>
-                <span :class="deliveryFee === 0 ? 'text-green-500 font-semibold' : ''">
-                  {{ deliveryFee === 0 ? 'Free' : '₱' + deliveryFee.toFixed(2) }}
-                </span>
+              <div class="flex justify-between text-gray-600">
+                <span>Delivery Fee</span>
+                <span>{{ deliveryFee > 0 ? '₱' + deliveryFee.toFixed(2) : 'Free' }}</span>
               </div>
-              <div v-if="form.tip > 0" class="flex items-center justify-between text-gray-600">
-                <span>Rider tip</span>
+              <div v-if="form.tip > 0" class="flex justify-between text-gray-600">
+                <span>Tip</span>
                 <span>₱{{ form.tip.toFixed(2) }}</span>
               </div>
+              <div class="flex justify-between font-black text-gray-900 text-base pt-2 border-t border-gray-100 mt-1">
+                <span>Total</span>
+                <span class="text-green-600">₱{{ orderTotal.toFixed(2) }}</span>
+              </div>
             </div>
 
-            <!-- Total -->
-            <div class="flex items-center justify-between py-3 border-t border-gray-100 mb-4">
-              <p class="text-sm font-bold text-gray-800">Total</p>
-              <p class="text-xl font-black text-green-600">₱{{ orderTotal.toFixed(2) }}</p>
-            </div>
+            <p v-if="error" class="mt-3 text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg">{{ error }}</p>
 
-            <!-- Place Order (desktop) -->
             <button
               @click="handlePlaceOrder"
               :disabled="loading"
-              class="hidden lg:flex w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white font-bold py-4 rounded-xl transition-colors shadow-md items-center justify-center gap-2"
+              class="mt-4 w-full bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2"
             >
-              <svg v-if="loading" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg v-if="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
               </svg>
               {{ loading ? 'Placing Order...' : 'Place Order' }}
             </button>
-
-            <p class="text-xs text-gray-400 text-center mt-3">
-              By placing your order, you agree to our
-              <NuxtLink to="/terms" class="text-green-500 hover:underline">Terms & Conditions</NuxtLink>
-            </p>
+            <p class="text-center text-xs text-gray-400 mt-2">By placing your order, you agree to our terms of service.</p>
           </div>
-        </div>
 
+        </div>
       </div>
     </div>
 
     <!-- Success Modal -->
     <Transition name="fade">
-      <div v-if="showSuccess" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 flex flex-col items-center text-center">
-          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+      <div v-if="showSuccess" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
+          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
           </div>
-          <h2 class="text-2xl font-black text-gray-900 mb-2">Order Placed! 🎉</h2>
+          <h2 class="text-xl font-black text-gray-900 mb-2">Order Placed! 🎉</h2>
           <p class="text-gray-400 text-sm mb-6">Your order has been successfully placed. The seller will confirm it shortly.</p>
           <NuxtLink
             to="/customer/orders"
-            class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition-colors"
+            class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition-colors block"
           >
             View My Orders
           </NuxtLink>
@@ -299,10 +273,20 @@ onMounted(() => {
   cartStore.loadFromStorage()
 })
 
-// Only selected items go to checkout
 const selectedItems = computed(() =>
   cartStore.items.filter(i => i.selected)
 )
+
+const sellerGroups = computed(() => {
+  const groups: Record<number, { sellerId: number; sellerName: string; items: typeof selectedItems.value }> = {}
+  selectedItems.value.forEach(item => {
+    if (!groups[item.sellerId]) {
+      groups[item.sellerId] = { sellerId: item.sellerId, sellerName: item.sellerName, items: [] }
+    }
+    groups[item.sellerId].items.push(item)
+  })
+  return Object.values(groups)
+})
 
 const subtotal = computed(() =>
   selectedItems.value.reduce((sum, i) => sum + i.price * i.quantity, 0)
@@ -319,7 +303,7 @@ const orderTotal = computed(() =>
 const handlePlaceOrder = async () => {
   error.value = ''
 
-  if (!form.value.address && form.value.deliveryType === 'delivery') {
+  if (form.value.deliveryType === 'delivery' && !form.value.address.trim()) {
     error.value = 'Please enter your delivery address.'
     return
   }
@@ -336,20 +320,21 @@ const handlePlaceOrder = async () => {
       ? `${form.value.address}, ${form.value.barangay}, ${form.value.city}, ${form.value.province}`
       : 'Store Pickup'
 
-    await post('/orders', {
-      seller_id: selectedItems.value[0].sellerId,
-      delivery_type: form.value.deliveryType,
-      payment_method: form.value.paymentMethod,
-      delivery_address: deliveryAddress,
-      delivery_note: form.value.note,
-      tip: form.value.tip,
-      items: selectedItems.value.map(i => ({
-        product_id: i.productId,
-        quantity: i.quantity,
-      })),
-    })
+    for (const group of sellerGroups.value) {
+      await post('/orders', {
+        seller_id: group.sellerId,
+        delivery_type: form.value.deliveryType,
+        payment_method: form.value.paymentMethod,
+        delivery_address: deliveryAddress,
+        delivery_note: form.value.note,
+        tip: form.value.tip,
+        items: group.items.map(i => ({
+          product_id: i.productId,
+          quantity: i.quantity,
+        })),
+      })
+    }
 
-    // Remove only the checked-out items from cart
     selectedItems.value.forEach(i => cartStore.removeItem(i.id))
     showSuccess.value = true
 

@@ -121,6 +121,8 @@ const mapProduct = (p: any) => ({
   category: p.category?.name || '',
   rating: 4,
   badge: p.original_price && Number(p.original_price) > Number(p.price) ? 'Sale' : undefined,
+  sellerId: p.user_id ?? 1,
+  sellerName: p.seller?.name || p.user?.name || 'OBRA Store',
 })
 
 const loadCategories = async () => {
@@ -137,21 +139,26 @@ const loadCategories = async () => {
 const loadProducts = async (categoryId?: number) => {
   loading.value = true
   try {
-    const params: Record<string, any> = { per_page: 8 }
+    const params: any = { per_page: 8 }
     if (categoryId) params.category_id = categoryId
     const res: any = await get('/products', params)
-    products.value = res.data
+    products.value = res.data || []
   } catch (e) {
     console.error('Failed to load products', e)
+    products.value = []
   } finally {
     loading.value = false
   }
 }
 
-const handleTabChange = async (tab: { label: string, categoryName: string }) => {
+const handleTabChange = async (tab: { label: string; categoryName: string }) => {
   activeTab.value = tab.label
-  const catId = tab.categoryName ? categoryMap.value[tab.categoryName] : undefined
-  await loadProducts(catId)
+  if (!tab.categoryName) {
+    await loadProducts()
+  } else {
+    const categoryId = categoryMap.value[tab.categoryName]
+    await loadProducts(categoryId)
+  }
 }
 
 onMounted(async () => {
