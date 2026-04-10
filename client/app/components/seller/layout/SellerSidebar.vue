@@ -1,13 +1,13 @@
 <template>
 <aside
   :class="[
-    'fixed top-0 left-0 h-full bg-gray-900 text-white z-40 flex flex-col',
+    'fixed top-0 left-0 h-full bg-gray-900 text-white z-40 flex-col',
     'transition-transform duration-300 ease-in-out',
-    // Desktop
+    // Desktop — always visible
     'hidden md:flex',
     collapsed ? 'md:w-16' : 'md:w-64',
-    // Mobile — slide in from left
-    mobileOpen ? '!flex w-72 translate-x-0' : '-translate-x-full',
+    // Mobile — slide in from left only
+    mobileOpen ? '!flex w-72 translate-x-0' : 'md:translate-x-0 -translate-x-full',
   ]"
 >
     <!-- Logo + Close button -->
