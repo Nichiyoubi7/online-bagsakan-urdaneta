@@ -32,9 +32,7 @@
           </div>
           <select v-model="categoryFilter" class="text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none bg-white">
             <option value="all">All Categories</option>
-            <option value="Vegetables">Vegetables</option>
-            <option value="Fruits">Fruits</option>
-            <option value="Meat & Fish">Meat & Fish</option>
+            <option v-for="cat in categories" :key="cat.id" :value="cat.name">{{ cat.name }}</option>
           </select>
           <button
             @click="openAdd"
