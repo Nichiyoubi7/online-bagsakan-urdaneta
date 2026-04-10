@@ -3,22 +3,33 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
+
 class OrderController extends Controller
 {
     public function index(Request $request)
     {
         $user = $request->user();
+        $role = $user->getRoleNames()->first();
+
         $query = Order::with(["items", "customer", "seller", "driver"]);
 
-        if ($user->hasRole("customer")) {
+        if ($role === "customer") {
             $query->where("customer_id", $user->id);
-        } elseif ($user->hasRole("seller")) {
+        } elseif ($role === "seller") {
             $query->where("seller_id", $user->id);
-        } elseif ($user->hasRole("driver")) {
-            $query->where("driver_id", $user->id);
+        } elseif ($role === "driver") {
+            // Driver sees: orders assigned to them OR ready orders with no driver
+            $query->where(function($q) use ($user) {
+                $q->where("driver_id", $user->id)
+                  ->orWhere(function($q2) {
+                      $q2->where("status", "ready")
+                         ->whereNull("driver_id");
+                  });
+            });
         }
+        // admin/staff see all orders
 
-        $orders = $query->orderBy("created_at", "desc")->paginate(10);
+        $orders = $query->orderBy("created_at", "desc")->paginate(50);
         return response()->json($orders);
     }
 
@@ -66,7 +77,6 @@ class OrderController extends Controller
         $order = Order::create([
             "customer_id"      => $request->user()->id,
             "seller_id"        => $request->seller_id,
-            "status"           => "pending",
             "delivery_type"    => $request->delivery_type,
             "payment_method"   => $request->payment_method,
             "subtotal"         => $subtotal,
@@ -76,32 +86,43 @@ class OrderController extends Controller
             "total_weight_kg"  => $totalWeight,
             "delivery_address" => $request->delivery_address,
             "delivery_note"    => $request->delivery_note,
+            "status"           => "pending",
         ]);
 
         $order->items()->createMany($orderItems);
 
         return response()->json([
             "message" => "Order placed successfully!",
-            "order"   => $order->load("items"),
+            "order"   => $order->load(["items", "customer", "seller"]),
         ], 201);
     }
 
     public function updateStatus(Request $request, $id)
     {
+        $order = Order::findOrFail($id);
         $request->validate([
             "status" => "required|in:pending,confirmed,preparing,ready,in_transit,delivered,cancelled",
         ]);
 
-        $order = Order::findOrFail($id);
-        $order->update(["status" => $request->status]);
+        $user = $request->user();
+        $role = $user->getRoleNames()->first();
 
-        if ($request->status === "delivered") {
-            $order->update(["delivered_at" => now()]);
+        // When driver accepts (in_transit), assign driver_id
+        if ($request->status === "in_transit" && $role === "driver") {
+            $order->driver_id = $user->id;
         }
+
+        // Mark delivered_at timestamp
+        if ($request->status === "delivered") {
+            $order->delivered_at = now();
+        }
+
+        $order->status = $request->status;
+        $order->save();
 
         return response()->json([
             "message" => "Order status updated!",
-            "order"   => $order,
+            "order"   => $order->load(["items", "customer", "seller", "driver"]),
         ]);
     }
 }

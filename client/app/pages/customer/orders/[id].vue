@@ -158,7 +158,7 @@
         <div class="flex items-center justify-between">
           <NuxtLink
             to="/customer/orders"
-            class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            class="text-sm text-gray-500 hover:text-gray-700 transition-colors"
           >
             ← Back to Orders
           </NuxtLink>
@@ -244,9 +244,9 @@ const imageMap: Record<string, string> = {
 }
 
 const statusSteps = [
-  { key: 'pending',    label: 'Order\nReceived' },
+  { key: 'pending',    label: 'Order Received' },
   { key: 'preparing',  label: 'Preparing' },
-  { key: 'in_transit', label: 'On the\nWay' },
+  { key: 'in_transit', label: 'On the Way' },
   { key: 'delivered',  label: 'Delivered' },
 ]
 
@@ -260,6 +260,7 @@ const progressWidth = computed(() => {
 })
 
 const isStepDone = (key: string) => {
+  if (order.value?.status === 'delivered' && key === 'delivered') return true
   const orderIdx = statusOrder.indexOf(order.value?.status)
   const stepIdx = statusOrder.indexOf(key)
   return stepIdx < orderIdx
