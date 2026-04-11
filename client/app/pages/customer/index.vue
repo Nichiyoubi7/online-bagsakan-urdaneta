@@ -14,6 +14,23 @@
       </div>
     </div>
 
+    <!-- Seller Banner -->
+    <div v-if="route.query.seller_id && currentSeller" class="bg-[#0f2d1f] py-6">
+      <div class="max-w-7xl mx-auto px-4 flex items-center gap-4">
+        <div class="w-14 h-14 bg-green-500 rounded-2xl flex items-center justify-center text-white font-black text-xl shrink-0">
+          {{ currentSeller.name?.charAt(0) }}
+        </div>
+        <div>
+          <p class="text-green-400 text-xs font-semibold uppercase tracking-widest mb-0.5">Now viewing</p>
+          <h2 class="text-white text-xl font-black">{{ currentSeller.name }}</h2>
+          <p class="text-green-200 text-sm">{{ currentSeller.description }}</p>
+        </div>
+        <NuxtLink to="/sellers" class="ml-auto text-green-400 hover:text-green-300 text-sm font-semibold flex items-center gap-1">
+          ← All Shops
+        </NuxtLink>
+      </div>
+    </div>
+
     <div class="max-w-7xl mx-auto px-4 py-6 md:py-10">
 
       <!-- Mobile Filter Toggle -->
@@ -93,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import GuestLayout from '../../components/layout/GuestLayout.vue'
 import ShopSidebar from '../../components/customer/shop/ShopSidebar.vue'
@@ -105,26 +122,34 @@ const route = useRoute()
 const { get } = useApi()
 
 const showMobileSidebar = ref(false)
-
-const selectedCategory = ref(
-  route.query.category ? String(route.query.category) : ''
-)
+const selectedCategory = ref(route.query.category ? String(route.query.category) : '')
 const selectedRating = ref(0)
 const selectedTag = ref('')
 const priceMax = ref(500)
 const sortBy = ref('default')
-
 const currentPage = ref(1)
 const perPage = 12
 const totalProducts = ref(0)
 const totalPages = ref(1)
-
 const products = ref<any[]>([])
 const loading = ref(false)
 const categoryMap = ref<Record<string, number>>({})
 
+const sellerMap: Record<string, { name: string; description: string }> = {
+  '16': { name: "Zandradee Poultry",      description: 'Dressed chicken & retailer — Stall #38' },
+  '17': { name: "Ali's Store",            description: 'Fresh eggs & market goods daily' },
+  '18': { name: "Ate Janice's Gulayan",   description: 'Fresh vegetables from the farm' },
+  '19': { name: "Kuya Bert's Juicy Meat", description: 'Premium cuts of pork & beef' },
+  '20': { name: "Lalaine & Noy Banana",   description: 'Wholesale & retail banana dealer' },
+  '21': { name: "Nick & Raquel Fruits",   description: 'Fresh fruits wholesale & retail' },
+}
+
+const currentSeller = computed(() => {
+  const id = String(route.query.seller_id || '')
+  return sellerMap[id] || null
+})
+
 const imageMap: Record<string, string> = {
-  // Vegetables
   'Tomato':        '/images/products/vegetables/Tomato.png',
   'Eggplant':      '/images/products/vegetables/eggplant.png',
   'Bitter Gourd':  '/images/products/vegetables/bitter_gourd.png',
@@ -146,7 +171,6 @@ const imageMap: Record<string, string> = {
   'Gabi':          '/images/products/vegetables/gabi.png',
   'Kamote':        '/images/products/vegetables/kamote.png',
   'Labanos':       '/images/products/vegetables/labanos.png',
-  // Fruits
   'Banana':        '/images/products/fruits/saging.png',
   'Mango':         '/images/products/fruits/mango.png',
   'Papaya':        '/images/products/fruits/papaya.png',
@@ -162,7 +186,6 @@ const imageMap: Record<string, string> = {
   'Orange':        '/images/products/fruits/Orange.png',
   'Apple':         '/images/products/fruits/Apple.png',
   'Grapes':        '/images/products/fruits/Grapes.png',
-  // Meat & Fish
   'Chicken':       '/images/products/meat/Chicken.png',
   'Pork Meat':     '/images/products/meat/pork_meat.png',
   'Egg':           '/images/products/meat/Egg.png',
@@ -181,6 +204,8 @@ const mapProduct = (p: any) => ({
   category: p.category?.name || '',
   rating: 4,
   badge: p.original_price && Number(p.original_price) > Number(p.price) ? 'Sale' : undefined,
+  sellerId: p.user_id ?? 1,
+  sellerName: p.seller?.name || p.user?.name || 'OBRA Store',
 })
 
 const loadCategories = async () => {
@@ -198,12 +223,22 @@ const loadProducts = async () => {
   loading.value = true
   try {
     const params: Record<string, any> = { page: currentPage.value }
+
     if (selectedCategory.value && selectedCategory.value !== 'All Categories') {
       const catId = categoryMap.value[selectedCategory.value]
       if (catId) params.category_id = catId
     }
-    if (sortBy.value === 'price_asc') params.sort = 'price_asc'
-    if (sortBy.value === 'price_desc') params.sort = 'price_desc'
+
+    if (route.query.seller_id) {
+      params.seller_id = route.query.seller_id
+    }
+
+    if (route.query.search) {
+      params.search = route.query.search
+    }
+
+    if (sortBy.value === 'price_asc')  { params.sort = 'price'; params.dir = 'asc'  }
+    if (sortBy.value === 'price_desc') { params.sort = 'price'; params.dir = 'desc' }
 
     const res: any = await get('/products', params)
     products.value = res.data
@@ -218,6 +253,12 @@ const loadProducts = async () => {
 
 onMounted(async () => {
   await loadCategories()
+  await loadProducts()
+})
+
+watch(() => route.query, async () => {
+  currentPage.value = 1
+  selectedCategory.value = route.query.category ? String(route.query.category) : ''
   await loadProducts()
 })
 

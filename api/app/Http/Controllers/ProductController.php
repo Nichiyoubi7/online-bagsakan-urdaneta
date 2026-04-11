@@ -19,6 +19,10 @@ class ProductController extends Controller
             $query->where('name', 'ILIKE', '%' . $request->search . '%');
         }
 
+        if ($request->filled('seller_id')) {
+            $query->where('user_id', $request->seller_id);
+        }
+
         if ($request->filled('min_price')) {
             $query->where('price', '>=', $request->min_price);
         }
@@ -37,7 +41,6 @@ class ProductController extends Controller
         $perPage = min((int) $request->get('per_page', 12), 100);
         $products = $query->paginate($perPage);
 
-        // Rename 'user' to 'seller' in output for clarity
         $products->getCollection()->transform(function ($product) {
             $product->seller = $product->user;
             return $product;
