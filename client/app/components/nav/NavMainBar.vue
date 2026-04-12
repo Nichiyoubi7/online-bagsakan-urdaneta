@@ -14,6 +14,7 @@
 
       <!-- Logo -->
       <NuxtLink to="/" class="flex items-center shrink-0">
+        <img src="/images/logo/OBRA_Logo.png" alt="OBRA" class="h-8 md:h-10 w-auto object-contain" />
         <span class="text-xl md:text-2xl font-black text-gray-800 tracking-tight">OBRA</span>
       </NuxtLink>
 

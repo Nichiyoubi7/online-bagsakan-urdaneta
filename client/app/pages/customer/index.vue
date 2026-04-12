@@ -76,7 +76,7 @@
           <!-- Products Grid -->
           <div v-else-if="products.length > 0" class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
             <ProductCard
-              v-for="product in products"
+              v-for="product in displayedProducts"
               :key="product.id"
               :product="mapProduct(product)"
             />
@@ -147,6 +147,31 @@ const sellerMap: Record<string, { name: string; description: string }> = {
 const currentSeller = computed(() => {
   const id = String(route.query.seller_id || '')
   return sellerMap[id] || null
+})
+
+const displayedProducts = computed(() => {
+  let result = [...products.value]
+
+  if (selectedRating.value > 0) {
+    result = result.filter(p => (p.rating || 4) >= selectedRating.value)
+  }
+
+  if (selectedTag.value) {
+    const tagMap: Record<string, string[]> = {
+      'Organic':      ['Kangkong', 'Sitaw', 'Okra', 'Carrot', 'Tomato'],
+      'Vegetarian':   ['Tomato', 'Eggplant', 'Okra', 'Sitaw', 'Kangkong', 'Repolyo'],
+      'Fresh':        ['Tomato', 'Eggplant', 'Bitter Gourd', 'Okra'],
+      'Local':        ['Kangkong', 'Sitaw', 'Mais', 'Banana', 'Papaya'],
+      'Spicy':        ['Siling Haba', 'Siling Labuyo'],
+      'Kid Friendly': ['Banana', 'Apple', 'Orange', 'Grapes', 'Mango'],
+    }
+    const tagProducts = tagMap[selectedTag.value] || []
+    if (tagProducts.length > 0) {
+      result = result.filter(p => tagProducts.includes(p.name))
+    }
+  }
+
+  return result
 })
 
 const imageMap: Record<string, string> = {
@@ -237,6 +262,10 @@ const loadProducts = async () => {
       params.search = route.query.search
     }
 
+    if (priceMax.value < 500) {
+      params.max_price = priceMax.value
+    }
+
     if (sortBy.value === 'price_asc')  { params.sort = 'price'; params.dir = 'asc'  }
     if (sortBy.value === 'price_desc') { params.sort = 'price'; params.dir = 'desc' }
 
@@ -275,7 +304,11 @@ const handleCategorySelect = async (cat: string) => {
   showMobileSidebar.value = false
   await loadProducts()
 }
-const handlePriceChange = (val: number) => { priceMax.value = val }
+const handlePriceChange = async (val: number) => {
+  priceMax.value = val
+  currentPage.value = 1
+  await loadProducts()
+}
 const handleRatingSelect = (rating: number) => { selectedRating.value = rating }
 const handleTagSelect = (tag: string) => { selectedTag.value = tag }
 const handleSort = async (val: string) => {

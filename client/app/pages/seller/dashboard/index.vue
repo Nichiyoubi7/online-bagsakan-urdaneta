@@ -39,7 +39,7 @@
 
       <!-- Recent Orders — 2 columns -->
       <div class="lg:col-span-2">
-        <RecentOrders :orders="recentOrders" :loading="loading" />
+        <RecentOrders :orders="recentOrders" :loading="loading" @update-status="handleUpdateStatus" />
       </div>
 
       <!-- Right Column -->
@@ -217,4 +217,18 @@ const quickActions = [
   { icon: '👤', label: 'Profile',     to: '/customer/profile' },
   { icon: '⚙️', label: 'Settings',    to: '/seller/settings'  },
 ]
+
+const { put } = useApi()
+
+const handleUpdateStatus = async (id: number, status: string) => {
+  try {
+    await put(`/orders/${id}/status`, { status })
+    const order = recentOrders.value.find((o: any) => o.id === id)
+    if (order) order.status = status
+    const allOrder = allOrders.value.find((o: any) => o.id === id)
+    if (allOrder) allOrder.status = status
+  } catch (e) {
+    console.error('Failed to update order status', e)
+  }
+}
 </script>

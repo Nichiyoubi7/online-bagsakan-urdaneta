@@ -54,13 +54,6 @@
         <div v-for="n in 5" :key="n" class="h-16 bg-gray-100 rounded-xl animate-pulse" />
       </div>
 
-      <!-- Empty -->
-      <div v-else-if="filteredOrders.length === 0" class="flex flex-col items-center justify-center py-16 text-center">
-        <span class="text-5xl mb-3">📦</span>
-        <p class="text-base font-bold text-gray-700">No orders found</p>
-        <p class="text-sm text-gray-400">Orders will appear here when customers place them</p>
-      </div>
-
       <!-- Desktop Table -->
       <div v-else class="hidden md:block overflow-x-auto">
         <table class="w-full">
@@ -70,7 +63,6 @@
               <th class="text-left text-xs font-semibold text-gray-500 uppercase px-5 py-3">Customer</th>
               <th class="text-left text-xs font-semibold text-gray-500 uppercase px-5 py-3">Items</th>
               <th class="text-left text-xs font-semibold text-gray-500 uppercase px-5 py-3">Total</th>
-              <th class="text-left text-xs font-semibold text-gray-500 uppercase px-5 py-3">Type</th>
               <th class="text-left text-xs font-semibold text-gray-500 uppercase px-5 py-3">Status</th>
               <th class="text-left text-xs font-semibold text-gray-500 uppercase px-5 py-3">Actions</th>
             </tr>
@@ -91,64 +83,54 @@
                     {{ order.customer?.name?.charAt(0) || 'C' }}
                   </div>
                   <div>
-                    <p class="text-sm text-gray-700">{{ order.customer?.name || 'Customer' }}</p>
-                    <p class="text-xs text-gray-400">{{ order.customer?.phone || '—' }}</p>
+                    <span class="text-sm text-gray-700">{{ order.customer?.name || 'Customer' }}</span>
+                    <!-- Note indicator on desktop -->
+                    <div v-if="order.delivery_note" class="flex items-center gap-1 mt-0.5">
+                      <span class="text-[10px] bg-yellow-100 text-yellow-700 font-semibold px-1.5 py-0.5 rounded-full">
+                        📝 {{ order.delivery_note }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </td>
-              <td class="px-5 py-4">
-                <div class="flex flex-col gap-0.5">
-                  <span
-                    v-for="item in order.items?.slice(0, 2)"
-                    :key="item.id"
-                    class="text-xs text-gray-600"
-                  >
-                    {{ item.product_name }} x{{ item.quantity }}
-                  </span>
-                  <span v-if="order.items?.length > 2" class="text-xs text-gray-400">
-                    +{{ order.items.length - 2 }} more
-                  </span>
-                </div>
+              <td class="px-5 py-4 text-sm text-gray-500">
+                {{ order.items?.length || 0 }} item{{ order.items?.length !== 1 ? 's' : '' }}
+              </td>
+              <td class="px-5 py-4 text-sm font-bold text-gray-800">
+                ₱{{ Number(order.total).toFixed(2) }}
               </td>
               <td class="px-5 py-4">
-                <p class="text-sm font-bold text-gray-800">₱{{ Number(order.total).toFixed(2) }}</p>
-                <p class="text-xs text-gray-400 capitalize">{{ order.payment_method }}</p>
-              </td>
-              <td class="px-5 py-4">
-                <span :class="[
-                  'text-xs font-semibold px-2 py-1 rounded-full capitalize',
-                  order.delivery_type === 'delivery' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
-                ]">
-                  {{ order.delivery_type }}
+                <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize', statusClass(order.status)]">
+                  {{ order.status }}
                 </span>
               </td>
               <td class="px-5 py-4">
-                <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold capitalize', statusClass(order.status)]">
-                  {{ statusLabel(order.status) }}
-                </span>
-              </td>
-              <td class="px-5 py-4">
-                <div class="flex items-center gap-2">
-                  <!-- Next action button based on current status -->
-                  <button
-                    v-if="nextAction(order.status)"
-                    @click="updateStatus(order, nextAction(order.status).status)"
-                    :disabled="updatingId === order.id"
-                    :class="[
-                      'text-xs font-semibold px-3 py-1.5 rounded-full transition-colors disabled:opacity-50',
-                      nextAction(order.status).class
-                    ]"
-                  >
-                    {{ updatingId === order.id ? '...' : nextAction(order.status).label }}
-                  </button>
-                  <!-- Cancel button for pending/confirmed only -->
-                  <button
-                    v-if="['pending', 'confirmed'].includes(order.status)"
-                    @click="updateStatus(order, 'cancelled')"
-                    :disabled="updatingId === order.id"
-                    class="text-xs font-semibold px-3 py-1.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-colors disabled:opacity-50"
-                  >
-                    Cancel
+                <div class="flex items-center gap-2 flex-wrap">
+                  <template v-if="order.status === 'pending'">
+                    <button @click="updateStatus(order.id, 'confirmed')"
+                      class="text-xs bg-green-500 hover:bg-green-600 text-white font-semibold px-3 py-1.5 rounded-full transition-colors">
+                      Accept
+                    </button>
+                    <button @click="updateStatus(order.id, 'cancelled')"
+                      class="text-xs bg-red-100 hover:bg-red-200 text-red-600 font-semibold px-3 py-1.5 rounded-full transition-colors">
+                      Reject
+                    </button>
+                  </template>
+                  <template v-else-if="order.status === 'confirmed'">
+                    <button @click="updateStatus(order.id, 'preparing')"
+                      class="text-xs bg-orange-500 hover:bg-orange-600 text-white font-semibold px-3 py-1.5 rounded-full transition-colors">
+                      Start Preparing
+                    </button>
+                  </template>
+                  <template v-else-if="order.status === 'preparing'">
+                    <button @click="updateStatus(order.id, 'ready')"
+                      class="text-xs bg-purple-500 hover:bg-purple-600 text-white font-semibold px-3 py-1.5 rounded-full transition-colors">
+                      Mark Ready
+                    </button>
+                  </template>
+                  <button @click="selectedOrder = order"
+                    class="text-xs text-green-500 hover:text-green-600 font-semibold">
+                    View
                   </button>
                 </div>
               </td>
@@ -158,44 +140,104 @@
       </div>
 
       <!-- Mobile Cards -->
-      <div class="md:hidden p-4 flex flex-col gap-3">
-        <div
-          v-for="order in filteredOrders"
-          :key="order.id"
-          class="border border-gray-100 rounded-xl p-4"
-        >
-          <div class="flex items-center justify-between mb-3">
-            <div>
-              <p class="text-sm font-black text-gray-800">#{{ order.id }}</p>
-              <p class="text-xs text-gray-400">{{ formatDate(order.created_at) }}</p>
-            </div>
-            <span :class="['text-xs font-bold px-2.5 py-1 rounded-full capitalize', statusClass(order.status)]">
-              {{ statusLabel(order.status) }}
+      <div v-if="!loading" class="md:hidden flex flex-col divide-y divide-gray-100">
+        <div v-for="order in filteredOrders" :key="order.id" class="px-4 py-4">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-sm font-bold text-gray-800">#{{ order.id }}</p>
+            <span :class="['inline-flex px-2.5 py-1 rounded-full text-xs font-semibold capitalize', statusClass(order.status)]">
+              {{ order.status }}
             </span>
           </div>
-          <p class="text-sm text-gray-700 mb-1">{{ order.customer?.name || 'Customer' }}</p>
-          <p class="text-sm font-bold text-green-600 mb-3">₱{{ Number(order.total).toFixed(2) }}</p>
-          <div class="flex gap-2">
-            <button
-              v-if="nextAction(order.status)"
-              @click="updateStatus(order, nextAction(order.status).status)"
-              :disabled="updatingId === order.id"
-              :class="['flex-1 text-xs font-semibold py-2 rounded-xl transition-colors', nextAction(order.status).class]"
-            >
-              {{ updatingId === order.id ? '...' : nextAction(order.status).label }}
-            </button>
-            <button
-              v-if="['pending', 'confirmed'].includes(order.status)"
-              @click="updateStatus(order, 'cancelled')"
-              class="text-xs font-semibold px-4 py-2 rounded-xl bg-red-100 text-red-600"
-            >
-              Cancel
-            </button>
+          <p class="text-sm text-gray-600 mb-1">{{ order.customer?.name || 'Customer' }}</p>
+          <p class="text-sm font-bold text-green-600 mb-2">₱{{ Number(order.total).toFixed(2) }}</p>
+          <!-- Note visible on mobile card -->
+          <div v-if="order.delivery_note" class="mb-2 bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2">
+            <p class="text-xs font-semibold text-yellow-700">📝 {{ order.delivery_note }}</p>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            <template v-if="order.status === 'pending'">
+              <button @click="updateStatus(order.id, 'confirmed')"
+                class="text-xs bg-green-500 text-white font-semibold px-3 py-1.5 rounded-full">Accept</button>
+              <button @click="updateStatus(order.id, 'cancelled')"
+                class="text-xs bg-red-100 text-red-600 font-semibold px-3 py-1.5 rounded-full">Reject</button>
+            </template>
+            <template v-else-if="order.status === 'confirmed'">
+              <button @click="updateStatus(order.id, 'preparing')"
+                class="text-xs bg-orange-500 text-white font-semibold px-3 py-1.5 rounded-full">Start Preparing</button>
+            </template>
+            <template v-else-if="order.status === 'preparing'">
+              <button @click="updateStatus(order.id, 'ready')"
+                class="text-xs bg-purple-500 text-white font-semibold px-3 py-1.5 rounded-full">Mark Ready</button>
+            </template>
+            <button @click="selectedOrder = order"
+              class="text-xs text-green-500 font-semibold">View</button>
           </div>
         </div>
       </div>
 
+      <!-- Empty State -->
+      <div v-if="!loading && filteredOrders.length === 0"
+        class="flex flex-col items-center justify-center py-16 text-center">
+        <span class="text-5xl mb-3">📦</span>
+        <h3 class="text-base font-bold text-gray-700">No orders found</h3>
+      </div>
+
     </div>
+
+    <!-- Order Detail Modal -->
+    <Transition name="fade">
+      <div v-if="selectedOrder"
+        class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+        @click.self="selectedOrder = null">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white">
+            <h3 class="text-lg font-black text-gray-800">Order #{{ selectedOrder.id }}</h3>
+            <button @click="selectedOrder = null"
+              class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-500">✕</button>
+          </div>
+          <div class="px-6 py-5 flex flex-col gap-3 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-500">Customer</span>
+              <span class="font-semibold">{{ selectedOrder.customer?.name }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Status</span>
+              <span :class="['px-2.5 py-0.5 rounded-full text-xs font-bold capitalize', statusClass(selectedOrder.status)]">
+                {{ selectedOrder.status }}
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Payment</span>
+              <span class="font-semibold capitalize">{{ selectedOrder.payment_method || 'COD' }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Delivery</span>
+              <span class="font-semibold capitalize">{{ selectedOrder.delivery_type || 'delivery' }}</span>
+            </div>
+            <div v-if="selectedOrder.delivery_address" class="flex justify-between">
+              <span class="text-gray-500">Address</span>
+              <span class="font-semibold text-right max-w-[60%]">{{ selectedOrder.delivery_address }}</span>
+            </div>
+            <!-- Order Note in modal -->
+            <div v-if="selectedOrder.delivery_note" class="bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2">
+              <p class="text-xs font-semibold text-yellow-700 mb-0.5">📝 Customer Note</p>
+              <p class="text-xs text-yellow-800">{{ selectedOrder.delivery_note }}</p>
+            </div>
+            <div class="border-t border-gray-100 pt-3">
+              <p class="font-semibold text-gray-700 mb-2">Items</p>
+              <div v-for="item in selectedOrder.items" :key="item.id" class="flex justify-between py-1">
+                <span class="text-gray-600">{{ item.quantity }}x {{ item.product_name }}</span>
+                <span class="font-semibold">₱{{ Number(item.subtotal).toFixed(2) }}</span>
+              </div>
+            </div>
+            <div class="border-t border-gray-100 pt-3 flex justify-between font-black text-base">
+              <span>Total</span>
+              <span class="text-green-600">₱{{ Number(selectedOrder.total).toFixed(2) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
   </SellerLayout>
 </template>
@@ -205,16 +247,17 @@ import { ref, computed, onMounted } from 'vue'
 import SellerLayout from '../../../components/seller/layout/SellerLayout.vue'
 
 const { get, put } = useApi()
+
 const loading = ref(true)
 const orders = ref<any[]>([])
-const activeFilter = ref('all')
 const search = ref('')
-const updatingId = ref<number | null>(null)
+const activeFilter = ref('all')
+const selectedOrder = ref<any>(null)
 
 const loadOrders = async () => {
   loading.value = true
   try {
-    const res: any = await get('/orders', { per_page: 100 })
+    const res: any = await get('/orders')
     orders.value = res.data || []
   } catch (e) {
     console.error('Failed to load orders', e)
@@ -226,81 +269,60 @@ const loadOrders = async () => {
 onMounted(() => loadOrders())
 
 const orderStats = computed(() => [
-  { icon: '📦', label: 'All Orders',  value: orders.value.length,                                                    filter: 'all'       },
-  { icon: '🕐', label: 'Pending',     value: orders.value.filter(o => o.status === 'pending').length,                filter: 'pending'   },
-  { icon: '🍳', label: 'Preparing',   value: orders.value.filter(o => ['confirmed','preparing','ready'].includes(o.status)).length, filter: 'preparing' },
-  { icon: '🚀', label: 'In Transit',  value: orders.value.filter(o => o.status === 'in_transit').length,             filter: 'in_transit'},
-  { icon: '✅', label: 'Delivered',   value: orders.value.filter(o => o.status === 'delivered').length,              filter: 'delivered' },
+  { icon: '📦', label: 'Total',     value: orders.value.length,                                        filter: 'all'       },
+  { icon: '🆕', label: 'Pending',   value: orders.value.filter(o => o.status === 'pending').length,    filter: 'pending'   },
+  { icon: '👨‍🍳', label: 'Preparing', value: orders.value.filter(o => o.status === 'preparing').length, filter: 'preparing' },
+  { icon: '📫', label: 'Ready',     value: orders.value.filter(o => o.status === 'ready').length,      filter: 'ready'     },
+  { icon: '✅', label: 'Delivered', value: orders.value.filter(o => o.status === 'delivered').length,  filter: 'delivered' },
 ])
 
 const filteredOrders = computed(() => {
   let result = [...orders.value]
   if (activeFilter.value !== 'all') {
-    if (activeFilter.value === 'preparing') {
-      result = result.filter(o => ['confirmed', 'preparing', 'ready'].includes(o.status))
-    } else {
-      result = result.filter(o => o.status === activeFilter.value)
-    }
+    result = result.filter(o => o.status === activeFilter.value)
   }
   if (search.value) {
     result = result.filter(o =>
-      String(o.id).includes(search.value) ||
-      o.customer?.name?.toLowerCase().includes(search.value.toLowerCase())
+      o.customer?.name?.toLowerCase().includes(search.value.toLowerCase()) ||
+      String(o.id).includes(search.value)
     )
   }
   return result
 })
 
-// Define the next logical action for each status
-const nextAction = (status: string) => {
-  const map: Record<string, { label: string; status: string; class: string }> = {
-    pending:    { label: 'Confirm',     status: 'confirmed', class: 'bg-blue-100 hover:bg-blue-200 text-blue-700' },
-    confirmed:  { label: 'Prepare',     status: 'preparing', class: 'bg-orange-100 hover:bg-orange-200 text-orange-700' },
-    preparing:  { label: 'Mark Ready',  status: 'ready',     class: 'bg-purple-100 hover:bg-purple-200 text-purple-700' },
-    ready:      { label: 'Hand to Driver', status: 'in_transit', class: 'bg-blue-100 hover:bg-blue-200 text-blue-700' },
+const statusClass = (status: string) => {
+  const map: Record<string, string> = {
+    'pending':    'bg-yellow-100 text-yellow-700',
+    'confirmed':  'bg-blue-100 text-blue-700',
+    'preparing':  'bg-orange-100 text-orange-700',
+    'ready':      'bg-purple-100 text-purple-700',
+    'in_transit': 'bg-blue-100 text-blue-700',
+    'delivered':  'bg-green-100 text-green-700',
+    'cancelled':  'bg-red-100 text-red-700',
   }
-  return map[status] || null
+  return map[status] ?? 'bg-gray-100 text-gray-700'
 }
 
-const updateStatus = async (order: any, status: string) => {
-  if (!confirm(`Change order #${order.id} to "${statusLabel(status)}"?`)) return
-  updatingId.value = order.id
-  try {
-    await put(`/orders/${order.id}/status`, { status })
-    order.status = status
-  } catch (e: any) {
-    alert(e?.data?.message || 'Failed to update order status.')
-  } finally {
-    updatingId.value = null
-  }
-}
-
-const formatDate = (d: string) => {
-  if (!d) return '—'
-  return new Date(d).toLocaleDateString('en-PH', {
-    month: 'short', day: 'numeric', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return ''
+  return new Date(dateStr).toLocaleDateString('en-PH', {
+    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
   })
 }
 
-const statusLabel = (s: string) => {
-  const map: Record<string, string> = {
-    pending: 'Pending', confirmed: 'Confirmed', preparing: 'Preparing',
-    ready: 'Ready', in_transit: 'In Transit', delivered: 'Delivered', cancelled: 'Cancelled',
+const updateStatus = async (id: number, status: string) => {
+  try {
+    await put(`/orders/${id}/status`, { status })
+    const order = orders.value.find(o => o.id === id)
+    if (order) order.status = status
+    if (selectedOrder.value?.id === id) selectedOrder.value.status = status
+  } catch (e) {
+    console.error('Failed to update order status', e)
   }
-  return map[s] ?? s
-}
-
-const statusClass = (s: string) => {
-  const map: Record<string, string> = {
-    pending:    'bg-yellow-100 text-yellow-700',
-    confirmed:  'bg-blue-100 text-blue-700',
-    preparing:  'bg-orange-100 text-orange-700',
-    ready:      'bg-purple-100 text-purple-700',
-    in_transit: 'bg-indigo-100 text-indigo-700',
-    delivered:  'bg-green-100 text-green-700',
-    cancelled:  'bg-red-100 text-red-700',
-  }
-  return map[s] ?? 'bg-gray-100 text-gray-700'
 }
 </script>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+</style>

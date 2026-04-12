@@ -41,7 +41,15 @@
                   <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold text-xs shrink-0">
                     {{ order.customer?.name?.charAt(0) || 'C' }}
                   </div>
-                  <span class="text-sm text-gray-700">{{ order.customer?.name || 'Customer' }}</span>
+                  <div>
+                    <span class="text-sm text-gray-700">{{ order.customer?.name || 'Customer' }}</span>
+                    <!-- Note indicator -->
+                    <div v-if="order.delivery_note" class="mt-0.5">
+                      <span class="text-[10px] bg-yellow-100 text-yellow-700 font-semibold px-1.5 py-0.5 rounded-full">
+                        📝 {{ order.delivery_note }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </td>
               <td class="px-5 py-4 text-sm font-bold text-gray-800">₱{{ Number(order.total).toFixed(2) }}</td>
@@ -86,10 +94,16 @@
 
       <!-- Mobile Cards -->
       <div class="md:hidden flex flex-col divide-y divide-gray-100">
-        <div v-for="order in orders" :key="order.id" class="px-4 py-4 flex items-center justify-between gap-3">
+        <div v-for="order in orders" :key="order.id" class="px-4 py-4 flex items-start justify-between gap-3">
           <div class="flex-1 min-w-0">
             <p class="text-sm font-bold text-gray-800">#{{ order.id }} · {{ order.customer?.name || 'Customer' }}</p>
             <p class="text-xs text-gray-400">₱{{ Number(order.total).toFixed(2) }}</p>
+            <!-- Note on mobile -->
+            <div v-if="order.delivery_note" class="mt-1">
+              <span class="text-[10px] bg-yellow-100 text-yellow-700 font-semibold px-1.5 py-0.5 rounded-full">
+                📝 {{ order.delivery_note }}
+              </span>
+            </div>
           </div>
           <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold shrink-0', statusClass(order.status)]">
             {{ order.status }}

@@ -8,7 +8,7 @@
         <!-- Col 1: Brand -->
         <div class="col-span-2 sm:col-span-3 lg:col-span-1">
           <div class="flex items-center gap-2 mb-3">
-            <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center font-black text-white text-sm">O</div>
+           <img src="/images/logo/OBRA_Logo.png" alt="OBRA" class="h-10 w-auto object-contain" />
             <span class="text-lg font-black text-white">OBRA</span>
           </div>
           <p class="text-xs text-gray-400 leading-relaxed mb-4">
@@ -87,25 +87,26 @@
 
 <script setup lang="ts">
 const accountLinks = [
-  { label: 'My Account',    to: '/customer/profile' },
+  { label: 'My Account',    to: '/customer/account' },
   { label: 'Order History', to: '/customer/orders' },
   { label: 'Shopping Cart', to: '/customer/cart' },
 ]
+
 const helpsLinks = [
-  { label: 'Contact',           to: '/contact' },
-  { label: 'FAQs',              to: '/faqs' },
-  { label: 'Terms & Condition', to: '/terms' },
-  { label: 'Privacy Policy',    to: '/privacy' },
+  { label: 'Terms & Conditions', to: '/terms' },
+  { label: 'Privacy Policy',     to: '/privacy' },
 ]
+
 const proxyLinks = [
   { label: 'About',       to: '/about' },
   { label: 'Shop',        to: '/customer' },
-  { label: 'Products',    to: '/customer' },
-  { label: 'Track Order', to: '/track' },
+  { label: 'Our Sellers', to: '/sellers' },
+  { label: 'Track Order', to: '/customer/orders' },
 ]
+
 const categoryLinks = [
-  { label: 'Fruit & Vegetables', to: '/customer?category=Vegetables' },
-  { label: 'Meat & Fish',        to: '/customer?category=Meat%20%26%20Fish' },
-  { label: 'Fresh Fruits',       to: '/customer?category=Fruits' },
+  { label: 'Fresh Vegetables', to: '/customer?category=Vegetables' },
+  { label: 'Fresh Fruits',     to: '/customer?category=Fruits' },
+  { label: 'Meat & Fish',      to: '/customer?category=Meat+%26+Fish' },
 ]
 </script>
