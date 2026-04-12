@@ -74,16 +74,6 @@
           </svg>
         </button>
 
-        <!-- Wishlist (desktop only) -->
-        <NuxtLink to="/customer/wishlist" class="hidden md:flex relative text-gray-600 hover:text-green-500 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-          </svg>
-          <span v-if="wishlistCount > 0" class="absolute -top-1.5 -right-1.5 bg-green-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-            {{ wishlistCount }}
-          </span>
-        </NuxtLink>
-
         <!-- Cart -->
         <NuxtLink to="/customer/cart" class="flex items-center gap-1.5 text-gray-700 hover:text-green-500 transition-colors">
           <div class="relative">

@@ -44,10 +44,6 @@
             </NuxtLink>
 
             <div class="mt-4 border-t border-gray-100 pt-4 flex flex-col gap-1">
-              <NuxtLink to="/customer/wishlist" @click="mobileMenuOpen = false"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-600 font-medium transition-colors">
-                ❤️ Wishlist
-              </NuxtLink>
               <NuxtLink to="/customer/cart" @click="mobileMenuOpen = false"
                 class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-600 font-medium transition-colors">
                 🛒 Cart
