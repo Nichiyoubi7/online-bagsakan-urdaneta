@@ -6,7 +6,8 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OtpController;
-use App\Http\Controllers\ReviewController;  
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\NotificationController;
 
 // Public routes
 Route::post("/register", [AuthController::class, "register"]);
@@ -19,7 +20,7 @@ Route::get("/categories",        [CategoryController::class, "index"]);
 Route::get("/categories/{id}",   [CategoryController::class, "show"]);
 Route::get("/products",          [ProductController::class, "index"]);
 Route::get("/products/{id}",     [ProductController::class, "show"]);
-Route::get("/reviews",           [ReviewController::class, "index"]);   
+Route::get("/reviews",           [ReviewController::class, "index"]);
 
 // Protected routes
 Route::middleware("auth:sanctum")->group(function () {
@@ -47,9 +48,15 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::post("/orders",            [OrderController::class, "store"]);
     Route::put("/orders/{id}/status", [OrderController::class, "updateStatus"]);
 
-    // Reviews      
+    // Reviews
     Route::post("/reviews",          [ReviewController::class, "store"]);
     Route::delete("/reviews/{id}",   [ReviewController::class, "destroy"]);
+
+    // Notifications
+    Route::get("/notifications",              [NotificationController::class, "index"]);
+    Route::get("/notifications/unread-count", [NotificationController::class, "unreadCount"]);
+    Route::put("/notifications/{id}/read",    [NotificationController::class, "markRead"]);
+    Route::put("/notifications/read-all",     [NotificationController::class, "markAllRead"]);
 
     // Users (admin only — checked in controller)
     Route::get("/users",          [UserController::class, "index"]);
