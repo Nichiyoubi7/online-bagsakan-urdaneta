@@ -250,7 +250,7 @@ const imageMap: Record<string, string> = {
 const loadProducts = async () => {
   loading.value = true
   try {
-    const res: any = await get('/products', { per_page: 100, seller_id: authStore.user?.id })
+    const res: any = await get('/products', { per_page: 100 })
     products.value = res.data || []
   } catch (e) {
     console.error('Failed to load products', e)
