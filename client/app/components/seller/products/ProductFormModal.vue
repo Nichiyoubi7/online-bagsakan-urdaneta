@@ -262,7 +262,7 @@ watch(() => props.product, (p) => {
     }
     // Show existing images as previews
     previewImages.value = (p.images || []).map((img: any) =>
-      `${config.public.apiBase.replace('/api', '')}/storage/${img.path}`
+      `https://api.obra-ur.xyz/storage/${img.path}`
     )
     selectedFiles.value = []
   } else {

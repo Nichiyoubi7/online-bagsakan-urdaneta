@@ -166,7 +166,7 @@ const imageMap: Record<string, string> = {
 const productImages = computed(() => {
   if (!product.value) return []
   const uploaded = (product.value.images || []).map((img: any) =>
-    `${config.public.apiBase.replace('/api', '')}/storage/${img.path}`
+    `https://api.obra-ur.xyz/storage/${img.path}`
   )
   if (uploaded.length > 0) return uploaded
   return [imageMap[product.value.name] || '/images/products/placeholder.png']
