@@ -10,7 +10,7 @@ export const useNotifications = () => {
   const fetchNotifications = async () => {
     try {
       const res: any = await get('/notifications')
-      notifications.value = res || []
+      notifications.value = Array.isArray(res) ? res : (res?.data || res || [])
       unreadCount.value   = notifications.value.filter((n: any) => !n.is_read).length
     } catch {}
   }
@@ -38,7 +38,7 @@ export const useNotifications = () => {
   }
 
   const startPolling = () => {
-    fetchNotifications()
+    fetchNotifications() 
     pollInterval = setInterval(fetchNotifications, 12000)
   }
 
