@@ -160,4 +160,30 @@ class ProductController extends Controller
 
         return response()->json(['message' => 'Product deleted!']);
     }
+
+
+
+    // GET /seller/products — only returns the logged-in seller's products
+public function sellerProducts(Request $request)
+{
+    $query = Product::with(['category', 'user', 'images'])
+        ->where('user_id', $request->user()->id);
+
+    if ($request->filled('search')) {
+        $query->where('name', 'LIKE', '%' . $request->search . '%');
+    }
+
+    $perPage = min((int) $request->get('per_page', 100), 100);
+    $products = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+    $products->getCollection()->transform(function ($product) {
+        $product->seller = $product->user;
+        return $product;
+    });
+
+    return response()->json($products);
+}
+
+
+
 }

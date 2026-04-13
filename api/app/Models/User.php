@@ -19,6 +19,12 @@ class User extends Authenticatable
         'password',
         'role',
         'status',
+        'address',
+        'store_name',
+        'store_description',
+        'store_status',
+        'vehicle_type',
+        'is_online',
     ];
 
     protected $hidden = [
