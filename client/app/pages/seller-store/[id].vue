@@ -94,7 +94,7 @@ const imageMap: Record<string, string> = {
 const mapProduct = (p: any) => {
   // Use uploaded images if available, otherwise fall back to imageMap
   const uploadedImages = (p.images || []).map((img: any) =>
-    `${config.public.apiBase.replace('/api', '')}/storage/${img.path}`
+    `https://api.obra-ur.xyz/storage/${img.path}`
   )
   return {
     id: p.id,

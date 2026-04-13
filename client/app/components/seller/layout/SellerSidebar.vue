@@ -107,7 +107,7 @@ const navGroups = [
     items: [
       { icon: '💰', label: 'Revenue',  to: '/seller/revenue',  badge: null },
       { icon: '⭐', label: 'Reviews',  to: '/seller/reviews',  badge: null },
-      { icon: '👤', label: 'Profile',  to: '/customer/profile', badge: null },
+      { icon: '👤', label: 'Profile',  to: '/seller/profile', badge: null },
     ],
   },
   {
