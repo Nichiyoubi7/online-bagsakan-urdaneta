@@ -191,6 +191,7 @@ import SellerLayout from '../../../components/seller/layout/SellerLayout.vue'
 import ProductFormModal from '../../../components/seller/products/ProductFormModal.vue'
 
 const { get, put, destroy } = useApi()
+const authStore = useAuthStore()
 
 const products = ref<any[]>([])
 const categories = ref<any[]>([])
@@ -249,7 +250,7 @@ const imageMap: Record<string, string> = {
 const loadProducts = async () => {
   loading.value = true
   try {
-    const res: any = await get('/products', { per_page: 100 })
+    const res: any = await get('/products', { per_page: 100, seller_id: authStore.user?.id })
     products.value = res.data || []
   } catch (e) {
     console.error('Failed to load products', e)
