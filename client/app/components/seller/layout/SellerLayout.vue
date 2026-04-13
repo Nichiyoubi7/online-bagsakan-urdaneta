@@ -1,33 +1,58 @@
 <template>
   <div class="min-h-screen bg-gray-50 flex">
 
+    <!-- Mobile Overlay -->
+    <div
+      v-if="mobileOpen"
+      class="fixed inset-0 bg-black/50 z-30 md:hidden"
+      @click="mobileOpen = false"
+    />
+
     <!-- Sidebar -->
-    <SellerSidebar @collapse="handleCollapse" />
+    <SellerSidebar
+      :mobile-open="mobileOpen"
+      @collapse="handleCollapse"
+      @close="mobileOpen = false"
+    />
 
     <!-- Main Content -->
     <div
       :class="[
         'flex-1 flex flex-col transition-all duration-300 min-w-0',
-        isCollapsed ? 'ml-16' : 'ml-64'
+        'md:' + (isCollapsed ? 'ml-16' : 'ml-64'),
+        'ml-0'
       ]"
     >
 
       <!-- Top Bar -->
-      <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
+      <header class="bg-white border-b border-gray-200 px-4 md:px-6 py-4 flex items-center justify-between sticky top-0 z-20">
 
-        <!-- Page Title -->
-        <div>
-          <h1 class="text-lg font-black text-gray-800">{{ title }}</h1>
-          <p v-if="subtitle" class="text-xs text-gray-400">{{ subtitle }}</p>
+        <!-- Left: Hamburger (mobile) + Title -->
+        <div class="flex items-center gap-3">
+          <!-- Hamburger button - mobile only -->
+          <button
+            class="md:hidden w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors"
+            @click="mobileOpen = true"
+          >
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+
+          <div>
+            <h1 class="text-base md:text-lg font-black text-gray-800">{{ title }}</h1>
+            <p v-if="subtitle" class="text-xs text-gray-400 hidden md:block">{{ subtitle }}</p>
+          </div>
         </div>
 
         <!-- Right: Notifications + Profile -->
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 md:gap-4">
+          <button class="relative w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+          </button>
 
-          <!-- Notifications -->
-          <NotificationBell />
-
-          <!-- Profile -->
           <div class="flex items-center gap-2">
             <div class="w-9 h-9 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
               {{ authStore.user?.name?.charAt(0)?.toUpperCase() || 'S' }}
@@ -37,12 +62,11 @@
               <p class="text-xs text-gray-400">Seller Account</p>
             </div>
           </div>
-
         </div>
       </header>
 
       <!-- Page Content -->
-      <main class="flex-1 p-6">
+      <main class="flex-1 p-4 md:p-6">
         <slot />
       </main>
 
@@ -53,7 +77,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import SellerSidebar from './SellerSidebar.vue'
-import NotificationBell from '~/components/shared/NotificationBell.vue'
 
 defineProps<{
   title: string
@@ -62,6 +85,7 @@ defineProps<{
 
 const authStore = useAuthStore()
 const isCollapsed = ref(false)
+const mobileOpen = ref(false)
 
 const handleCollapse = (collapsed: boolean) => {
   isCollapsed.value = collapsed
