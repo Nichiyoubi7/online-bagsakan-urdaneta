@@ -2,13 +2,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'user'])
+        $query = Product::with(['category', 'user', 'images'])
             ->where('status', 'active');
 
         if ($request->filled('category_id')) {
@@ -16,7 +18,7 @@ class ProductController extends Controller
         }
 
         if ($request->filled('search')) {
-            $query->where('name', 'ILIKE', '%' . $request->search . '%');
+            $query->where('name', 'LIKE', '%' . $request->search . '%');
         }
 
         if ($request->filled('seller_id')) {
@@ -51,7 +53,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::with(['category', 'user'])->findOrFail($id);
+        $product = Product::with(['category', 'user', 'images'])->findOrFail($id);
         $product->seller = $product->user;
         return response()->json($product);
     }
@@ -63,6 +65,8 @@ class ProductController extends Controller
             'price'       => 'required|numeric|min:0',
             'stock'       => 'required|integer|min:0',
             'category_id' => 'required|exists:categories,id',
+            'images'      => 'nullable|array|max:5',
+            'images.*'    => 'image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         $product = Product::create([
@@ -78,31 +82,82 @@ class ProductController extends Controller
             'status'         => $request->status ?? 'active',
         ]);
 
-        $product->load(['category', 'user']);
+        // Save uploaded images
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $index => $file) {
+                $path = $file->store('products', 'public');
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'path'       => $path,
+                    'order'      => $index,
+                ]);
+            }
+        }
+
+        $product->load(['category', 'user', 'images']);
         $product->seller = $product->user;
 
-        return response()->json(['message' => 'Product created!', 'product' => $product], 201);
+        return response()->json([
+            'message' => 'Product created!',
+            'product' => $product,
+        ], 201);
     }
 
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
 
+        $request->validate([
+            'name'        => 'sometimes|string|max:255',
+            'price'       => 'sometimes|numeric|min:0',
+            'stock'       => 'sometimes|integer|min:0',
+            'category_id' => 'sometimes|exists:categories,id',
+            'images'      => 'nullable|array|max:5',
+            'images.*'    => 'image|mimes:jpeg,png,jpg,webp|max:2048',
+        ]);
+
         $product->update($request->only([
             'name', 'description', 'price', 'original_price',
-            'stock', 'weight_kg', 'category_id', 'status', 'sku',
+            'stock', 'weight_kg', 'category_id', 'sku',
+            'status', 'image',
         ]));
 
-        $product->load(['category', 'user']);
+        // If new images uploaded, delete old ones and save new
+        if ($request->hasFile('images')) {
+            foreach ($product->images as $old) {
+                Storage::disk('public')->delete($old->path);
+                $old->delete();
+            }
+            foreach ($request->file('images') as $index => $file) {
+                $path = $file->store('products', 'public');
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'path'       => $path,
+                    'order'      => $index,
+                ]);
+            }
+        }
+
+        $product->load(['category', 'user', 'images']);
         $product->seller = $product->user;
 
-        return response()->json(['message' => 'Product updated!', 'product' => $product]);
+        return response()->json([
+            'message' => 'Product updated!',
+            'product' => $product,
+        ]);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $product = Product::findOrFail($id);
+
+        // Delete all images from storage
+        foreach ($product->images as $image) {
+            Storage::disk('public')->delete($image->path);
+        }
+
         $product->delete();
+
         return response()->json(['message' => 'Product deleted!']);
     }
 }

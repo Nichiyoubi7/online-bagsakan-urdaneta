@@ -29,8 +29,33 @@
 
       <!-- Product Detail -->
       <div v-else-if="product" class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 mb-12">
+
+        <!-- Left: Gallery -->
         <ProductGallery :images="productImages" :product-name="product.name" />
-        <ProductInfo :product="mappedProduct" @add-to-cart="handleAddToCart" />
+
+        <!-- Right: Seller Badge + Product Info -->
+        <div class="flex flex-col">
+
+          <!-- Seller Badge -->
+          <NuxtLink
+            :to="`/seller-store/${product.user_id}`"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full hover:bg-green-100 transition-colors mb-4 w-fit"
+          >
+            <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+              {{ (product.seller?.name || product.user?.name || 'S').charAt(0) }}
+            </div>
+            <span class="text-sm font-semibold text-green-700">
+              {{ product.seller?.store_name || product.seller?.name || product.user?.name || 'OBRA Store' }}
+            </span>
+            <svg class="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </NuxtLink>
+
+          <!-- Product Info -->
+          <ProductInfo :product="mappedProduct" @add-to-cart="handleAddToCart" />
+
+        </div>
       </div>
 
       <!-- Not Found -->
@@ -137,8 +162,13 @@ const imageMap: Record<string, string> = {
   'Hipon':         '/images/products/meat/Chicken.png',
 }
 
+// Use real uploaded images if available, otherwise fall back to imageMap
 const productImages = computed(() => {
   if (!product.value) return []
+  const uploaded = (product.value.images || []).map((img: any) =>
+    `${config.public.apiBase.replace('/api', '')}/storage/${img.path}`
+  )
+  if (uploaded.length > 0) return uploaded
   return [imageMap[product.value.name] || '/images/products/placeholder.png']
 })
 
