@@ -1,9 +1,11 @@
 <template>
   <GuestLayout>
+
+    <!-- Page Header -->
     <div class="bg-gray-800">
-      <div class="max-w-7xl mx-auto px-6 py-10">
+      <div class="max-w-7xl mx-auto px-4 py-8 md:py-10">
         <p class="text-green-400 text-xs font-semibold uppercase tracking-widest mb-1">Online Bagsakan</p>
-        <h1 class="text-white text-3xl font-black mb-2">Shop Fresh Products</h1>
+        <h1 class="text-white text-2xl md:text-3xl font-black mb-2">Shop Fresh Products</h1>
         <div class="flex items-center gap-2 text-sm text-gray-300">
           <NuxtLink to="/" class="hover:text-green-400 transition-colors">Home</NuxtLink>
           <span>/</span>
@@ -12,17 +14,52 @@
       </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-6 py-10">
-      <div class="flex gap-8">
-        <ShopSidebar
-          :selected-category="selectedCategory"
-          :selected-rating="selectedRating"
-          :selected-tag="selectedTag"
-          @select-category="handleCategorySelect"
-          @price-change="handlePriceChange"
-          @select-rating="handleRatingSelect"
-          @select-tag="handleTagSelect"
-        />
+    <!-- Seller Banner -->
+    <div v-if="route.query.seller_id && currentSeller" class="bg-[#0f2d1f] py-6">
+      <div class="max-w-7xl mx-auto px-4 flex items-center gap-4">
+        <div class="w-14 h-14 bg-green-500 rounded-2xl flex items-center justify-center text-white font-black text-xl shrink-0">
+          {{ currentSeller.name?.charAt(0) }}
+        </div>
+        <div>
+          <p class="text-green-400 text-xs font-semibold uppercase tracking-widest mb-0.5">Now viewing</p>
+          <h2 class="text-white text-xl font-black">{{ currentSeller.name }}</h2>
+          <p class="text-green-200 text-sm">{{ currentSeller.description }}</p>
+        </div>
+        <NuxtLink to="/sellers" class="ml-auto text-green-400 hover:text-green-300 text-sm font-semibold flex items-center gap-1">
+          ← All Shops
+        </NuxtLink>
+      </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-10">
+
+      <!-- Mobile Filter Toggle -->
+      <button
+        class="md:hidden flex items-center justify-center gap-2 mb-4 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 shadow-sm w-full"
+        @click="showMobileSidebar = !showMobileSidebar"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M6 8h12M9 12h6"/>
+        </svg>
+        {{ showMobileSidebar ? 'Hide Filters' : 'Show Filters' }}
+      </button>
+
+      <div class="flex gap-6">
+
+        <!-- Sidebar -->
+        <div :class="['shrink-0 w-64', showMobileSidebar ? 'block' : 'hidden md:block']">
+          <ShopSidebar
+            :selected-category="selectedCategory"
+            :selected-rating="selectedRating"
+            :selected-tag="selectedTag"
+            @select-category="handleCategorySelect"
+            @price-change="handlePriceChange"
+            @select-rating="handleRatingSelect"
+            @select-tag="handleTagSelect"
+          />
+        </div>
+
+        <!-- Products Area -->
         <div class="flex-1 min-w-0">
           <ShopTopBar
             :from="paginationFrom"
@@ -32,13 +69,17 @@
           />
 
           <!-- Loading -->
-          <div v-if="loading" class="grid grid-cols-2 md:grid-cols-3 gap-5">
+          <div v-if="loading" class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
             <div v-for="n in 6" :key="n" class="bg-gray-100 rounded-2xl h-64 animate-pulse" />
           </div>
 
-          <!-- Products -->
-          <div v-else-if="products.length > 0" class="grid grid-cols-2 md:grid-cols-3 gap-5">
-            <ProductCard v-for="product in products" :key="product.id" :product="mapProduct(product)" />
+          <!-- Products Grid -->
+          <div v-else-if="products.length > 0" class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
+            <ProductCard
+              v-for="product in displayedProducts"
+              :key="product.id"
+              :product="mapProduct(product)"
+            />
           </div>
 
           <!-- Empty -->
@@ -46,17 +87,30 @@
             <span class="text-5xl mb-4">🥦</span>
             <h3 class="text-lg font-bold text-gray-700 mb-2">No products found</h3>
             <p class="text-sm text-gray-400 mb-4">Try adjusting your filters</p>
-            <button @click="resetFilters" class="px-5 py-2 bg-green-500 text-white text-sm font-semibold rounded-full hover:bg-green-600 transition-colors">Reset Filters</button>
+            <button
+              @click="resetFilters"
+              class="px-5 py-2 bg-green-500 text-white text-sm font-semibold rounded-full hover:bg-green-600 transition-colors"
+            >
+              Reset Filters
+            </button>
           </div>
 
-          <ShopPagination v-if="totalPages > 1" :current-page="currentPage" :total-pages="totalPages" @change="handlePageChange" />
+          <ShopPagination
+            v-if="totalPages > 1"
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            @change="handlePageChange"
+          />
         </div>
+
       </div>
     </div>
+
   </GuestLayout>
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import GuestLayout from '../../components/layout/GuestLayout.vue'
 import ShopSidebar from '../../components/customer/shop/ShopSidebar.vue'
@@ -67,93 +121,153 @@ import ProductCard from '../../components/customer/products/ProductCard.vue'
 const route = useRoute()
 const { get } = useApi()
 
-const selectedCategory = ref(
-  route.query.category ? decodeURIComponent(route.query.category as string) : ''
-)
+const showMobileSidebar = ref(false)
+const selectedCategory = ref(route.query.category ? String(route.query.category) : '')
 const selectedRating = ref(0)
 const selectedTag = ref('')
 const priceMax = ref(500)
 const sortBy = ref('default')
 const currentPage = ref(1)
 const perPage = 12
-
-const products = ref<any[]>([])
 const totalProducts = ref(0)
 const totalPages = ref(1)
+const products = ref<any[]>([])
 const loading = ref(false)
 const categoryMap = ref<Record<string, number>>({})
 
+const sellerMap: Record<string, { name: string; description: string }> = {
+  '16': { name: "Zandradee Poultry",      description: 'Dressed chicken & retailer — Stall #38' },
+  '17': { name: "Ali's Store",            description: 'Fresh eggs & market goods daily' },
+  '18': { name: "Ate Janice's Gulayan",   description: 'Fresh vegetables from the farm' },
+  '19': { name: "Kuya Bert's Juicy Meat", description: 'Premium cuts of pork & beef' },
+  '20': { name: "Lalaine & Noy Banana",   description: 'Wholesale & retail banana dealer' },
+  '21': { name: "Nick & Raquel Fruits",   description: 'Fresh fruits wholesale & retail' },
+}
+
+const currentSeller = computed(() => {
+  const id = String(route.query.seller_id || '')
+  return sellerMap[id] || null
+})
+
+const displayedProducts = computed(() => {
+  let result = [...products.value]
+
+  if (selectedRating.value > 0) {
+    result = result.filter(p => (p.rating || 4) >= selectedRating.value)
+  }
+
+  if (selectedTag.value) {
+    const tagMap: Record<string, string[]> = {
+      'Organic':      ['Kangkong', 'Sitaw', 'Okra', 'Carrot', 'Tomato'],
+      'Vegetarian':   ['Tomato', 'Eggplant', 'Okra', 'Sitaw', 'Kangkong', 'Repolyo'],
+      'Fresh':        ['Tomato', 'Eggplant', 'Bitter Gourd', 'Okra'],
+      'Local':        ['Kangkong', 'Sitaw', 'Mais', 'Banana', 'Papaya'],
+      'Spicy':        ['Siling Haba', 'Siling Labuyo'],
+      'Kid Friendly': ['Banana', 'Apple', 'Orange', 'Grapes', 'Mango'],
+    }
+    const tagProducts = tagMap[selectedTag.value] || []
+    if (tagProducts.length > 0) {
+      result = result.filter(p => tagProducts.includes(p.name))
+    }
+  }
+
+  return result
+})
+
 const imageMap: Record<string, string> = {
-  'Tomato': '/images/products/vegetables/Tomato.png',
-  'Eggplant': '/images/products/vegetables/eggplant.png',
-  'Bitter Gourd': '/images/products/vegetables/bitter_gourd.png',
-  'Okra': '/images/products/vegetables/okra.png',
-  'Sitaw': '/images/products/vegetables/sitaw.png',
-  'Kangkong': '/images/products/vegetables/kangkong.png',
-  'Repolyo': '/images/products/vegetables/repolyo.png',
-  'Carrot': '/images/products/vegetables/carrot.png',
-  'Potato': '/images/products/vegetables/potato.png',
-  'Sibuyas': '/images/products/vegetables/sibuyas.png',
-  'Bawang': '/images/products/vegetables/bawang.png',
-  'Luya': '/images/products/vegetables/luya.png',
-  'Mais': '/images/products/vegetables/mais.png',
-  'Siling Haba': '/images/products/vegetables/siling_haba.png',
+  'Tomato':        '/images/products/vegetables/Tomato.png',
+  'Eggplant':      '/images/products/vegetables/eggplant.png',
+  'Bitter Gourd':  '/images/products/vegetables/bitter_gourd.png',
+  'Okra':          '/images/products/vegetables/okra.png',
+  'Sitaw':         '/images/products/vegetables/sitaw.png',
+  'Kangkong':      '/images/products/vegetables/kangkong.png',
+  'Repolyo':       '/images/products/vegetables/repolyo.png',
+  'Carrot':        '/images/products/vegetables/carrot.png',
+  'Potato':        '/images/products/vegetables/potato.png',
+  'Sibuyas':       '/images/products/vegetables/sibuyas.png',
+  'Bawang':        '/images/products/vegetables/bawang.png',
+  'Luya':          '/images/products/vegetables/luya.png',
+  'Mais':          '/images/products/vegetables/mais.png',
+  'Siling Haba':   '/images/products/vegetables/siling_haba.png',
   'Siling Labuyo': '/images/products/vegetables/siling_labuyo.png',
-  'Upo': '/images/products/vegetables/upo.png',
-  'Patola': '/images/products/vegetables/patola.png',
-  'Sigarilyas': '/images/products/vegetables/sigarilyas.png',
-  'Labanos': '/images/products/vegetables/labanos.png',
-  'Gabi': '/images/products/vegetables/gabi.png',
-  'Kamote': '/images/products/vegetables/kamote.png',
-  'Mango': '/images/products/fruits/mango.png',
-  'Saging': '/images/products/fruits/saging.png',
-  'Papaya': '/images/products/fruits/papaya.png',
-  'Pakwan': '/images/products/fruits/pakwan.png',
-  'Melon': '/images/products/fruits/melon.png',
-  'Pineapple': '/images/products/fruits/Pineapple.png',
-  'Avocado': '/images/products/fruits/Avocado.png',
-  'Guava': '/images/products/fruits/Guava.png',
-  'Rambutan': '/images/products/fruits/Rambutan.png',
-  'Lanzones': '/images/products/fruits/Lanzones.jpg',
-  'Calamansi': '/images/products/fruits/Calamansi.png',
-  'Orange': '/images/products/fruits/Orange.png',
-  'Apple': '/images/products/fruits/Apple.png',
-  'Grapes': '/images/products/fruits/Grapes.png',
-  'Chicken': '/images/products/meat/Chicken.png',
-  'Pork Meat': '/images/products/meat/pork_meat.png',
-  'Egg': '/images/products/meat/Egg.png',
-  'Rice': '/images/products/meat/rice.png',
+  'Upo':           '/images/products/vegetables/upo.png',
+  'Patola':        '/images/products/vegetables/patola.png',
+  'Sigarilyas':    '/images/products/vegetables/sigarilyas.png',
+  'Gabi':          '/images/products/vegetables/gabi.png',
+  'Kamote':        '/images/products/vegetables/kamote.png',
+  'Labanos':       '/images/products/vegetables/labanos.png',
+  'Banana':        '/images/products/fruits/saging.png',
+  'Mango':         '/images/products/fruits/mango.png',
+  'Papaya':        '/images/products/fruits/papaya.png',
+  'Pakwan':        '/images/products/fruits/pakwan.png',
+  'Bayabas':       '/images/products/fruits/Guava.png',
+  'Melon':         '/images/products/fruits/melon.png',
+  'Pineapple':     '/images/products/fruits/Pineapple.png',
+  'Avocado':       '/images/products/fruits/Avocado.png',
+  'Guava':         '/images/products/fruits/Guava.png',
+  'Rambutan':      '/images/products/fruits/Rambutan.png',
+  'Lanzones':      '/images/products/fruits/Lanzones.jpg',
+  'Calamansi':     '/images/products/fruits/Calamansi.png',
+  'Orange':        '/images/products/fruits/Orange.png',
+  'Apple':         '/images/products/fruits/Apple.png',
+  'Grapes':        '/images/products/fruits/Grapes.png',
+  'Chicken':       '/images/products/meat/Chicken.png',
+  'Pork Meat':     '/images/products/meat/pork_meat.png',
+  'Egg':           '/images/products/meat/Egg.png',
+  'Rice':          '/images/products/meat/rice.png',
+  'Bangus':        '/images/products/meat/Chicken.png',
+  'Tilapia':       '/images/products/meat/Chicken.png',
+  'Hipon':         '/images/products/meat/Chicken.png',
 }
 
 const mapProduct = (p: any) => ({
   id: p.id,
   name: p.name,
-  price: p.price,
-  image: imageMap[p.name] || '/images/products/vegetables/Tomato.png',
-  rating: 4,
+  price: Number(p.price),
+  originalPrice: p.original_price ? Number(p.original_price) : undefined,
+  image: imageMap[p.name] || '/images/products/placeholder.png',
   category: p.category?.name || '',
-  badge: p.original_price && p.original_price > p.price ? 'Sale' : undefined,
+  rating: 4,
+  badge: p.original_price && Number(p.original_price) > Number(p.price) ? 'Sale' : undefined,
+  sellerId: p.user_id ?? 1,
+  sellerName: p.seller?.name || p.user?.name || 'OBRA Store',
 })
 
 const loadCategories = async () => {
-  const res: any = await get('/categories')
-  res.forEach((cat: any) => {
-    categoryMap.value[cat.name] = cat.id
-  })
+  try {
+    const res: any = await get('/categories')
+    res.forEach((cat: any) => {
+      categoryMap.value[cat.name] = cat.id
+    })
+  } catch (e) {
+    console.error('Failed to load categories', e)
+  }
 }
 
 const loadProducts = async () => {
   loading.value = true
   try {
-    const params: Record<string, any> = {
-      page: currentPage.value,
-    }
+    const params: Record<string, any> = { page: currentPage.value }
+
     if (selectedCategory.value && selectedCategory.value !== 'All Categories') {
       const catId = categoryMap.value[selectedCategory.value]
       if (catId) params.category_id = catId
     }
-    if (sortBy.value === 'price_asc') params.sort = 'price_asc'
-    if (sortBy.value === 'price_desc') params.sort = 'price_desc'
+
+    if (route.query.seller_id) {
+      params.seller_id = route.query.seller_id
+    }
+
+    if (route.query.search) {
+      params.search = route.query.search
+    }
+
+    if (priceMax.value < 500) {
+      params.max_price = priceMax.value
+    }
+
+    if (sortBy.value === 'price_asc')  { params.sort = 'price'; params.dir = 'asc'  }
+    if (sortBy.value === 'price_desc') { params.sort = 'price'; params.dir = 'desc' }
 
     const res: any = await get('/products', params)
     products.value = res.data
@@ -171,15 +285,30 @@ onMounted(async () => {
   await loadProducts()
 })
 
-const paginationFrom = computed(() => totalProducts.value === 0 ? 0 : (currentPage.value - 1) * perPage + 1)
-const paginationTo = computed(() => Math.min(currentPage.value * perPage, totalProducts.value))
+watch(() => route.query, async () => {
+  currentPage.value = 1
+  selectedCategory.value = route.query.category ? String(route.query.category) : ''
+  await loadProducts()
+})
+
+const paginationFrom = computed(() =>
+  totalProducts.value === 0 ? 0 : (currentPage.value - 1) * perPage + 1
+)
+const paginationTo = computed(() =>
+  Math.min(currentPage.value * perPage, totalProducts.value)
+)
 
 const handleCategorySelect = async (cat: string) => {
   selectedCategory.value = cat
   currentPage.value = 1
+  showMobileSidebar.value = false
   await loadProducts()
 }
-const handlePriceChange = (val: number) => { priceMax.value = val }
+const handlePriceChange = async (val: number) => {
+  priceMax.value = val
+  currentPage.value = 1
+  await loadProducts()
+}
 const handleRatingSelect = (rating: number) => { selectedRating.value = rating }
 const handleTagSelect = (tag: string) => { selectedTag.value = tag }
 const handleSort = async (val: string) => {

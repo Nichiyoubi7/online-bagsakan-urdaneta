@@ -25,21 +25,16 @@
         <div class="flex items-center gap-4">
 
           <!-- Notifications -->
-          <button class="relative w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
-            <span>🔔</span>
-            <span class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-              3
-            </span>
-          </button>
+          <NotificationBell />
 
           <!-- Profile -->
           <div class="flex items-center gap-2">
-            <div class="w-9 h-9 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-              M
+            <div class="w-9 h-9 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
+              {{ authStore.user?.name?.charAt(0)?.toUpperCase() || 'S' }}
             </div>
             <div class="hidden md:block">
-              <p class="text-sm font-semibold text-gray-800 leading-tight">Mang Bert</p>
-              <p class="text-xs text-gray-400">Seller</p>
+              <p class="text-sm font-semibold text-gray-800 leading-tight">{{ authStore.user?.name || 'Seller' }}</p>
+              <p class="text-xs text-gray-400">Seller Account</p>
             </div>
           </div>
 
@@ -58,12 +53,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import SellerSidebar from './SellerSidebar.vue'
+import NotificationBell from '~/components/shared/NotificationBell.vue'
 
 defineProps<{
   title: string
   subtitle?: string
 }>()
 
+const authStore = useAuthStore()
 const isCollapsed = ref(false)
 
 const handleCollapse = (collapsed: boolean) => {

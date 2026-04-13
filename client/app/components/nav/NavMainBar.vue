@@ -1,14 +1,25 @@
 <template>
   <div class="bg-white border-b border-gray-100 py-3">
-    <div class="max-w-7xl mx-auto px-6 flex items-center gap-4">
+    <div class="max-w-7xl mx-auto px-4 flex items-center gap-3">
+
+      <!-- Hamburger (mobile only) -->
+      <button
+        class="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors shrink-0"
+        @click="$emit('toggle-menu')"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
 
       <!-- Logo -->
       <NuxtLink to="/" class="flex items-center shrink-0">
-        <span class="text-2xl font-black text-gray-800 tracking-tight">OBRA</span>
+        <img src="/images/logo/OBRA_Logo.png" alt="OBRA" class="h-8 md:h-10 w-auto object-contain" />
+        <span class="text-xl md:text-2xl font-black text-gray-800 tracking-tight">OBRA</span>
       </NuxtLink>
 
-      <!-- Search Bar -->
-      <div class="flex-1 flex flex-col max-w-2xl relative">
+      <!-- Desktop Search Bar -->
+      <div class="hidden md:flex flex-1 flex-col max-w-2xl relative">
         <div class="flex items-center border border-gray-200 rounded-md overflow-hidden">
           <input
             v-model="searchQuery"
@@ -27,8 +38,7 @@
             Search
           </button>
         </div>
-
-        <!-- Suggestions Dropdown -->
+        <!-- Desktop Suggestions -->
         <div
           v-if="showSuggestions && filteredSuggestions.length > 0"
           class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-50 max-h-72 overflow-y-auto"
@@ -43,27 +53,30 @@
             <img :src="product.image" :alt="product.name" class="w-10 h-10 object-contain rounded-lg bg-gray-50" />
             <div>
               <p class="text-sm font-medium text-gray-800">{{ product.name }}</p>
-              <p class="text-xs text-gray-400">{{ product.category }} · ₱{{ product.price.toFixed(2) }}</p>
+              <p class="text-xs text-gray-400">{{ product.category?.name || product.category }} · ₱{{ Number(product.price).toFixed(2) }}</p>
             </div>
           </NuxtLink>
         </div>
       </div>
 
-      <!-- Right Icons -->
-      <div class="flex items-center gap-3 ml-auto shrink-0">
+      <!-- Spacer on mobile -->
+      <div class="flex-1 md:hidden" />
 
-        <!-- Wishlist -->
-        <NuxtLink to="/customer/wishlist" class="relative text-gray-600 hover:text-green-500 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+      <!-- Right Icons -->
+      <div class="flex items-center gap-2 md:gap-3 shrink-0">
+
+        <!-- Mobile Search Icon -->
+        <button
+          class="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+          @click="mobileSearchOpen = !mobileSearchOpen"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
           </svg>
-          <span v-if="wishlistCount > 0" class="absolute -top-1.5 -right-1.5 bg-green-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-            {{ wishlistCount }}
-          </span>
-        </NuxtLink>
+        </button>
 
         <!-- Cart -->
-        <NuxtLink to="/customer/cart" class="flex items-center gap-2 text-gray-700 hover:text-green-500 transition-colors">
+        <NuxtLink to="/customer/cart" class="flex items-center gap-1.5 text-gray-700 hover:text-green-500 transition-colors">
           <div class="relative">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 6M17 13l1.5 6M9 19a1 1 0 100 2 1 1 0 000-2zm8 0a1 1 0 100 2 1 1 0 000-2z"/>
@@ -72,42 +85,62 @@
               {{ cartCount }}
             </span>
           </div>
-          <div class="flex flex-col leading-tight">
+          <div class="hidden md:flex flex-col leading-tight">
             <span class="text-[10px] text-gray-400">Shopping Cart</span>
             <span class="text-sm font-semibold text-gray-800">₱{{ cartTotal.toFixed(2) }}</span>
           </div>
         </NuxtLink>
 
-        <!-- Divider -->
-        <div class="w-px h-8 bg-gray-200" />
+        <!-- Divider (desktop only) -->
+        <div class="hidden md:block w-px h-8 bg-gray-200" />
 
-        <!-- Guest: Log In / Sign Up -->
+        <!-- Guest: Log In + Sign Up -->
         <template v-if="!authStore.isLoggedIn">
-          <button
-            @click="showAuthModal = true"
-            class="px-4 py-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-full hover:border-green-500 hover:text-green-600 transition-all duration-200"
-          >
-            Log In
-          </button>
-          <button
-            @click="showAuthModal = true"
-            class="px-4 py-2 text-sm font-semibold text-white bg-green-500 hover:bg-green-600 rounded-full transition-all duration-200 shadow-sm"
-          >
-            Sign Up
-          </button>
+          <!-- Mobile -->
+          <div class="flex items-center gap-1.5 md:hidden">
+            <button
+              @click="showAuthModal = true"
+              class="px-3 py-1.5 text-xs font-semibold text-gray-700 border border-gray-300 rounded-full hover:border-green-500 hover:text-green-600 transition-all"
+            >
+              Log In
+            </button>
+            <button
+              @click="showAuthModal = true"
+              class="px-3 py-1.5 text-xs font-semibold text-white bg-green-500 hover:bg-green-600 rounded-full transition-all shadow-sm"
+            >
+              Sign Up
+            </button>
+          </div>
+          <!-- Desktop -->
+          <div class="hidden md:flex items-center gap-2">
+            <button
+              @click="showAuthModal = true"
+              class="px-4 py-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-full hover:border-green-500 hover:text-green-600 transition-all"
+            >
+              Log In
+            </button>
+            <button
+              @click="showAuthModal = true"
+              class="px-4 py-2 text-sm font-semibold text-white bg-green-500 hover:bg-green-600 rounded-full transition-all shadow-sm"
+            >
+              Sign Up
+            </button>
+          </div>
         </template>
 
         <!-- Logged In: User Dropdown -->
         <div v-else class="relative" ref="dropdownRef">
           <button
             @click="showDropdown = !showDropdown"
-            class="flex items-center gap-2 px-3 py-2 rounded-full border border-gray-200 hover:border-green-400 transition-all duration-200"
+            class="flex items-center gap-1.5 px-2 md:px-3 py-2 rounded-full border border-gray-200 hover:border-green-400 transition-all"
           >
             <div class="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center text-white text-xs font-bold">
               {{ authStore.user?.name?.charAt(0).toUpperCase() }}
             </div>
-            <span class="text-sm font-semibold text-gray-700 max-w-[100px] truncate">{{ authStore.user?.name }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <span class="hidden md:block text-sm font-semibold text-gray-700 max-w-[100px] truncate">
+              {{ authStore.user?.name }}
+            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="hidden md:block w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
           </button>
@@ -121,149 +154,232 @@
               <p class="text-xs font-semibold text-gray-800 truncate">{{ authStore.user?.name }}</p>
               <p class="text-xs text-gray-400 truncate">{{ authStore.user?.email }}</p>
             </div>
-            <NuxtLink to="/customer/orders" @click="showDropdown = false" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
+            <NuxtLink to="/customer/orders" @click="showDropdown = false"
+              class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
               </svg>
               Orders & Reordering
             </NuxtLink>
-            <NuxtLink to="/customer/profile" @click="showDropdown = false" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
+            <NuxtLink to="/customer/account" @click="showDropdown = false"
+              class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
               </svg>
               Profile
             </NuxtLink>
-            <NuxtLink to="/contact" @click="showDropdown = false" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
+            <button @click="handleLogout"
+              class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
               </svg>
-              Contact Us
-            </NuxtLink>
-            <div class="border-t border-gray-100 mt-1">
-              <button @click="handleLogout" class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                </svg>
-                Log Out
-              </button>
-            </div>
+              Log Out
+            </button>
           </div>
         </div>
 
       </div>
     </div>
-  </div>
 
-  <!-- Auth Modal -->
-  <AuthModal v-model="showAuthModal" />
-
-  <!-- Logout Confirmation Modal -->
-  <Transition name="fade">
-    <div v-if="showLogoutModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" @click.self="showLogoutModal = false">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-bold text-gray-900">Logging out?</h3>
-          <button @click="showLogoutModal = false" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+    <!-- Mobile Search Expandable Bar -->
+    <Transition name="slide-down">
+      <div v-if="mobileSearchOpen" class="md:hidden px-4 pb-3 pt-2 relative">
+        <div class="flex items-center border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+          <input
+            ref="mobileSearchInput"
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search products..."
+            class="flex-1 px-4 py-2.5 text-sm text-gray-700 outline-none placeholder:text-gray-400"
+            @keyup.enter="handleSearch"
+            @input="handleInput"
+            @focus="showSuggestions = true"
+            @blur="hideSuggestions"
+          />
+          <button
+            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2.5 transition-colors"
+            @click="handleSearch"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
             </svg>
           </button>
         </div>
-        <p class="text-sm text-gray-500 mb-6">Are you sure you want to log out of your OBRA account?</p>
-        <div class="flex gap-3 justify-end">
-          <button @click="showLogoutModal = false" class="px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-full hover:border-gray-400 transition-colors">
-            Cancel
-          </button>
-          <button @click="confirmLogout" class="px-5 py-2 text-sm font-semibold text-white bg-green-500 hover:bg-green-600 rounded-full transition-colors">
-            Log Out
-          </button>
+        <!-- Mobile Suggestions -->
+        <div
+          v-if="showSuggestions && filteredSuggestions.length > 0"
+          class="absolute left-4 right-4 bg-white border border-gray-200 rounded-xl shadow-lg mt-1 z-50 max-h-60 overflow-y-auto"
+        >
+          <NuxtLink
+            v-for="product in filteredSuggestions"
+            :key="product.id"
+            :to="`/customer/products/${product.id}`"
+            class="flex items-center gap-3 px-4 py-3 hover:bg-green-50 transition-colors"
+            @click="selectSuggestion(product.name); mobileSearchOpen = false"
+          >
+            <img :src="product.image" :alt="product.name" class="w-9 h-9 object-contain rounded-lg bg-gray-50" />
+            <div>
+              <p class="text-sm font-medium text-gray-800">{{ product.name }}</p>
+              <p class="text-xs text-gray-400">₱{{ Number(product.price).toFixed(2) }}</p>
+            </div>
+          </NuxtLink>
         </div>
       </div>
-    </div>
-  </Transition>
+    </Transition>
+
+    <AuthModal v-model="showAuthModal" />
+  </div>
 </template>
 
 <script setup lang="ts">
-import { navigateTo } from '#app'
-import AuthModal from '../auth/AuthModal.vue'
+import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import AuthModal from '~/components/auth/AuthModal.vue'
+
+defineEmits(['toggle-menu'])
 
 const authStore = useAuthStore()
+const config = useRuntimeConfig()
 
 const searchQuery = ref('')
-const wishlistCount = ref(0)
-const cartCount = ref(2)
-const cartTotal = ref(570.00)
-const showAuthModal = ref(false)
 const showSuggestions = ref(false)
 const showDropdown = ref(false)
-const showLogoutModal = ref(false)
+const showAuthModal = ref(false)
+const mobileSearchOpen = ref(false)
+const filteredSuggestions = ref<any[]>([])
 const dropdownRef = ref<HTMLElement | null>(null)
+const mobileSearchInput = ref<HTMLInputElement | null>(null)
+
+const cartStore = useCartStore()
+const cartCount = computed(() => cartStore.totalCount)
+const cartTotal = computed(() => cartStore.totalPrice)
+const wishlistCount = ref(0)
 
 onMounted(() => {
-  authStore.loadFromStorage()
-  document.addEventListener('click', (e) => {
-    if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
-      showDropdown.value = false
+  cartStore.loadFromStorage()
+})
+
+const imageMap: Record<string, string> = {
+  // Vegetables
+  'Tomato':        '/images/products/vegetables/Tomato.png',
+  'Eggplant':      '/images/products/vegetables/eggplant.png',
+  'Bitter Gourd':  '/images/products/vegetables/bitter_gourd.png',
+  'Okra':          '/images/products/vegetables/okra.png',
+  'Sitaw':         '/images/products/vegetables/sitaw.png',
+  'Kangkong':      '/images/products/vegetables/kangkong.png',
+  'Repolyo':       '/images/products/vegetables/repolyo.png',
+  'Carrot':        '/images/products/vegetables/carrot.png',
+  'Potato':        '/images/products/vegetables/potato.png',
+  'Sibuyas':       '/images/products/vegetables/sibuyas.png',
+  'Bawang':        '/images/products/vegetables/bawang.png',
+  'Luya':          '/images/products/vegetables/luya.png',
+  'Mais':          '/images/products/vegetables/mais.png',
+  'Siling Haba':   '/images/products/vegetables/siling_haba.png',
+  'Siling Labuyo': '/images/products/vegetables/siling_labuyo.png',
+  'Upo':           '/images/products/vegetables/upo.png',
+  'Patola':        '/images/products/vegetables/patola.png',
+  'Sigarilyas':    '/images/products/vegetables/sigarilyas.png',
+  'Gabi':          '/images/products/vegetables/gabi.png',
+  'Kamote':        '/images/products/vegetables/kamote.png',
+  'Labanos':       '/images/products/vegetables/labanos.png',
+  // Fruits
+  'Banana':        '/images/products/fruits/saging.png',
+  'Mango':         '/images/products/fruits/mango.png',
+  'Papaya':        '/images/products/fruits/papaya.png',
+  'Pakwan':        '/images/products/fruits/pakwan.png',
+  'Bayabas':       '/images/products/fruits/Guava.png',
+  'Melon':         '/images/products/fruits/melon.png',
+  'Pineapple':     '/images/products/fruits/Pineapple.png',
+  'Avocado':       '/images/products/fruits/Avocado.png',
+  'Guava':         '/images/products/fruits/Guava.png',
+  'Rambutan':      '/images/products/fruits/Rambutan.png',
+  'Lanzones':      '/images/products/fruits/Lanzones.jpg',
+  'Calamansi':     '/images/products/fruits/Calamansi.png',
+  'Orange':        '/images/products/fruits/Orange.png',
+  'Apple':         '/images/products/fruits/Apple.png',
+  'Grapes':        '/images/products/fruits/Grapes.png',
+  // Meat & Fish
+  'Chicken':       '/images/products/meat/Chicken.png',
+  'Pork Meat':     '/images/products/meat/pork_meat.png',
+  'Egg':           '/images/products/meat/Egg.png',
+  'Rice':          '/images/products/meat/rice.png',
+  'Bangus':        '/images/products/meat/Chicken.png',
+  'Tilapia':       '/images/products/meat/Chicken.png',
+  'Hipon':         '/images/products/meat/Chicken.png',
+}
+
+let debounceTimer: ReturnType<typeof setTimeout>
+
+const handleInput = () => {
+  clearTimeout(debounceTimer)
+  if (!searchQuery.value.trim()) {
+    filteredSuggestions.value = []
+    return
+  }
+  debounceTimer = setTimeout(async () => {
+    try {
+      const res: any = await $fetch('/products', {
+        baseURL: config.public.apiBase,
+        params: { search: searchQuery.value, per_page: 6 },
+        headers: { Accept: 'application/json' },
+      })
+      filteredSuggestions.value = (res.data || []).map((p: any) => ({
+        ...p,
+        image: imageMap[p.name] || '/images/products/placeholder.png',
+      }))
+    } catch {
+      filteredSuggestions.value = []
     }
-  })
-})
-
-const handleLogout = () => {
-  showDropdown.value = false
-  showLogoutModal.value = true
+  }, 300)
 }
 
-const confirmLogout = async () => {
-  showLogoutModal.value = false
-  await authStore.logout()
-  navigateTo('/')
-}
-
-const allProducts = [
-  { id: 1,  name: 'Tomato',       price: 20.00,  image: '/images/products/vegetables/Tomato.png',       category: 'Vegetables' },
-  { id: 2,  name: 'Eggplant',     price: 15.00,  image: '/images/products/vegetables/eggplant.png',     category: 'Vegetables' },
-  { id: 3,  name: 'Bitter Gourd', price: 18.00,  image: '/images/products/vegetables/bitter_gourd.png', category: 'Vegetables' },
-  { id: 4,  name: 'Okra',         price: 12.00,  image: '/images/products/vegetables/okra.png',         category: 'Vegetables' },
-  { id: 5,  name: 'Sitaw',        price: 15.00,  image: '/images/products/vegetables/sitaw.png',        category: 'Vegetables' },
-  { id: 6,  name: 'Kangkong',     price: 10.00,  image: '/images/products/vegetables/kangkong.png',     category: 'Vegetables' },
-  { id: 7,  name: 'Repolyo',      price: 25.00,  image: '/images/products/vegetables/repolyo.png',      category: 'Vegetables' },
-  { id: 8,  name: 'Carrot',       price: 25.00,  image: '/images/products/vegetables/carrot.png',       category: 'Vegetables' },
-  { id: 9,  name: 'Potato',       price: 30.00,  image: '/images/products/vegetables/potato.png',       category: 'Vegetables' },
-  { id: 10, name: 'Sibuyas',      price: 60.00,  image: '/images/products/vegetables/sibuyas.png',      category: 'Vegetables' },
-  { id: 11, name: 'Bawang',       price: 80.00,  image: '/images/products/vegetables/bawang.png',       category: 'Vegetables' },
-  { id: 12, name: 'Mais',         price: 15.00,  image: '/images/products/vegetables/mais.png',         category: 'Vegetables' },
-  { id: 13, name: 'Mango',        price: 50.00,  image: '/images/products/fruits/mango.png',            category: 'Fruits' },
-  { id: 14, name: 'Saging',       price: 30.00,  image: '/images/products/fruits/saging.png',           category: 'Fruits' },
-  { id: 15, name: 'Papaya',       price: 40.00,  image: '/images/products/fruits/papaya.png',           category: 'Fruits' },
-  { id: 16, name: 'Pakwan',       price: 80.00,  image: '/images/products/fruits/pakwan.png',           category: 'Fruits' },
-  { id: 17, name: 'Pineapple',    price: 45.00,  image: '/images/products/fruits/Pineapple.png',        category: 'Fruits' },
-  { id: 18, name: 'Avocado',      price: 60.00,  image: '/images/products/fruits/Avocado.png',          category: 'Fruits' },
-  { id: 19, name: 'Guava',        price: 25.00,  image: '/images/products/fruits/Guava.png',            category: 'Fruits' },
-  { id: 20, name: 'Rambutan',     price: 35.00,  image: '/images/products/fruits/Rambutan.png',         category: 'Fruits' },
-  { id: 21, name: 'Chicken',      price: 180.00, image: '/images/products/meat/Chicken.png',            category: 'Meat & Fish' },
-  { id: 22, name: 'Pork Meat',    price: 220.00, image: '/images/products/meat/pork_meat.png',          category: 'Meat & Fish' },
-  { id: 23, name: 'Egg',          price: 12.00,  image: '/images/products/meat/Egg.png',                category: 'Meat & Fish' },
-  { id: 24, name: 'Rice',         price: 55.00,  image: '/images/products/meat/rice.png',               category: 'Meat & Fish' },
-]
-
-const filteredSuggestions = computed(() => {
-  if (!searchQuery.value.trim()) return []
-  return allProducts
-    .filter(p => p.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
-    .slice(0, 6)
-})
-
-const handleInput = () => { showSuggestions.value = true }
 const handleSearch = () => {
-  if (!searchQuery.value.trim()) return
-  showSuggestions.value = false
-  navigateTo(`/customer?search=${searchQuery.value}`)
+  if (searchQuery.value.trim()) {
+    navigateTo(`/customer?search=${encodeURIComponent(searchQuery.value)}`)
+    showSuggestions.value = false
+    mobileSearchOpen.value = false
+  }
 }
+
 const selectSuggestion = (name: string) => {
   searchQuery.value = name
   showSuggestions.value = false
 }
+
 const hideSuggestions = () => {
-  setTimeout(() => { showSuggestions.value = false }, 200)
+  setTimeout(() => { showSuggestions.value = false }, 150)
 }
+
+const handleLogout = async () => {
+  showDropdown.value = false
+  await authStore.logout()
+  navigateTo('/')
+}
+
+watch(mobileSearchOpen, async (val) => {
+  if (val) {
+    await nextTick()
+    mobileSearchInput.value?.focus()
+  }
+})
+
+const handleClickOutside = (e: MouseEvent) => {
+  if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
+    showDropdown.value = false
+  }
+}
+
+onMounted(() => document.addEventListener('click', handleClickOutside))
+onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 </script>
+
+<style scoped>
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.2s ease;
+}
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+</style>

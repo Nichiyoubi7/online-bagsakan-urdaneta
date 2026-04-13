@@ -14,17 +14,16 @@ class AuthController extends Controller
         $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
-            'phone'    => 'required|string|unique:users,phone',
+            'phone'    => 'nullable|string|unique:users,phone',
             'password' => 'required|string|min:8|confirmed',
-            'role'     => 'sometimes|in:customer,seller,driver',
+            'role'     => 'sometimes|in:customer,seller,driver,admin,staff',
         ]);
 
         $user = User::create([
             'name'     => $request->name,
             'email'    => $request->email,
-            'phone'    => $request->phone,
+            'phone'    => $request->phone ?? null,
             'password' => Hash::make($request->password),
-            'status'   => 'active',
         ]);
 
         $role = $request->role ?? 'customer';
@@ -55,16 +54,13 @@ class AuthController extends Controller
             ]);
         }
 
-        if ($user->status === 'suspended') {
-            return response()->json(['message' => 'Your account has been suspended.'], 403);
-        }
-
         $token = $user->createToken('auth_token')->plainTextToken;
+        $role = $user->getRoleNames()->first() ?? 'customer';
 
         return response()->json([
             'message' => 'Login successful!',
             'user'    => $user,
-            'role'    => $user->getRoleNames()->first(),
+            'role'    => $role,
             'token'   => $token,
         ]);
     }
@@ -72,15 +68,15 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-
         return response()->json(['message' => 'Logged out successfully!']);
     }
 
     public function me(Request $request)
     {
+        $user = $request->user();
         return response()->json([
-            'user' => $request->user(),
-            'role' => $request->user()->getRoleNames()->first(),
+            'user' => $user,
+            'role' => $user->getRoleNames()->first() ?? 'customer',
         ]);
     }
 }

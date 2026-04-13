@@ -21,37 +21,40 @@
         </div>
 
         <!-- Form -->
-        <form @submit.prevent="handleSubmit" class="px-6 py-5 flex flex-col gap-4">
+        <div class="px-6 py-5 flex flex-col gap-4">
+
+          <!-- Error -->
+          <div v-if="error" class="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl">
+            {{ error }}
+          </div>
 
           <!-- Product Name -->
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Product Name</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Product Name <span class="text-red-400">*</span></label>
             <input
               v-model="form.name"
               type="text"
-              placeholder="e.g. Green Apple"
+              placeholder="e.g. Fresh Tomato"
               class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all"
-              required
             />
           </div>
 
           <!-- Category -->
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Category</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Category <span class="text-red-400">*</span></label>
             <select
-              v-model="form.category"
+              v-model="form.category_id"
               class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all bg-white"
-              required
             >
               <option value="">Select category</option>
-              <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+              <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
             </select>
           </div>
 
           <!-- Price + Original Price -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Price (₱)</label>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Price (₱) <span class="text-red-400">*</span></label>
               <input
                 v-model="form.price"
                 type="number"
@@ -59,13 +62,12 @@
                 step="0.01"
                 min="0"
                 class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all"
-                required
               />
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Original Price (₱)</label>
               <input
-                v-model="form.originalPrice"
+                v-model="form.original_price"
                 type="number"
                 placeholder="0.00"
                 step="0.01"
@@ -75,16 +77,39 @@
             </div>
           </div>
 
-          <!-- Stock -->
+          <!-- Stock + Weight -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Stock <span class="text-red-400">*</span></label>
+              <input
+                v-model="form.stock"
+                type="number"
+                placeholder="0"
+                min="0"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Weight (kg)</label>
+              <input
+                v-model="form.weight_kg"
+                type="number"
+                placeholder="0.00"
+                step="0.01"
+                min="0"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all"
+              />
+            </div>
+          </div>
+
+          <!-- SKU -->
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Stock Quantity</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">SKU</label>
             <input
-              v-model="form.stock"
-              type="number"
-              placeholder="0"
-              min="0"
+              v-model="form.sku"
+              type="text"
+              placeholder="e.g. SKU-001"
               class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all"
-              required
             />
           </div>
 
@@ -93,74 +118,47 @@
             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Description</label>
             <textarea
               v-model="form.description"
-              placeholder="Describe your product..."
               rows="3"
+              placeholder="Describe your product..."
               class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all resize-none"
             />
           </div>
 
-          <!-- Image URL -->
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Product Image URL</label>
-            <input
-              v-model="form.image"
-              type="text"
-              placeholder="/images/products/your-product.png"
-              class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all"
-            />
-          </div>
-
           <!-- Status -->
-          <div class="flex items-center justify-between py-2">
-            <div>
-              <p class="text-sm font-semibold text-gray-700">Active Status</p>
-              <p class="text-xs text-gray-400">Product will be visible to customers</p>
-            </div>
-            <button
-              type="button"
-              @click="form.active = !form.active"
-              :class="[
-                'relative w-11 h-6 rounded-full transition-colors duration-200',
-                form.active ? 'bg-green-500' : 'bg-gray-200'
-              ]"
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Status</label>
+            <select
+              v-model="form.status"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all bg-white"
             >
-              <span
-                :class="[
-                  'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200',
-                  form.active ? 'translate-x-5' : 'translate-x-0'
-                ]"
-              />
-            </button>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
           </div>
 
-          <!-- Error -->
-          <p v-if="error" class="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-xl">
-            {{ error }}
-          </p>
-
-          <!-- Submit -->
+          <!-- Buttons -->
           <div class="flex gap-3 pt-2">
             <button
-              type="button"
               @click="$emit('close')"
-              class="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+              type="button"
+              class="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
-              type="submit"
-              :disabled="loading"
-              class="flex-1 py-3 rounded-xl bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2"
+              @click="handleSubmit"
+              :disabled="saving"
+              class="flex-1 px-4 py-3 rounded-xl bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2"
             >
-              <svg v-if="loading" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg v-if="saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
               </svg>
-              {{ loading ? 'Saving...' : product ? 'Save Changes' : 'Add Product' }}
+              {{ saving ? 'Saving...' : (product ? 'Save Changes' : 'Add Product') }}
             </button>
           </div>
 
-        </form>
+        </div>
       </div>
     </div>
   </Transition>
@@ -171,63 +169,94 @@ import { ref, watch } from 'vue'
 
 const props = defineProps<{
   show: boolean
-  product?: any
+  product: any
+  categories: { id: number; name: string }[]
 }>()
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'save', data: object): void
+  (e: 'saved', product: any): void
 }>()
 
-const loading = ref(false)
+const { post, put } = useApi()
+const saving = ref(false)
 const error = ref('')
-
-const categories = [
-  'Fresh Fruit', 'Vegetables', 'Meat & Fish',
-  'Snacks', 'Beverages', 'Bread & Bakery',
-  'Cooking', 'Diabetic Food', 'Beauty & Health',
-]
 
 const form = ref({
   name: '',
-  category: '',
-  price: 0,
-  originalPrice: 0,
-  stock: 0,
+  category_id: '',
+  price: '',
+  original_price: '',
+  stock: '',
+  weight_kg: '',
+  sku: '',
   description: '',
-  image: '',
-  active: true,
+  status: 'active',
 })
 
-// Fill form when editing
-watch(() => props.product, (val) => {
-  if (val) {
+// Populate form when editing
+watch(() => props.product, (p) => {
+  if (p) {
     form.value = {
-      name: val.name,
-      category: val.category,
-      price: val.price,
-      originalPrice: val.originalPrice ?? 0,
-      stock: val.stock,
-      description: val.description ?? '',
-      image: val.image,
-      active: val.status === 'Active',
+      name:           p.name || '',
+      category_id:    p.category_id || '',
+      price:          p.price || '',
+      original_price: p.original_price || '',
+      stock:          p.stock || '',
+      weight_kg:      p.weight_kg || '',
+      sku:            p.sku || '',
+      description:    p.description || '',
+      status:         p.status || 'active',
     }
   } else {
-    form.value = { name: '', category: '', price: 0, originalPrice: 0, stock: 0, description: '', image: '', active: true }
+    form.value = {
+      name: '', category_id: '', price: '', original_price: '',
+      stock: '', weight_kg: '', sku: '', description: '', status: 'active',
+    }
   }
-})
+}, { immediate: true })
 
 const handleSubmit = async () => {
-  loading.value = true
   error.value = ''
+
+  if (!form.value.name.trim()) { error.value = 'Product name is required.'; return }
+  if (!form.value.category_id) { error.value = 'Please select a category.'; return }
+  if (!form.value.price)       { error.value = 'Price is required.'; return }
+  if (!form.value.stock)       { error.value = 'Stock is required.'; return }
+
+  saving.value = true
   try {
-    await new Promise(resolve => setTimeout(resolve, 800))
-    emit('save', { ...form.value })
-    emit('close')
-  } catch (e) {
-    error.value = 'Something went wrong. Please try again.'
+    const payload = {
+      name:           form.value.name,
+      category_id:    Number(form.value.category_id),
+      price:          Number(form.value.price),
+      original_price: form.value.original_price ? Number(form.value.original_price) : null,
+      stock:          Number(form.value.stock),
+      weight_kg:      form.value.weight_kg ? Number(form.value.weight_kg) : 0,
+      sku:            form.value.sku || undefined,
+      description:    form.value.description || '',
+      status:         form.value.status,
+    }
+
+    let savedProduct: any
+    if (props.product) {
+      const res: any = await put(`/products/${props.product.id}`, payload)
+      savedProduct = res.product
+    } else {
+      const res: any = await post('/products', payload)
+      savedProduct = res.product
+    }
+
+    emit('saved', savedProduct)
+  } catch (e: any) {
+    error.value = e?.data?.message || 'Failed to save product. Please try again.'
   } finally {
-    loading.value = false
+    saving.value = false
   }
 }
 </script>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+</style>

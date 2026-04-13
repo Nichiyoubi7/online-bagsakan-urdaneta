@@ -5,7 +5,6 @@
       isNew ? 'border-green-400 shadow-green-100' : 'border-gray-100'
     ]"
   >
-
     <!-- New Badge -->
     <div v-if="isNew" class="bg-green-500 px-4 py-1.5 flex items-center gap-2">
       <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
@@ -15,15 +14,14 @@
     <!-- Card Content -->
     <div class="p-4">
 
-      <!-- Header: Order ID + Time -->
+      <!-- Header -->
       <div class="flex items-center justify-between mb-3">
         <span class="text-sm font-black text-gray-800">Order #{{ delivery.id }}</span>
         <span class="text-xs text-gray-400">{{ delivery.time }}</span>
       </div>
 
-      <!-- Route: Pickup → Dropoff -->
-      <div class="flex flex-col gap-2 mb-4">
-
+      <!-- Route -->
+      <div class="flex flex-col gap-2 mb-3">
         <!-- Pickup -->
         <div class="flex items-start gap-3">
           <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
@@ -36,8 +34,7 @@
           </div>
         </div>
 
-        <!-- Dashed Line -->
-        <div class="ml-4 w-0.5 h-4 bg-dashed border-l-2 border-dashed border-gray-200"></div>
+        <div class="ml-4 w-0.5 h-4 border-l-2 border-dashed border-gray-200"></div>
 
         <!-- Dropoff -->
         <div class="flex items-start gap-3">
@@ -50,7 +47,12 @@
             <p class="text-xs text-gray-400 truncate">{{ delivery.customerAddress }}</p>
           </div>
         </div>
+      </div>
 
+      <!-- Order Note -->
+      <div v-if="delivery.note" class="mb-3 bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2">
+        <p class="text-xs font-semibold text-yellow-700 mb-0.5">📝 Note from customer</p>
+        <p class="text-xs text-yellow-800">{{ delivery.note }}</p>
       </div>
 
       <!-- Order Details -->
@@ -72,7 +74,7 @@
       </div>
 
       <!-- Action Buttons -->
-      <div v-if="delivery.status === 'pending'" class="flex gap-3">
+      <div v-if="isNew" class="flex gap-3">
         <button
           @click="$emit('reject', delivery.id)"
           class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
@@ -81,23 +83,13 @@
         </button>
         <button
           @click="$emit('accept', delivery.id)"
-          class="flex-2 flex-1 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white text-sm font-bold transition-colors"
+          class="flex-1 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white text-sm font-bold transition-colors"
         >
           Accept Delivery
         </button>
       </div>
 
-      <!-- Active Delivery Actions -->
-      <div v-else-if="delivery.status === 'accepted'" class="flex gap-3">
-        <button
-          @click="$emit('pickedUp', delivery.id)"
-          class="w-full py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold transition-colors"
-        >
-          Picked Up 📦
-        </button>
-      </div>
-
-      <div v-else-if="delivery.status === 'picked_up'" class="flex gap-3">
+      <div v-else-if="delivery.status === 'in_transit'" class="flex gap-3">
         <button
           @click="$emit('delivered', delivery.id)"
           class="w-full py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white text-sm font-bold transition-colors"
@@ -106,7 +98,6 @@
         </button>
       </div>
 
-      <!-- Delivered -->
       <div v-else-if="delivery.status === 'delivered'" class="text-center py-2">
         <span class="text-sm font-semibold text-green-600">✅ Delivered Successfully!</span>
       </div>
@@ -124,6 +115,7 @@ defineProps<{
     sellerAddress: string
     customer: string
     customerAddress: string
+    note?: string
     items: number
     distance: string
     earnings: number

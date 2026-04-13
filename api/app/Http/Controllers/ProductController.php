@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Product;
@@ -9,19 +8,51 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $products = Product::with('category')
-            ->when($request->category_id, fn($q) => $q->where('category_id', $request->category_id))
-            ->when($request->search, fn($q) => $q->where('name', 'like', '%' . $request->search . '%'))
-            ->when($request->status, fn($q) => $q->where('status', $request->status))
-            ->orderBy('category_id', 'asc')->orderBy('name', 'asc')
-            ->paginate(12);
+        $query = Product::with(['category', 'user'])
+            ->where('status', 'active');
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->filled('search')) {
+            $query->where('name', 'ILIKE', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('seller_id')) {
+            $query->where('user_id', $request->seller_id);
+        }
+
+        if ($request->filled('min_price')) {
+            $query->where('price', '>=', $request->min_price);
+        }
+
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        $sortField = $request->get('sort', 'created_at');
+        $sortDir   = $request->get('dir', 'desc');
+        $allowedSorts = ['price', 'name', 'created_at', 'stock'];
+        if (!in_array($sortField, $allowedSorts)) $sortField = 'created_at';
+
+        $query->orderBy($sortField, $sortDir === 'asc' ? 'asc' : 'desc');
+
+        $perPage = min((int) $request->get('per_page', 12), 100);
+        $products = $query->paginate($perPage);
+
+        $products->getCollection()->transform(function ($product) {
+            $product->seller = $product->user;
+            return $product;
+        });
 
         return response()->json($products);
     }
 
     public function show($id)
     {
-        $product = Product::with('category')->findOrFail($id);
+        $product = Product::with(['category', 'user'])->findOrFail($id);
+        $product->seller = $product->user;
         return response()->json($product);
     }
 
@@ -29,59 +60,49 @@ class ProductController extends Controller
     {
         $request->validate([
             'name'        => 'required|string|max:255',
-            'category_id' => 'required|exists:categories,id',
             'price'       => 'required|numeric|min:0',
             'stock'       => 'required|integer|min:0',
-            'description' => 'nullable|string',
-            'weight_kg'   => 'nullable|numeric|min:0',
+            'category_id' => 'required|exists:categories,id',
         ]);
 
         $product = Product::create([
-            'user_id'        => $request->user()->id,
-            'category_id'    => $request->category_id,
             'name'           => $request->name,
-            'sku'            => 'SKU-' . strtoupper(uniqid()),
             'description'    => $request->description,
             'price'          => $request->price,
             'original_price' => $request->original_price,
             'stock'          => $request->stock,
             'weight_kg'      => $request->weight_kg ?? 0,
-            'status'         => 'active',
+            'category_id'    => $request->category_id,
+            'user_id'        => $request->user()->id,
+            'sku'            => $request->sku ?? 'SKU-' . strtoupper(uniqid()),
+            'status'         => $request->status ?? 'active',
         ]);
 
-        return response()->json([
-            'message' => 'Product created successfully!',
-            'product' => $product,
-        ], 201);
+        $product->load(['category', 'user']);
+        $product->seller = $product->user;
+
+        return response()->json(['message' => 'Product created!', 'product' => $product], 201);
     }
 
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
 
-        $request->validate([
-            'name'        => 'sometimes|string|max:255',
-            'price'       => 'sometimes|numeric|min:0',
-            'stock'       => 'sometimes|integer|min:0',
-            'status'      => 'sometimes|in:active,inactive',
-        ]);
-
         $product->update($request->only([
             'name', 'description', 'price', 'original_price',
-            'stock', 'status', 'category_id', 'weight_kg'
+            'stock', 'weight_kg', 'category_id', 'status', 'sku',
         ]));
 
-        return response()->json([
-            'message' => 'Product updated successfully!',
-            'product' => $product,
-        ]);
+        $product->load(['category', 'user']);
+        $product->seller = $product->user;
+
+        return response()->json(['message' => 'Product updated!', 'product' => $product]);
     }
 
     public function destroy($id)
     {
         $product = Product::findOrFail($id);
         $product->delete();
-
-        return response()->json(['message' => 'Product deleted successfully!']);
+        return response()->json(['message' => 'Product deleted!']);
     }
 }

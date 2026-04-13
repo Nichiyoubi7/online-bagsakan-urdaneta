@@ -1,61 +1,72 @@
 <template>
   <GuestLayout>
 
-    <!-- Hero -->
-    <div class="bg-[#0f2d1f] text-white py-16">
+    <div class="bg-[#0f2d1f] py-16">
       <div class="max-w-7xl mx-auto px-6 text-center">
-        <p class="text-green-400 text-xs font-semibold uppercase tracking-widest mb-2">Our Community</p>
-        <h1 class="text-4xl font-black mb-4">Meet Our Sellers</h1>
-        <p class="text-green-100 text-sm max-w-xl mx-auto">Local farmers and vendors from Urdaneta City bringing you the freshest products straight from their farms and stores.</p>
+        <p class="text-green-400 font-semibold text-xs tracking-widest uppercase mb-2">Our Community</p>
+        <h1 class="text-3xl md:text-4xl font-black text-white mb-4">Meet Our Sellers</h1>
+        <p class="text-green-200 text-sm max-w-xl mx-auto">
+          Local farmers and vendors from Urdaneta City bringing you the freshest products straight from their farms and stores.
+        </p>
       </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-6 py-16">
+    <div class="max-w-7xl mx-auto px-6 py-10">
 
-      <!-- Search -->
-      <div class="flex items-center justify-between mb-8">
-        <input v-model="search" placeholder="Search sellers..." class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm w-72 outline-none focus:border-green-500 bg-white" />
-        <p class="text-sm text-gray-400">{{ filteredSellers.length }} sellers found</p>
-      </div>
-
-      <!-- Sellers Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div
-          v-for="seller in filteredSellers"
-          :key="seller.id"
-          class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden"
-        >
-          <!-- Cover -->
-          <div class="h-20 w-full" :style="{ background: seller.color }"></div>
-
-          <!-- Info -->
-          <div class="px-6 pb-6 pt-4">
-            <div class="flex items-center gap-4 mb-4">
-              <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black text-white shrink-0" :style="{ background: seller.color }">
-                {{ seller.name[0] }}
-              </div>
-              <div>
-                <p class="font-black text-gray-900 text-sm">{{ seller.name }}</p>
-                <p class="text-xs text-gray-400">{{ seller.location }}</p>
-              </div>
-            </div>
-            <p class="text-sm text-gray-500 mb-4 leading-relaxed">{{ seller.description }}</p>
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex gap-3 text-xs text-gray-400">
-                <span>🛍️ {{ seller.products }} products</span>
-                <span>⭐ {{ seller.rating }}</span>
-              </div>
-              <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full" :class="seller.status === 'Open' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'">{{ seller.status }}</span>
-            </div>
-            <NuxtLink to="/customer" class="block w-full text-center bg-green-500 hover:bg-green-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-all">
-              Visit Shop
-            </NuxtLink>
-          </div>
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 w-72 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+          </svg>
+          <input v-model="search" type="text" placeholder="Search sellers..." class="bg-transparent text-sm outline-none text-gray-700 placeholder:text-gray-400 flex-1" />
         </div>
+        <p class="text-sm text-gray-400">{{ filteredShops.length }} sellers found</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <NuxtLink
+          v-for="shop in filteredShops"
+          :key="shop.id"
+          :to="shop.link"
+          class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group"
+        >
+          <div class="relative h-44 overflow-hidden">
+            <img :src="shop.image" :alt="shop.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            <div class="absolute inset-0 bg-black/30" />
+            <span class="absolute top-3 right-3 bg-green-500 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full">Open</span>
+            <div class="absolute bottom-3 left-3">
+              <p class="text-white font-black text-base drop-shadow">{{ shop.name }}</p>
+              <p class="text-green-200 text-xs">Urdaneta City</p>
+            </div>
+          </div>
+          <div class="p-5">
+            <p class="text-sm text-gray-500 mb-3">{{ shop.description }}</p>
+            <div class="flex items-center justify-between text-xs text-gray-400 mb-4">
+              <div class="flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>{{ shop.deliveryTime }}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <span>₱{{ shop.deliveryFee }} delivery</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <span class="text-yellow-400">★</span>
+                <span class="font-semibold text-gray-700">{{ shop.rating }}</span>
+              </div>
+            </div>
+            <div class="w-full bg-green-500 hover:bg-green-600 text-white text-sm font-semibold py-2.5 rounded-xl text-center transition-colors">
+              Visit Shop →
+            </div>
+          </div>
+        </NuxtLink>
       </div>
 
     </div>
-
   </GuestLayout>
 </template>
 
@@ -65,23 +76,74 @@ import GuestLayout from '~/components/layout/GuestLayout.vue'
 
 const search = ref('')
 
-const sellers = [
-  { id: 1, name: "Aling Nena's Store",  location: 'Urdaneta City',        description: 'Fresh vegetables and fruits harvested daily from our family farm. Serving Urdaneta for over 20 years.',        products: 24, rating: 4.8, status: 'Open',   color: '#1D9E75' },
-  { id: 2, name: 'Fresh Harvest PH',    location: 'Villasis, Pangasinan', description: 'Organic produce direct from our farm. We specialize in leafy greens, root crops, and seasonal fruits.',        products: 18, rating: 4.6, status: 'Open',   color: '#0f2d1f' },
-  { id: 3, name: 'Green Market',        location: 'Urdaneta City',        description: 'Your one-stop shop for all your daily fresh produce needs. We source directly from local Pangasinan farmers.',   products: 32, rating: 4.7, status: 'Open',   color: '#2D6A4F' },
-  { id: 4, name: 'Bagsak Goods',        location: 'Binalonan, Pangasinan',description: 'Wholesale and retail fresh goods. Best prices in Pangasinan. Delivering freshness every morning.',              products: 15, rating: 4.3, status: 'Closed', color: '#52B788' },
-  { id: 5, name: "Mang Bert's Farm",    location: 'Sta. Barbara, Pangasinan', description: 'Family-owned farm selling fresh native chicken, eggs, and vegetables grown without pesticides.',           products: 20, rating: 4.9, status: 'Open',   color: '#40916C' },
-  { id: 6, name: 'Lita Fresh Produce',  location: 'Asingan, Pangasinan', description: 'Specializing in fresh fish, seafood, and meat products sourced from trusted local suppliers daily.',            products: 12, rating: 4.5, status: 'Open',   color: '#1B4332' },
+const shops = [
+  {
+    id: 1,
+    name: "Zandradee Poultry",
+    description: 'Dressed chicken & retailer. Fresh poultry products daily at Stall #38.',
+    rating: 4.8,
+    deliveryTime: '25-40 min',
+    deliveryFee: 50,
+    image: "/images/shops/Zandradee Poultry.jpg",
+    link: '/customer?seller_id=16',
+  },
+  {
+    id: 2,
+    name: "Ali's Store",
+    description: 'Fresh eggs and market goods. Your one-stop shop for daily essentials.',
+    rating: 4.7,
+    deliveryTime: '20-35 min',
+    deliveryFee: 40,
+    image: "/images/shops/Ali Store.jpg",
+    link: '/customer?seller_id=17',
+  },
+  {
+    id: 3,
+    name: "Ate Janice's Gulayan",
+    description: 'Fresh vegetables sourced directly from local farms every morning.',
+    rating: 4.9,
+    deliveryTime: '15-30 min',
+    deliveryFee: 35,
+    image: "/images/shops/Ate Janice's Gulayan.jpeg",
+    link: '/customer?seller_id=18',
+  },
+  {
+    id: 4,
+    name: "Kuya Bert's Juicy Meat",
+    description: 'Premium cuts of pork and beef. Fresh meat products at the best prices.',
+    rating: 4.8,
+    deliveryTime: '25-40 min',
+    deliveryFee: 50,
+    image: "/images/shops/Kuya Bert's Juicy Meat.jpg",
+    link: '/customer?seller_id=19',
+  },
+  {
+    id: 5,
+    name: "Lalaine & Noy Banana",
+    description: 'Wholesale and retail banana dealer. Various banana varieties available.',
+    rating: 4.6,
+    deliveryTime: '20-35 min',
+    deliveryFee: 30,
+    image: "/images/shops/Lalaine and Noy Banana wholesale and retail.jpg",
+    link: '/customer?seller_id=20',
+  },
+  {
+    id: 6,
+    name: "Nick & Raquel Fruits",
+    description: 'Fresh fruits wholesale and retail. Wide variety of seasonal fruits.',
+    rating: 4.9,
+    deliveryTime: '20-40 min',
+    deliveryFee: 40,
+    image: "/images/shops/Nick and Raquel Fruits.jpg",
+    link: '/customer?seller_id=21',
+  },
 ]
 
-const filteredSellers = computed(() =>
-  sellers.filter(s => s.name.toLowerCase().includes(search.value.toLowerCase()))
-)
+const filteredShops = computed(() => {
+  if (!search.value) return shops
+  return shops.filter(s =>
+    s.name.toLowerCase().includes(search.value.toLowerCase()) ||
+    s.description.toLowerCase().includes(search.value.toLowerCase())
+  )
+})
 </script>
-```
-
----
-
-Save with `Ctrl+S` then go to:
-```
-localhost:3000/sellers
