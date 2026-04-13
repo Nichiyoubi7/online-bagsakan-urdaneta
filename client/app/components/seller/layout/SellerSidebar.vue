@@ -20,8 +20,8 @@
           {{ authStore.user?.name?.charAt(0)?.toUpperCase() || 'S' }}
         </div>
         <div class="min-w-0">
-          <p class="text-sm font-semibold text-white truncate">{{ authStore.user?.name || 'Seller' }}</p>
-          <p class="text-xs text-green-400">Seller Account</p>
+          <div class="text-white font-semibold text-sm">{{ authStore.user?.store_name || authStore.user?.name || 'My Shop' }}</div>
+          <div class="text-white/40 text-xs">Seller Account</div>
         </div>
       </div>
     </div>

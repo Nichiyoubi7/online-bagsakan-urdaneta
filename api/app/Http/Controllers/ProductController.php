@@ -10,8 +10,15 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'user', 'images'])
-            ->where('status', 'active');
+        $query = Product::with(['category', 'user', 'images']);
+
+        // If logged in as seller, only show their own products
+        $authUser = $request->user();
+        if ($authUser && $authUser->getRoleNames()->first() === 'seller') {
+            $query->where('user_id', $authUser->id);
+        } else {
+            $query->where('status', 'active');
+        }
 
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
