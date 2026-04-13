@@ -1,14 +1,15 @@
 <template>
-  <aside
-    :class="[
-      'fixed top-0 left-0 h-full bg-gray-900 text-white transition-all duration-300 z-40 flex flex-col',
-      // Desktop: collapsed or full
-      'hidden md:flex',
-      collapsed ? 'md:w-16' : 'md:w-64',
-      // Mobile: slide in/out
-      mobileOpen ? '!flex w-72' : '',
-    ]"
-  >
+<aside
+  :class="[
+    'fixed top-0 left-0 h-full bg-gray-900 text-white z-40 flex flex-col',
+    'transition-transform duration-300 ease-in-out',
+    // Desktop
+    'hidden md:flex',
+    collapsed ? 'md:w-16' : 'md:w-64',
+    // Mobile — slide in from left
+    mobileOpen ? '!flex w-72 translate-x-0' : '-translate-x-full',
+  ]"
+>
     <!-- Logo + Close button -->
     <div class="flex items-center justify-between px-4 py-5 border-b border-gray-700">
       <div class="flex items-center gap-3">

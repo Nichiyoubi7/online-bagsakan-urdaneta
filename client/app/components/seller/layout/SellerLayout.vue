@@ -2,11 +2,14 @@
   <div class="min-h-screen bg-gray-50 flex">
 
     <!-- Mobile Overlay -->
-    <div
-      v-if="mobileOpen"
-      class="fixed inset-0 bg-black/50 z-30 md:hidden"
-      @click="mobileOpen = false"
-    />
+<!-- Mobile Overlay -->
+<Transition name="fade">
+  <div
+    v-if="mobileOpen"
+    class="fixed inset-0 bg-black/50 z-30 md:hidden"
+    @click="mobileOpen = false"
+  />
+</Transition>
 
     <!-- Sidebar -->
     <SellerSidebar
