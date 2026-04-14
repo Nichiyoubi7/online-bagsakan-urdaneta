@@ -7,7 +7,7 @@
     'hidden md:flex',
     collapsed ? 'md:w-16' : 'md:w-64',
     // Mobile — slide in from left only
-    mobileOpen ? '!flex w-72 translate-x-0' : 'md:translate-x-0 -translate-x-full',
+    mobileOpen ? '!flex w-72' : 'md:translate-x-0 -translate-x-full md:!flex',
   ]"
 >
     <!-- Logo + Close button -->
