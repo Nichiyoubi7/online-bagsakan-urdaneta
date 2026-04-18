@@ -168,7 +168,7 @@ const stats = computed(() => [
   { icon: '🏪', label: 'Total Sellers',  value: sellers.value.length },
   { icon: '✅', label: 'Active',          value: sellers.value.filter(s => s.status === 'active').length },
   { icon: '⏳', label: 'Pending Review',  value: sellers.value.filter(s => s.verification_status === 'pending').length },
-  { icon: '🛡️', label: 'Verified',        value: sellers.value.filter(s => s.verification_status === 'verified').length },
+  { icon: '🔒', label: 'Verified',        value: sellers.value.filter(s => s.verification_status === 'verified').length },
 ])
 
 const filteredSellers = computed(() => {
