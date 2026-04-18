@@ -36,6 +36,12 @@
               <span class="text-gray-500">Location</span>
               <span class="font-semibold text-gray-800">Urdaneta City</span>
             </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-500">Verification</span>
+              <span :class="['text-xs font-bold px-2 py-0.5 rounded-full', verificationClass(authStore.user?.verification_status)]">
+                {{ verificationLabel(authStore.user?.verification_status) }}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -48,49 +54,22 @@
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h3 class="text-base font-black text-gray-800 mb-4">Personal Information</h3>
           <div class="flex flex-col gap-4">
-
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
-              <input
-                v-model="form.name"
-                type="text"
-                class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-gray-800 text-sm outline-none focus:border-green-500 transition-colors"
-              />
+              <input v-model="form.name" type="text" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-gray-800 text-sm outline-none focus:border-green-500 transition-colors" />
             </div>
-
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
-              <input
-                v-model="form.email"
-                type="email"
-                disabled
-                class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 text-gray-400 text-sm outline-none bg-gray-50 cursor-not-allowed"
-              />
+              <input v-model="form.email" type="email" disabled class="w-full px-4 py-3 rounded-xl border-2 border-gray-100 text-gray-400 text-sm outline-none bg-gray-50 cursor-not-allowed" />
               <p class="text-xs text-gray-400 mt-1">Email cannot be changed</p>
             </div>
-
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Phone Number</label>
-              <input
-                v-model="form.phone"
-                type="text"
-                placeholder="+63 9XX XXX XXXX"
-                class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-gray-800 text-sm outline-none focus:border-green-500 transition-colors"
-              />
+              <input v-model="form.phone" type="text" placeholder="+63 9XX XXX XXXX" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-gray-800 text-sm outline-none focus:border-green-500 transition-colors" />
             </div>
-
-            <div v-if="personalSuccess" class="text-sm text-green-600 bg-green-50 border border-green-200 px-4 py-3 rounded-xl">
-              ✅ Personal info updated successfully!
-            </div>
-            <div v-if="personalError" class="text-sm text-red-600 bg-red-50 border border-red-200 px-4 py-3 rounded-xl">
-              {{ personalError }}
-            </div>
-
-            <button
-              @click="savePersonal"
-              :disabled="savingPersonal"
-              class="w-fit bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-sm font-bold px-6 py-3 rounded-xl transition-colors"
-            >
+            <div v-if="personalSuccess" class="text-sm text-green-600 bg-green-50 border border-green-200 px-4 py-3 rounded-xl">✅ Personal info updated successfully!</div>
+            <div v-if="personalError" class="text-sm text-red-600 bg-red-50 border border-red-200 px-4 py-3 rounded-xl">{{ personalError }}</div>
+            <button @click="savePersonal" :disabled="savingPersonal" class="w-fit bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-sm font-bold px-6 py-3 rounded-xl transition-colors">
               {{ savingPersonal ? 'Saving...' : 'Save Personal Info' }}
             </button>
           </div>
@@ -100,40 +79,90 @@
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h3 class="text-base font-black text-gray-800 mb-4">Store Information</h3>
           <div class="flex flex-col gap-4">
-
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Store Name</label>
-              <input
-                v-model="form.store_name"
-                type="text"
-                placeholder="e.g. Mang Bert's Wet Market"
-                class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-gray-800 text-sm outline-none focus:border-green-500 transition-colors"
-              />
+              <input v-model="form.store_name" type="text" placeholder="e.g. Mang Bert's Wet Market" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-gray-800 text-sm outline-none focus:border-green-500 transition-colors" />
             </div>
-
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Store Description</label>
-              <textarea
-                v-model="form.store_description"
-                rows="3"
-                placeholder="Tell customers what you sell..."
-                class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-gray-800 text-sm outline-none focus:border-green-500 transition-colors resize-none"
-              />
+              <textarea v-model="form.store_description" rows="3" placeholder="Tell customers what you sell..." class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-gray-800 text-sm outline-none focus:border-green-500 transition-colors resize-none" />
+            </div>
+            <div v-if="storeSuccess" class="text-sm text-green-600 bg-green-50 border border-green-200 px-4 py-3 rounded-xl">✅ Store info updated successfully!</div>
+            <div v-if="storeError" class="text-sm text-red-600 bg-red-50 border border-red-200 px-4 py-3 rounded-xl">{{ storeError }}</div>
+            <button @click="saveStore" :disabled="savingStore" class="w-fit bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-sm font-bold px-6 py-3 rounded-xl transition-colors">
+              {{ savingStore ? 'Saving...' : 'Save Store Info' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- ID Verification -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-black text-gray-800">ID Verification</h3>
+            <span :class="['text-xs font-bold px-3 py-1 rounded-full', verificationClass(authStore.user?.verification_status)]">
+              {{ verificationLabel(authStore.user?.verification_status) }}
+            </span>
+          </div>
+
+          <!-- Already verified -->
+          <div v-if="authStore.user?.verification_status === 'verified'" class="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+            <span class="text-2xl">✅</span>
+            <div>
+              <p class="text-sm font-bold text-green-700">Your account is verified!</p>
+              <p class="text-xs text-green-600 mt-0.5">You are an approved seller on OBRA.</p>
+            </div>
+          </div>
+
+          <!-- Pending review -->
+          <div v-else-if="authStore.user?.verification_status === 'pending'" class="flex items-center gap-3 bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3">
+            <span class="text-2xl">⏳</span>
+            <div>
+              <p class="text-sm font-bold text-yellow-700">Document submitted — under review</p>
+              <p class="text-xs text-yellow-600 mt-0.5">An admin will review your document shortly.</p>
+            </div>
+          </div>
+
+          <!-- Upload form -->
+          <div v-else class="flex flex-col gap-4">
+            <div v-if="authStore.user?.verification_status === 'rejected'" class="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+              <span class="text-2xl">❌</span>
+              <div>
+                <p class="text-sm font-bold text-red-700">Verification rejected</p>
+                <p class="text-xs text-red-600 mt-0.5">Please re-upload a valid ID or barangay document.</p>
+              </div>
             </div>
 
-            <div v-if="storeSuccess" class="text-sm text-green-600 bg-green-50 border border-green-200 px-4 py-3 rounded-xl">
-              ✅ Store info updated successfully!
+            <p class="text-sm text-gray-500">Upload a valid government-issued ID or barangay document for admin review.</p>
+
+            <div
+              class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center cursor-pointer hover:border-green-400 transition-colors"
+              @click="triggerFileInput"
+            >
+              <input ref="fileInput" type="file" accept="image/jpeg,image/png,image/jpg,application/pdf" class="hidden" @change="handleFileSelect" />
+              <div v-if="!selectedDoc">
+                <span class="text-4xl mb-2 block">📄</span>
+                <p class="text-sm font-semibold text-gray-700">Click to upload your ID</p>
+                <p class="text-xs text-gray-400 mt-1">JPG, PNG, or PDF — max 5MB</p>
+              </div>
+              <div v-else class="flex items-center justify-center gap-3">
+                <span class="text-2xl">📎</span>
+                <div class="text-left">
+                  <p class="text-sm font-semibold text-gray-800">{{ selectedDoc.name }}</p>
+                  <p class="text-xs text-gray-400">{{ (selectedDoc.size / 1024).toFixed(0) }} KB</p>
+                </div>
+                <button @click.stop="selectedDoc = null" class="ml-auto text-xs text-red-400 hover:text-red-600">✕ Remove</button>
+              </div>
             </div>
-            <div v-if="storeError" class="text-sm text-red-600 bg-red-50 border border-red-200 px-4 py-3 rounded-xl">
-              {{ storeError }}
-            </div>
+
+            <div v-if="docSuccess" class="text-sm text-green-600 bg-green-50 border border-green-200 px-4 py-3 rounded-xl">✅ Document submitted! Awaiting admin review.</div>
+            <div v-if="docError" class="text-sm text-red-600 bg-red-50 border border-red-200 px-4 py-3 rounded-xl">{{ docError }}</div>
 
             <button
-              @click="saveStore"
-              :disabled="savingStore"
+              @click="uploadDocument"
+              :disabled="!selectedDoc || uploadingDoc"
               class="w-fit bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-sm font-bold px-6 py-3 rounded-xl transition-colors"
             >
-              {{ savingStore ? 'Saving...' : 'Save Store Info' }}
+              {{ uploadingDoc ? 'Uploading...' : 'Submit Document' }}
             </button>
           </div>
         </div>
@@ -150,6 +179,7 @@ import SellerLayout from '../../components/seller/layout/SellerLayout.vue'
 
 const { put } = useApi()
 const authStore = useAuthStore()
+const config = useRuntimeConfig()
 
 const form = ref({
   name:              '',
@@ -159,13 +189,20 @@ const form = ref({
   store_description: '',
 })
 
-const savingPersonal = ref(false)
+const savingPersonal  = ref(false)
 const personalSuccess = ref(false)
-const personalError = ref('')
+const personalError   = ref('')
 
-const savingStore = ref(false)
+const savingStore  = ref(false)
 const storeSuccess = ref(false)
-const storeError = ref('')
+const storeError   = ref('')
+
+// Document upload
+const fileInput   = ref<HTMLInputElement | null>(null)
+const selectedDoc = ref<File | null>(null)
+const uploadingDoc = ref(false)
+const docSuccess  = ref(false)
+const docError    = ref('')
 
 onMounted(() => {
   form.value.name              = authStore.user?.name || ''
@@ -176,9 +213,9 @@ onMounted(() => {
 })
 
 const savePersonal = async () => {
-  savingPersonal.value = true
+  savingPersonal.value  = true
   personalSuccess.value = false
-  personalError.value = ''
+  personalError.value   = ''
   try {
     const res: any = await put('/profile', {
       name:  form.value.name,
@@ -196,9 +233,9 @@ const savePersonal = async () => {
 }
 
 const saveStore = async () => {
-  savingStore.value = true
+  savingStore.value  = true
   storeSuccess.value = false
-  storeError.value = ''
+  storeError.value   = ''
   try {
     const res: any = await put('/profile', {
       store_name:        form.value.store_name,
@@ -213,5 +250,59 @@ const saveStore = async () => {
   } finally {
     savingStore.value = false
   }
+}
+
+const triggerFileInput = () => fileInput.value?.click()
+
+const handleFileSelect = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  if (input.files?.[0]) selectedDoc.value = input.files[0]
+}
+
+const uploadDocument = async () => {
+  if (!selectedDoc.value) return
+  uploadingDoc.value = true
+  docSuccess.value   = false
+  docError.value     = ''
+  try {
+    const formData = new FormData()
+    formData.append('id_document', selectedDoc.value)
+
+    const token = localStorage.getItem('obra_token')
+    const res = await fetch(`${config.public.apiBase}/profile/document`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      body: formData,
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.message || 'Upload failed')
+
+    authStore.user = data.user
+    localStorage.setItem('obra_user', JSON.stringify(data.user))
+    docSuccess.value  = true
+    selectedDoc.value = null
+  } catch (e: any) {
+    docError.value = e.message || 'Failed to upload document.'
+  } finally {
+    uploadingDoc.value = false
+  }
+}
+
+const verificationLabel = (v: string) => {
+  const map: Record<string, string> = {
+    unverified: 'Unverified', pending: 'Pending Review',
+    verified: 'Verified', rejected: 'Rejected',
+  }
+  return map[v] ?? 'Unverified'
+}
+
+const verificationClass = (v: string) => {
+  const map: Record<string, string> = {
+    unverified: 'bg-gray-100 text-gray-500',
+    pending:    'bg-yellow-100 text-yellow-700',
+    verified:   'bg-green-100 text-green-700',
+    rejected:   'bg-red-100 text-red-700',
+  }
+  return map[v] ?? 'bg-gray-100 text-gray-500'
 }
 </script>

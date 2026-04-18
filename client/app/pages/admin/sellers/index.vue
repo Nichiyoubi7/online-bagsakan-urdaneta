@@ -6,10 +6,7 @@
       <div
         v-for="stat in stats"
         :key="stat.label"
-        :class="[
-          'bg-white rounded-2xl border shadow-sm p-4 flex items-center gap-3',
-          stat.highlight ? 'border-yellow-300 bg-yellow-50' : 'border-gray-100'
-        ]"
+        class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3"
       >
         <span class="text-2xl">{{ stat.icon }}</span>
         <div>
@@ -35,6 +32,13 @@
             <option value="active">Active</option>
             <option value="suspended">Suspended</option>
           </select>
+          <select v-model="verificationFilter" class="text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none bg-white">
+            <option value="all">All Verification</option>
+            <option value="pending">Pending</option>
+            <option value="verified">Verified</option>
+            <option value="unverified">Unverified</option>
+            <option value="rejected">Rejected</option>
+          </select>
         </div>
       </div>
 
@@ -52,6 +56,7 @@
               <th class="text-left text-xs font-semibold text-gray-500 uppercase px-5 py-3">Phone</th>
               <th class="text-left text-xs font-semibold text-gray-500 uppercase px-5 py-3">Joined</th>
               <th class="text-left text-xs font-semibold text-gray-500 uppercase px-5 py-3">Status</th>
+              <th class="text-left text-xs font-semibold text-gray-500 uppercase px-5 py-3">Verification</th>
               <th class="text-left text-xs font-semibold text-gray-500 uppercase px-5 py-3">Actions</th>
             </tr>
           </thead>
@@ -72,12 +77,49 @@
                 <span :class="[
                   'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold',
                   seller.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                ]">
-                  {{ seller.status === 'active' ? 'Active' : 'Suspended' }}
-                </span>
+                ]">{{ seller.status === 'active' ? 'Active' : 'Suspended' }}</span>
               </td>
               <td class="px-5 py-4">
                 <div class="flex items-center gap-2">
+                  <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold', verificationClass(seller.verification_status)]">
+                    {{ verificationLabel(seller.verification_status) }}
+                  </span>
+                  
+                    v-if="seller.id_document"
+                    :href="`${apiBase}/storage/${seller.id_document}`"
+                    target="_blank"
+                    class="text-xs text-blue-500 hover:underline font-semibold"
+                  >
+                    View ID
+                  </a>
+                </div>
+              </td>
+              <td class="px-5 py-4">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <!-- Verify / Reject buttons for pending -->
+                  <template v-if="seller.verification_status === 'pending'">
+                    <button
+                      @click="verifyUser(seller, 'verified')"
+                      class="text-xs bg-green-500 hover:bg-green-600 text-white font-semibold px-3 py-1.5 rounded-full transition-colors"
+                    >
+                      ✓ Approve
+                    </button>
+                    <button
+                      @click="verifyUser(seller, 'rejected')"
+                      class="text-xs bg-red-100 hover:bg-red-200 text-red-600 font-semibold px-3 py-1.5 rounded-full transition-colors"
+                    >
+                      ✕ Reject
+                    </button>
+                  </template>
+                  <!-- Re-verify if rejected -->
+                  <button
+                    v-else-if="seller.verification_status === 'rejected'"
+                    @click="verifyUser(seller, 'verified')"
+                    class="text-xs bg-green-100 hover:bg-green-200 text-green-600 font-semibold px-3 py-1.5 rounded-full transition-colors"
+                  >
+                    ✓ Approve
+                  </button>
+                  <!-- Suspend / Activate -->
                   <button
                     @click="toggleStatus(seller)"
                     :class="[
@@ -112,16 +154,19 @@ import { ref, computed, onMounted } from 'vue'
 import AdminLayout from '../../../components/admin/layout/AdminLayout.vue'
 
 const { get, put } = useApi()
+const config = useRuntimeConfig()
+const apiBase = config.public.apiBase
 
-const search = ref('')
-const statusFilter = ref('all')
-const loading = ref(true)
-const sellers = ref<any[]>([])
+const search             = ref('')
+const statusFilter       = ref('all')
+const verificationFilter = ref('all')
+const loading            = ref(true)
+const sellers            = ref<any[]>([])
 
 const loadSellers = async () => {
   loading.value = true
   try {
-    const res: any = await get('/users', { role: 'seller' })
+    const res: any = await get('/users', { role: 'seller', per_page: 100 })
     sellers.value = res.data || []
   } catch (e) {
     console.error('Failed to load sellers', e)
@@ -133,15 +178,16 @@ const loadSellers = async () => {
 onMounted(() => loadSellers())
 
 const stats = computed(() => [
-  { icon: '🏪', label: 'Total Sellers',   value: sellers.value.length,                                            highlight: false },
-  { icon: '✅', label: 'Active',           value: sellers.value.filter(s => s.status === 'active').length,        highlight: false },
-  { icon: '🚫', label: 'Suspended',        value: sellers.value.filter(s => s.status === 'suspended').length,     highlight: false },
-  { icon: '📦', label: 'Total Products',   value: '—', highlight: false },
+  { icon: '🏪', label: 'Total Sellers',  value: sellers.value.length },
+  { icon: '✅', label: 'Active',          value: sellers.value.filter(s => s.status === 'active').length },
+  { icon: '⏳', label: 'Pending Review',  value: sellers.value.filter(s => s.verification_status === 'pending').length },
+  { icon: '🛡️', label: 'Verified',        value: sellers.value.filter(s => s.verification_status === 'verified').length },
 ])
 
 const filteredSellers = computed(() => {
   let result = [...sellers.value]
-  if (statusFilter.value !== 'all') result = result.filter(s => s.status === statusFilter.value)
+  if (statusFilter.value !== 'all')       result = result.filter(s => s.status === statusFilter.value)
+  if (verificationFilter.value !== 'all') result = result.filter(s => s.verification_status === verificationFilter.value)
   if (search.value) result = result.filter(s =>
     s.name?.toLowerCase().includes(search.value.toLowerCase()) ||
     s.email?.toLowerCase().includes(search.value.toLowerCase())
@@ -149,11 +195,27 @@ const filteredSellers = computed(() => {
   return result
 })
 
+const verificationLabel = (v: string) => {
+  const map: Record<string, string> = {
+    unverified: 'Unverified', pending: 'Pending Review',
+    verified: 'Verified', rejected: 'Rejected',
+  }
+  return map[v] ?? 'Unverified'
+}
+
+const verificationClass = (v: string) => {
+  const map: Record<string, string> = {
+    unverified: 'bg-gray-100 text-gray-500',
+    pending:    'bg-yellow-100 text-yellow-700',
+    verified:   'bg-green-100 text-green-700',
+    rejected:   'bg-red-100 text-red-700',
+  }
+  return map[v] ?? 'bg-gray-100 text-gray-500'
+}
+
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleDateString('en-PH', {
-    year: 'numeric', month: 'short', day: 'numeric'
-  })
+  return new Date(dateStr).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
 const toggleStatus = async (seller: any) => {
@@ -163,6 +225,15 @@ const toggleStatus = async (seller: any) => {
     seller.status = newStatus
   } catch (e) {
     console.error('Failed to update seller status', e)
+  }
+}
+
+const verifyUser = async (seller: any, status: string) => {
+  try {
+    await put(`/users/${seller.id}/verify`, { verification_status: status })
+    seller.verification_status = status
+  } catch (e) {
+    console.error('Failed to update verification', e)
   }
 }
 </script>
