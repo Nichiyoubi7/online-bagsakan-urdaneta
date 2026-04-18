@@ -32,6 +32,9 @@ Route::middleware("auth:sanctum")->group(function () {
     // Self profile update (any authenticated user)
     Route::put("/profile", [UserController::class, "updateSelf"]);
 
+    // Seller uploads their ID document
+    Route::post("/profile/document", [UserController::class, "uploadDocument"]);
+
     // Products
     Route::post("/products",          [ProductController::class, "store"]);
     Route::put("/products/{id}",      [ProductController::class, "update"]);
@@ -59,10 +62,11 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::put("/notifications/read-all",     [NotificationController::class, "markAllRead"]);
 
     // Users (admin only — checked in controller)
-    Route::get("/users",          [UserController::class, "index"]);
-    Route::get("/users/{id}",     [UserController::class, "show"]);
-    Route::put("/users/{id}",     [UserController::class, "update"]);
-    Route::delete("/users/{id}",  [UserController::class, "destroy"]);
+    Route::get("/users",                  [UserController::class, "index"]);
+    Route::get("/users/{id}",             [UserController::class, "show"]);
+    Route::put("/users/{id}",             [UserController::class, "update"]);
+    Route::delete("/users/{id}",          [UserController::class, "destroy"]);
+    Route::put("/users/{id}/verify",      [UserController::class, "verify"]);
 
     // Seller shop setup
     Route::post('/seller/shop', function(\Illuminate\Http\Request $request) {

@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,17 +12,13 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
-        'name',
-        'email',
-        'phone',
-        'password',
-        'role',
-        'status',
+        'name', 'email', 'phone', 'password', 'role', 'status',
+        'store_name', 'store_description', 'store_status',
+        'id_document', 'verification_status',
     ];
 
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password', 'remember_token',
     ];
 
     protected function casts(): array
