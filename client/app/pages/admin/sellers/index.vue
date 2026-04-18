@@ -92,20 +92,20 @@
                   >View ID</a>
                 </div>
               </td>
-              <td class="px-5 py-4">
+<td class="px-5 py-4">
                 <div class="flex items-center gap-2 flex-wrap">
-                  <template v-if="seller.verification_status === 'pending'">
-                    <button
-                      @click="verifyUser(seller, 'verified')"
-                      class="text-xs bg-green-500 hover:bg-green-600 text-white font-semibold px-3 py-1.5 rounded-full transition-colors"
-                    >✓ Approve</button>
-                    <button
-                      @click="verifyUser(seller, 'rejected')"
-                      class="text-xs bg-red-100 hover:bg-red-200 text-red-600 font-semibold px-3 py-1.5 rounded-full transition-colors"
-                    >✕ Reject</button>
-                  </template>
                   <button
-                    v-else-if="seller.verification_status === 'rejected'"
+                    v-if="seller.verification_status === 'pending'"
+                    @click="verifyUser(seller, 'verified')"
+                    class="text-xs bg-green-500 hover:bg-green-600 text-white font-semibold px-3 py-1.5 rounded-full transition-colors"
+                  >✓ Approve</button>
+                  <button
+                    v-if="seller.verification_status === 'pending'"
+                    @click="verifyUser(seller, 'rejected')"
+                    class="text-xs bg-red-100 hover:bg-red-200 text-red-600 font-semibold px-3 py-1.5 rounded-full transition-colors"
+                  >✕ Reject</button>
+                  <button
+                    v-if="seller.verification_status === 'rejected'"
                     @click="verifyUser(seller, 'verified')"
                     class="text-xs bg-green-100 hover:bg-green-200 text-green-600 font-semibold px-3 py-1.5 rounded-full transition-colors"
                   >✓ Approve</button>
