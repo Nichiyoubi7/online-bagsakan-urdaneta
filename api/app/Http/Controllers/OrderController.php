@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Notification;
+use App\Models\AuditLog;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -88,6 +89,7 @@ class OrderController extends Controller
 
         $order->items()->createMany($orderItems);
 
+        // Notify seller of new order
         Notification::create([
             'user_id'  => $request->seller_id,
             'title'    => 'New Order Received! 🛍️',
@@ -95,6 +97,46 @@ class OrderController extends Controller
             'type'     => 'info',
             'icon'     => '🛍️',
             'order_id' => $order->id,
+        ]);
+
+        // Deduct stock and send alerts
+        foreach ($request->items as $item) {
+            $product  = Product::findOrFail($item['product_id']);
+            $newStock = max(0, $product->stock - $item['quantity']);
+            $product->update(['stock' => $newStock]);
+
+            if ($newStock === 0) {
+                Notification::create([
+                    'user_id' => $product->user_id,
+                    'title'   => 'Product Out of Stock ⚠️',
+                    'message' => "Your product \"{$product->name}\" is now out of stock after Order #{$order->id}.",
+                    'type'    => 'warning',
+                    'icon'    => '⚠️',
+                ]);
+            } elseif ($newStock <= 5) {
+                Notification::create([
+                    'user_id' => $product->user_id,
+                    'title'   => 'Low Stock Warning 📉',
+                    'message' => "Your product \"{$product->name}\" only has {$newStock} left after Order #{$order->id}.",
+                    'type'    => 'warning',
+                    'icon'    => '📉',
+                ]);
+            }
+        }
+
+        // Audit log — order placed
+        AuditLog::create([
+            'user_id'    => $request->user()->id,
+            'action'     => 'order.placed',
+            'model_type' => 'Order',
+            'model_id'   => $order->id,
+            'new_values' => [
+                'order_id'       => $order->id,
+                'payment_method' => $order->payment_method,
+                'total'          => $order->total,
+                'status'         => 'pending',
+            ],
+            'ip_address' => $request->ip(),
         ]);
 
         return response()->json([
@@ -109,9 +151,10 @@ class OrderController extends Controller
             'status' => 'required|in:pending,confirmed,preparing,ready,in_transit,delivered,cancelled',
         ]);
 
-        $order  = Order::with(['customer', 'seller'])->findOrFail($id);
-        $data   = ['status' => $request->status];
-        $status = $request->status;
+        $order     = Order::with(['customer', 'seller'])->findOrFail($id);
+        $oldStatus = $order->status;
+        $data      = ['status' => $request->status];
+        $status    = $request->status;
 
         if ($status === 'in_transit') {
             $data['driver_id'] = $request->user()->id;
@@ -122,8 +165,19 @@ class OrderController extends Controller
 
         $order->update($data);
 
-        $orderId  = $order->id;
+        $orderId    = $order->id;
         $sellerName = $order->seller->name ?? 'Seller';
+
+        // Audit log — status change
+        AuditLog::create([
+            'user_id'    => $request->user()->id,
+            'action'     => 'order.status_changed',
+            'model_type' => 'Order',
+            'model_id'   => $orderId,
+            'old_values' => ['status' => $oldStatus],
+            'new_values' => ['status' => $status],
+            'ip_address' => $request->ip(),
+        ]);
 
         match ($status) {
             'confirmed' => Notification::create([
