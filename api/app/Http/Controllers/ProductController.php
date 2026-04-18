@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Notification;
+use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -100,6 +101,20 @@ class ProductController extends Controller
             }
         }
 
+        // Audit log — product created
+        AuditLog::create([
+            'user_id'    => $request->user()->id,
+            'action'     => 'product.created',
+            'model_type' => 'Product',
+            'model_id'   => $product->id,
+            'new_values' => [
+                'name'  => $product->name,
+                'price' => $product->price,
+                'stock' => $product->stock,
+            ],
+            'ip_address' => $request->ip(),
+        ]);
+
         $product->load(['category', 'user', 'images']);
         $product->seller = $product->user;
 
@@ -122,6 +137,12 @@ class ProductController extends Controller
             'images.*'    => 'image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
+        $oldValues = [
+            'name'   => $product->name,
+            'price'  => $product->price,
+            'stock'  => $product->stock,
+            'status' => $product->status,
+        ];
         $oldStock = $product->stock;
 
         $product->update($request->only([
@@ -152,6 +173,22 @@ class ProductController extends Controller
             }
         }
 
+        // Audit log — product updated
+        AuditLog::create([
+            'user_id'    => $request->user()->id,
+            'action'     => 'product.updated',
+            'model_type' => 'Product',
+            'model_id'   => $product->id,
+            'old_values' => $oldValues,
+            'new_values' => [
+                'name'   => $product->name,
+                'price'  => $product->price,
+                'stock'  => $product->stock,
+                'status' => $product->status,
+            ],
+            'ip_address' => $request->ip(),
+        ]);
+
         if ($request->hasFile('images')) {
             foreach ($product->images as $old) {
                 Storage::disk('public')->delete($old->path);
@@ -179,6 +216,20 @@ class ProductController extends Controller
     public function destroy(Request $request, $id)
     {
         $product = Product::findOrFail($id);
+
+        // Audit log — product deleted
+        AuditLog::create([
+            'user_id'    => $request->user()->id,
+            'action'     => 'product.deleted',
+            'model_type' => 'Product',
+            'model_id'   => $product->id,
+            'old_values' => [
+                'name'  => $product->name,
+                'price' => $product->price,
+                'stock' => $product->stock,
+            ],
+            'ip_address' => $request->ip(),
+        ]);
 
         foreach ($product->images as $image) {
             Storage::disk('public')->delete($image->path);
