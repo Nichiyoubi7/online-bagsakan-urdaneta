@@ -89,37 +89,26 @@
                     :href="`${apiBase}/storage/${seller.id_document}`"
                     target="_blank"
                     class="text-xs text-blue-500 hover:underline font-semibold"
-                  >
-                    View ID
-                  </a>
+                  >View ID</a>
                 </div>
               </td>
               <td class="px-5 py-4">
                 <div class="flex items-center gap-2 flex-wrap">
-                  <!-- Verify / Reject buttons for pending -->
                   <template v-if="seller.verification_status === 'pending'">
                     <button
                       @click="verifyUser(seller, 'verified')"
                       class="text-xs bg-green-500 hover:bg-green-600 text-white font-semibold px-3 py-1.5 rounded-full transition-colors"
-                    >
-                      ✓ Approve
-                    </button>
+                    >✓ Approve</button>
                     <button
                       @click="verifyUser(seller, 'rejected')"
                       class="text-xs bg-red-100 hover:bg-red-200 text-red-600 font-semibold px-3 py-1.5 rounded-full transition-colors"
-                    >
-                      ✕ Reject
-                    </button>
+                    >✕ Reject</button>
                   </template>
-                  <!-- Re-verify if rejected -->
                   <button
                     v-else-if="seller.verification_status === 'rejected'"
                     @click="verifyUser(seller, 'verified')"
                     class="text-xs bg-green-100 hover:bg-green-200 text-green-600 font-semibold px-3 py-1.5 rounded-full transition-colors"
-                  >
-                    ✓ Approve
-                  </button>
-                  <!-- Suspend / Activate -->
+                  >✓ Approve</button>
                   <button
                     @click="toggleStatus(seller)"
                     :class="[
@@ -128,9 +117,7 @@
                         ? 'bg-yellow-100 hover:bg-yellow-200 text-yellow-600'
                         : 'bg-green-100 hover:bg-green-200 text-green-600'
                     ]"
-                  >
-                    {{ seller.status === 'active' ? 'Suspend' : 'Activate' }}
-                  </button>
+                  >{{ seller.status === 'active' ? 'Suspend' : 'Activate' }}</button>
                 </div>
               </td>
             </tr>
