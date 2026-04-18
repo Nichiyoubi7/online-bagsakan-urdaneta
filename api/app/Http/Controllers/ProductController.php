@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,7 +13,6 @@ class ProductController extends Controller
     {
         $query = Product::with(['category', 'user', 'images']);
 
-        // If logged in as seller, only show their own products
         $authUser = $request->user();
         if ($authUser && $authUser->getRoleNames()->first() === 'seller') {
             $query->where('user_id', $authUser->id);
@@ -40,14 +40,14 @@ class ProductController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
 
-        $sortField = $request->get('sort', 'created_at');
-        $sortDir   = $request->get('dir', 'desc');
+        $sortField    = $request->get('sort', 'created_at');
+        $sortDir      = $request->get('dir', 'desc');
         $allowedSorts = ['price', 'name', 'created_at', 'stock'];
         if (!in_array($sortField, $allowedSorts)) $sortField = 'created_at';
 
         $query->orderBy($sortField, $sortDir === 'asc' ? 'asc' : 'desc');
 
-        $perPage = min((int) $request->get('per_page', 12), 100);
+        $perPage  = min((int) $request->get('per_page', 12), 100);
         $products = $query->paginate($perPage);
 
         $products->getCollection()->transform(function ($product) {
@@ -60,7 +60,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::with(['category', 'user', 'images'])->findOrFail($id);
+        $product         = Product::with(['category', 'user', 'images'])->findOrFail($id);
         $product->seller = $product->user;
         return response()->json($product);
     }
@@ -89,7 +89,6 @@ class ProductController extends Controller
             'status'         => $request->status ?? 'active',
         ]);
 
-        // Save uploaded images
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $file) {
                 $path = $file->store('products', 'public');
@@ -123,13 +122,36 @@ class ProductController extends Controller
             'images.*'    => 'image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
+        $oldStock = $product->stock;
+
         $product->update($request->only([
             'name', 'description', 'price', 'original_price',
             'stock', 'weight_kg', 'category_id', 'sku',
             'status', 'image',
         ]));
 
-        // If new images uploaded, delete old ones and save new
+        // Stock alerts when seller manually updates stock
+        if ($request->filled('stock')) {
+            $newStock = (int) $request->stock;
+            if ($newStock === 0 && $oldStock > 0) {
+                Notification::create([
+                    'user_id' => $product->user_id,
+                    'title'   => 'Product Out of Stock ⚠️',
+                    'message' => "Your product \"{$product->name}\" is now out of stock. Please update your inventory.",
+                    'type'    => 'warning',
+                    'icon'    => '⚠️',
+                ]);
+            } elseif ($newStock <= 5 && $newStock > 0 && $oldStock > 5) {
+                Notification::create([
+                    'user_id' => $product->user_id,
+                    'title'   => 'Low Stock Warning 📉',
+                    'message' => "Your product \"{$product->name}\" only has {$newStock} left in stock.",
+                    'type'    => 'warning',
+                    'icon'    => '📉',
+                ]);
+            }
+        }
+
         if ($request->hasFile('images')) {
             foreach ($product->images as $old) {
                 Storage::disk('public')->delete($old->path);
@@ -158,7 +180,6 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
 
-        // Delete all images from storage
         foreach ($product->images as $image) {
             Storage::disk('public')->delete($image->path);
         }

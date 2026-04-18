@@ -43,6 +43,34 @@
             </span>
           </div>
 
+          <!-- ETA Banner -->
+          <div
+            v-if="['confirmed','preparing','ready','in_transit'].includes(order.status)"
+            class="flex items-center gap-3 rounded-xl px-4 py-3 mb-5"
+            :class="{
+              'bg-blue-50 border border-blue-100':   order.status === 'in_transit',
+              'bg-purple-50 border border-purple-100': order.status === 'ready',
+              'bg-orange-50 border border-orange-100': order.status === 'preparing',
+              'bg-green-50 border border-green-100':  order.status === 'confirmed',
+            }"
+          >
+            <span class="text-2xl">{{ etaEmoji(order.status) }}</span>
+            <div>
+              <p class="text-sm font-bold" :class="{
+                'text-blue-700':   order.status === 'in_transit',
+                'text-purple-700': order.status === 'ready',
+                'text-orange-700': order.status === 'preparing',
+                'text-green-700':  order.status === 'confirmed',
+              }">{{ etaLabel(order.status) }}</p>
+              <p class="text-xs mt-0.5" :class="{
+                'text-blue-500':   order.status === 'in_transit',
+                'text-purple-500': order.status === 'ready',
+                'text-orange-500': order.status === 'preparing',
+                'text-green-600':  order.status === 'confirmed',
+              }">Estimated delivery: <span class="font-semibold">{{ etaTime(order.status) }}</span></p>
+            </div>
+          </div>
+
           <!-- Tracker -->
           <div class="flex items-center justify-between relative">
             <div class="absolute left-0 right-0 top-3.5 h-0.5 bg-gray-200 z-0" />
@@ -272,6 +300,33 @@ const isStepActive = (key: string) => {
   if (key === 'in_transit') return s === 'in_transit'
   if (key === 'delivered') return s === 'delivered'
   return false
+}
+
+const etaEmoji = (status: string) => {
+  const map: Record<string, string> = {
+    confirmed: '✅', preparing: '🧑‍🍳', ready: '📦', in_transit: '🛵'
+  }
+  return map[status] ?? '📦'
+}
+
+const etaLabel = (status: string) => {
+  const map: Record<string, string> = {
+    confirmed:  'Order confirmed by seller!',
+    preparing:  'Seller is preparing your order',
+    ready:      'Order ready — waiting for a driver',
+    in_transit: 'Driver is on the way!',
+  }
+  return map[status] ?? ''
+}
+
+const etaTime = (status: string) => {
+  const map: Record<string, string> = {
+    confirmed:  '45 – 60 minutes',
+    preparing:  '45 – 60 minutes',
+    ready:      '30 – 45 minutes',
+    in_transit: '30 – 45 minutes',
+  }
+  return map[status] ?? ''
 }
 
 const formatDate = (d: string) => {

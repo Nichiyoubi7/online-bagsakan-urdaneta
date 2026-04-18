@@ -88,6 +88,7 @@ class OrderController extends Controller
 
         $order->items()->createMany($orderItems);
 
+        // Notify seller of new order
         Notification::create([
             'user_id'  => $request->seller_id,
             'title'    => 'New Order Received! 🛍️',
@@ -96,6 +97,31 @@ class OrderController extends Controller
             'icon'     => '🛍️',
             'order_id' => $order->id,
         ]);
+
+        // Deduct stock and send alerts
+        foreach ($request->items as $item) {
+            $product  = Product::findOrFail($item['product_id']);
+            $newStock = max(0, $product->stock - $item['quantity']);
+            $product->update(['stock' => $newStock]);
+
+            if ($newStock === 0) {
+                Notification::create([
+                    'user_id' => $product->user_id,
+                    'title'   => 'Product Out of Stock ⚠️',
+                    'message' => "Your product \"{$product->name}\" is now out of stock after Order #{$order->id}.",
+                    'type'    => 'warning',
+                    'icon'    => '⚠️',
+                ]);
+            } elseif ($newStock <= 5) {
+                Notification::create([
+                    'user_id' => $product->user_id,
+                    'title'   => 'Low Stock Warning 📉',
+                    'message' => "Your product \"{$product->name}\" only has {$newStock} left after Order #{$order->id}.",
+                    'type'    => 'warning',
+                    'icon'    => '📉',
+                ]);
+            }
+        }
 
         return response()->json([
             'message' => 'Order placed successfully!',
@@ -122,7 +148,7 @@ class OrderController extends Controller
 
         $order->update($data);
 
-        $orderId  = $order->id;
+        $orderId    = $order->id;
         $sellerName = $order->seller->name ?? 'Seller';
 
         match ($status) {
