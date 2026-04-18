@@ -181,18 +181,9 @@
             <h3 class="text-base font-black text-gray-800">Items Ordered</h3>
           </div>
           <div class="divide-y divide-gray-50">
-            <div
-              v-for="item in order.items"
-              :key="item.id"
-              class="flex items-center gap-4 px-5 py-4"
-            >
+            <div v-for="item in order.items" :key="item.id" class="flex items-center gap-4 px-5 py-4">
               <div class="w-14 h-14 bg-gray-50 rounded-xl shrink-0 flex items-center justify-center overflow-hidden">
-                <img
-                  v-if="imageMap[item.product_name]"
-                  :src="imageMap[item.product_name]"
-                  :alt="item.product_name"
-                  class="w-full h-full object-contain p-1"
-                />
+                <img v-if="imageMap[item.product_name]" :src="imageMap[item.product_name]" :alt="item.product_name" class="w-full h-full object-contain p-1" />
                 <span v-else class="text-2xl">🥬</span>
               </div>
               <div class="flex-1 min-w-0">
@@ -206,10 +197,7 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-between">
-          <NuxtLink
-            to="/customer/orders"
-            class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-          >
+          <NuxtLink to="/customer/orders" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
             ← Back to Orders
           </NuxtLink>
           <div class="flex gap-3">
@@ -221,12 +209,76 @@
             >
               {{ cancelling ? 'Cancelling...' : 'Cancel Order' }}
             </button>
-            <NuxtLink
-              to="/customer"
-              class="px-5 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white text-sm font-bold transition-colors"
+            <button
+              v-if="order.status === 'delivered'"
+              @click="printInvoice"
+              class="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors"
             >
+              🧾 Download Invoice
+            </button>
+            <NuxtLink to="/customer" class="px-5 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white text-sm font-bold transition-colors">
               Continue Shopping
             </NuxtLink>
+          </div>
+        </div>
+
+        <!-- Printable Invoice -->
+        <div id="obra-invoice" class="hidden">
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px;">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <h1 style="font-size: 24px; font-weight: 900; color: #0f2d1f; margin: 0;">OBRA</h1>
+              <p style="font-size: 12px; color: #6b7280; margin: 4px 0;">Online Bagsakan Urdaneta</p>
+              <p style="font-size: 12px; color: #6b7280; margin: 0;">Urdaneta City, Pangasinan</p>
+            </div>
+            <div style="border-top: 2px solid #0f2d1f; border-bottom: 1px solid #e5e7eb; padding: 12px 0; margin-bottom: 20px;">
+              <h2 style="font-size: 16px; font-weight: 700; margin: 0 0 8px;">OFFICIAL RECEIPT</h2>
+              <div style="display: flex; justify-content: space-between; font-size: 13px; color: #374151;">
+                <span>Order #{{ order.id }}</span>
+                <span>{{ formatDate(order.created_at) }}</span>
+              </div>
+            </div>
+            <div style="margin-bottom: 20px; font-size: 13px;">
+              <p style="font-weight: 700; margin: 0 0 4px;">Bill To:</p>
+              <p style="margin: 0;">{{ order.customer?.name }}</p>
+              <p style="margin: 0; color: #6b7280;">{{ order.customer?.email }}</p>
+              <p style="margin: 0; color: #6b7280;">{{ order.delivery_address || 'Store Pickup' }}</p>
+            </div>
+            <div style="margin-bottom: 20px; font-size: 13px;">
+              <p style="font-weight: 700; margin: 0 0 4px;">Seller:</p>
+              <p style="margin: 0;">{{ order.seller?.name }}</p>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
+              <thead>
+                <tr style="background: #f3f4f6;">
+                  <th style="text-align: left; padding: 8px; border: 1px solid #e5e7eb;">Item</th>
+                  <th style="text-align: center; padding: 8px; border: 1px solid #e5e7eb;">Qty</th>
+                  <th style="text-align: right; padding: 8px; border: 1px solid #e5e7eb;">Price</th>
+                  <th style="text-align: right; padding: 8px; border: 1px solid #e5e7eb;">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in order.items" :key="item.id">
+                  <td style="padding: 8px; border: 1px solid #e5e7eb;">{{ item.product_name }}</td>
+                  <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;">{{ item.quantity }}</td>
+                  <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: right;">₱{{ Number(item.price).toFixed(2) }}</td>
+                  <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: right;">₱{{ Number(item.subtotal).toFixed(2) }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="text-align: right; font-size: 13px; margin-bottom: 20px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Subtotal</span><span>₱{{ Number(order.subtotal).toFixed(2) }}</span></div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Delivery Fee</span><span>₱{{ Number(order.delivery_fee).toFixed(2) }}</span></div>
+              <div v-if="Number(order.tip) > 0" style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Tip</span><span>₱{{ Number(order.tip).toFixed(2) }}</span></div>
+              <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 15px; border-top: 2px solid #0f2d1f; padding-top: 8px; margin-top: 8px;">
+                <span>TOTAL</span><span>₱{{ Number(order.total).toFixed(2) }}</span>
+              </div>
+            </div>
+            <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;"><span style="font-weight: 700;">Payment:</span> {{ order.payment_method?.toUpperCase() }}</div>
+            <div style="font-size: 12px; color: #6b7280; margin-bottom: 20px;"><span style="font-weight: 700;">Delivery:</span> {{ order.delivery_type?.toUpperCase() }}</div>
+            <div style="text-align: center; border-top: 1px solid #e5e7eb; padding-top: 16px; font-size: 12px; color: #6b7280;">
+              <p style="margin: 0;">Thank you for shopping at OBRA!</p>
+              <p style="margin: 4px 0 0;">obra-ur.xyz · Urdaneta City, Pangasinan</p>
+            </div>
           </div>
         </div>
 
@@ -235,14 +287,8 @@
 
     <!-- Rating Modal -->
     <Transition name="fade">
-      <div
-        v-if="showRatingModal"
-        class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-        @click.self="showRatingModal = false"
-      >
+      <div v-if="showRatingModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" @click.self="showRatingModal = false">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-
-          <!-- Modal Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white">
             <div>
               <h3 class="text-base font-black text-gray-800">Rate Your Order</h3>
@@ -250,75 +296,33 @@
             </div>
             <button @click="showRatingModal = false" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-500">✕</button>
           </div>
-
-          <!-- Items to Rate -->
           <div class="px-6 py-5 flex flex-col gap-6">
-            <div
-              v-for="item in order?.items"
-              :key="item.id"
-              class="flex flex-col gap-3"
-            >
-              <!-- Product Info -->
+            <div v-for="item in order?.items" :key="item.id" class="flex flex-col gap-3">
               <div class="flex items-center gap-3">
                 <div class="w-12 h-12 bg-gray-50 rounded-xl shrink-0 flex items-center justify-center overflow-hidden">
-                  <img
-                    v-if="imageMap[item.product_name]"
-                    :src="imageMap[item.product_name]"
-                    :alt="item.product_name"
-                    class="w-full h-full object-contain p-1"
-                  />
+                  <img v-if="imageMap[item.product_name]" :src="imageMap[item.product_name]" :alt="item.product_name" class="w-full h-full object-contain p-1" />
                   <span v-else class="text-xl">🥬</span>
                 </div>
                 <div>
                   <p class="text-sm font-semibold text-gray-800">{{ item.product_name }}</p>
                   <p class="text-xs text-gray-400">x{{ item.quantity }}</p>
                 </div>
-                <span
-                  v-if="reviewedProductIds.has(item.product_id)"
-                  class="ml-auto text-xs font-semibold text-green-600 bg-green-50 px-2.5 py-1 rounded-full"
-                >
-                  ✓ Reviewed
-                </span>
+                <span v-if="reviewedProductIds.has(item.product_id)" class="ml-auto text-xs font-semibold text-green-600 bg-green-50 px-2.5 py-1 rounded-full">✓ Reviewed</span>
               </div>
-
-              <!-- Star Rating -->
               <div v-if="!reviewedProductIds.has(item.product_id)">
                 <div class="flex gap-1 mb-2">
-                  <button
-                    v-for="star in 5"
-                    :key="star"
-                    @click="setRating(item.product_id, star)"
-                    :class="star <= (ratings[item.product_id] ?? 0) ? 'text-yellow-400' : 'text-gray-300'"
-                    class="text-2xl transition-colors hover:text-yellow-400"
-                  >★</button>
+                  <button v-for="star in 5" :key="star" @click="setRating(item.product_id, star)" :class="star <= (ratings[item.product_id] ?? 0) ? 'text-yellow-400' : 'text-gray-300'" class="text-2xl transition-colors hover:text-yellow-400">★</button>
                 </div>
-                <textarea
-                  v-model="comments[item.product_id]"
-                  rows="2"
-                  :placeholder="`Comment on ${item.product_name} (optional)`"
-                  class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-green-400"
-                />
+                <textarea v-model="comments[item.product_id]" rows="2" :placeholder="`Comment on ${item.product_name} (optional)`" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-green-400" />
               </div>
             </div>
           </div>
-
-          <!-- Modal Footer -->
           <div class="px-6 pb-6 flex gap-3">
-            <button
-              @click="showRatingModal = false"
-              class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              @click="submitAllReviews"
-              :disabled="submittingReview || !hasAnyRating"
-              class="flex-1 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white text-sm font-bold transition-colors"
-            >
+            <button @click="showRatingModal = false" class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
+            <button @click="submitAllReviews" :disabled="submittingReview || !hasAnyRating" class="flex-1 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white text-sm font-bold transition-colors">
               {{ submittingReview ? 'Submitting...' : 'Submit Reviews' }}
             </button>
           </div>
-
         </div>
       </div>
     </Transition>
@@ -333,15 +337,13 @@ import GuestLayout from '../../../components/layout/GuestLayout.vue'
 const route = useRoute()
 const { get, post, put } = useApi()
 
-const loading   = ref(true)
-const order     = ref<any>(null)
-const cancelling = ref(false)
-
-// Rating modal state
-const showRatingModal   = ref(false)
-const submittingReview  = ref(false)
-const ratings           = ref<Record<number, number>>({})
-const comments          = ref<Record<number, string>>({})
+const loading          = ref(true)
+const order            = ref<any>(null)
+const cancelling       = ref(false)
+const showRatingModal  = ref(false)
+const submittingReview = ref(false)
+const ratings          = ref<Record<number, number>>({})
+const comments         = ref<Record<number, string>>({})
 const reviewedProductIds = ref<Set<number>>(new Set())
 
 const imageMap: Record<string, string> = {
@@ -440,16 +442,10 @@ const checkExistingReviews = async () => {
   try {
     for (const item of order.value.items) {
       const res: any = await get('/reviews', { product_id: item.product_id })
-      const alreadyReviewed = (res.data ?? []).some(
-        (r: any) => r.order_id === order.value.id
-      )
-      if (alreadyReviewed) {
-        reviewedProductIds.value = new Set([...reviewedProductIds.value, item.product_id])
-      }
+      const already = (res.data ?? []).some((r: any) => r.order_id === order.value.id)
+      if (already) reviewedProductIds.value = new Set([...reviewedProductIds.value, item.product_id])
     }
-  } catch (e) {
-    console.error('Failed to check existing reviews', e)
-  }
+  } catch (e) { console.error(e) }
 }
 
 const submitAllReviews = async () => {
@@ -469,11 +465,18 @@ const submitAllReviews = async () => {
       reviewedProductIds.value = new Set([...reviewedProductIds.value, item.product_id])
     }
     showRatingModal.value = false
-  } catch (e) {
-    console.error('Failed to submit reviews', e)
-  } finally {
-    submittingReview.value = false
-  }
+  } catch (e) { console.error(e) }
+  finally { submittingReview.value = false }
+}
+
+const printInvoice = () => {
+  const invoice = document.getElementById('obra-invoice')
+  if (!invoice) return
+  const original = document.body.innerHTML
+  document.body.innerHTML = invoice.innerHTML
+  window.print()
+  document.body.innerHTML = original
+  window.location.reload()
 }
 
 const etaEmoji = (status: string) => {
@@ -544,9 +547,7 @@ onMounted(async () => {
   try {
     const res: any = await get(`/orders/${route.params.id}`)
     order.value = res
-    if (res?.status === 'delivered') {
-      await checkExistingReviews()
-    }
+    if (res?.status === 'delivered') await checkExistingReviews()
   } catch (e) {
     console.error(e)
     order.value = null
@@ -559,4 +560,7 @@ onMounted(async () => {
 <style scoped>
 .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+@media print {
+  #obra-invoice { display: block !important; }
+}
 </style>
