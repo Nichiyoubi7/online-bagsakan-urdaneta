@@ -43,6 +43,56 @@
             </span>
           </div>
 
+          <!-- ETA Banner -->
+          <div
+            v-if="['confirmed','preparing','ready','in_transit'].includes(order.status)"
+            class="flex items-center gap-3 rounded-xl px-4 py-3 mb-5"
+            :class="{
+              'bg-blue-50 border border-blue-100':    order.status === 'in_transit',
+              'bg-purple-50 border border-purple-100': order.status === 'ready',
+              'bg-orange-50 border border-orange-100': order.status === 'preparing',
+              'bg-green-50 border border-green-100':   order.status === 'confirmed',
+            }"
+          >
+            <span class="text-2xl">{{ etaEmoji(order.status) }}</span>
+            <div>
+              <p class="text-sm font-bold" :class="{
+                'text-blue-700':   order.status === 'in_transit',
+                'text-purple-700': order.status === 'ready',
+                'text-orange-700': order.status === 'preparing',
+                'text-green-700':  order.status === 'confirmed',
+              }">{{ etaLabel(order.status) }}</p>
+              <p class="text-xs mt-0.5" :class="{
+                'text-blue-500':   order.status === 'in_transit',
+                'text-purple-500': order.status === 'ready',
+                'text-orange-500': order.status === 'preparing',
+                'text-green-600':  order.status === 'confirmed',
+              }">Estimated delivery: <span class="font-semibold">{{ etaTime(order.status) }}</span></p>
+            </div>
+          </div>
+
+          <!-- Delivered Banner -->
+          <div
+            v-if="order.status === 'delivered'"
+            class="flex items-center gap-3 rounded-xl px-4 py-3 mb-5 bg-green-50 border border-green-100"
+          >
+            <span class="text-2xl">🎉</span>
+            <div class="flex-1">
+              <p class="text-sm font-bold text-green-700">Order delivered successfully!</p>
+              <p class="text-xs text-green-600 mt-0.5">Thank you for your purchase. How was your experience?</p>
+            </div>
+            <button
+              v-if="!allReviewed"
+              @click="showRatingModal = true"
+              class="shrink-0 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-xl transition-colors"
+            >
+              ⭐ Rate Order
+            </button>
+            <span v-else class="shrink-0 text-xs font-semibold text-green-600 bg-green-100 px-3 py-1.5 rounded-xl">
+              ✓ Reviewed
+            </span>
+          </div>
+
           <!-- Tracker -->
           <div class="flex items-center justify-between relative">
             <div class="absolute left-0 right-0 top-3.5 h-0.5 bg-gray-200 z-0" />
@@ -158,7 +208,7 @@
         <div class="flex items-center justify-between">
           <NuxtLink
             to="/customer/orders"
-            class="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
           >
             ← Back to Orders
           </NuxtLink>
@@ -183,6 +233,96 @@
       </template>
     </div>
 
+    <!-- Rating Modal -->
+    <Transition name="fade">
+      <div
+        v-if="showRatingModal"
+        class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+        @click.self="showRatingModal = false"
+      >
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white">
+            <div>
+              <h3 class="text-base font-black text-gray-800">Rate Your Order</h3>
+              <p class="text-xs text-gray-400">Order #{{ order?.id }}</p>
+            </div>
+            <button @click="showRatingModal = false" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-500">✕</button>
+          </div>
+
+          <!-- Items to Rate -->
+          <div class="px-6 py-5 flex flex-col gap-6">
+            <div
+              v-for="item in order?.items"
+              :key="item.id"
+              class="flex flex-col gap-3"
+            >
+              <!-- Product Info -->
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gray-50 rounded-xl shrink-0 flex items-center justify-center overflow-hidden">
+                  <img
+                    v-if="imageMap[item.product_name]"
+                    :src="imageMap[item.product_name]"
+                    :alt="item.product_name"
+                    class="w-full h-full object-contain p-1"
+                  />
+                  <span v-else class="text-xl">🥬</span>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-gray-800">{{ item.product_name }}</p>
+                  <p class="text-xs text-gray-400">x{{ item.quantity }}</p>
+                </div>
+                <span
+                  v-if="reviewedProductIds.has(item.product_id)"
+                  class="ml-auto text-xs font-semibold text-green-600 bg-green-50 px-2.5 py-1 rounded-full"
+                >
+                  ✓ Reviewed
+                </span>
+              </div>
+
+              <!-- Star Rating -->
+              <div v-if="!reviewedProductIds.has(item.product_id)">
+                <div class="flex gap-1 mb-2">
+                  <button
+                    v-for="star in 5"
+                    :key="star"
+                    @click="setRating(item.product_id, star)"
+                    :class="star <= (ratings[item.product_id] ?? 0) ? 'text-yellow-400' : 'text-gray-300'"
+                    class="text-2xl transition-colors hover:text-yellow-400"
+                  >★</button>
+                </div>
+                <textarea
+                  v-model="comments[item.product_id]"
+                  rows="2"
+                  :placeholder="`Comment on ${item.product_name} (optional)`"
+                  class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-green-400"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="px-6 pb-6 flex gap-3">
+            <button
+              @click="showRatingModal = false"
+              class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              @click="submitAllReviews"
+              :disabled="submittingReview || !hasAnyRating"
+              class="flex-1 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white text-sm font-bold transition-colors"
+            >
+              {{ submittingReview ? 'Submitting...' : 'Submit Reviews' }}
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </Transition>
+
   </GuestLayout>
 </template>
 
@@ -191,11 +331,18 @@ import { ref, computed, onMounted } from 'vue'
 import GuestLayout from '../../../components/layout/GuestLayout.vue'
 
 const route = useRoute()
-const { get, put } = useApi()
+const { get, post, put } = useApi()
 
-const loading = ref(true)
-const order = ref<any>(null)
+const loading   = ref(true)
+const order     = ref<any>(null)
 const cancelling = ref(false)
+
+// Rating modal state
+const showRatingModal   = ref(false)
+const submittingReview  = ref(false)
+const ratings           = ref<Record<number, number>>({})
+const comments          = ref<Record<number, string>>({})
+const reviewedProductIds = ref<Set<number>>(new Set())
 
 const imageMap: Record<string, string> = {
   'Tomato':        '/images/products/vegetables/Tomato.png',
@@ -244,9 +391,9 @@ const imageMap: Record<string, string> = {
 }
 
 const statusSteps = [
-  { key: 'pending',    label: 'Order Received' },
+  { key: 'pending',    label: 'Order\nReceived' },
   { key: 'preparing',  label: 'Preparing' },
-  { key: 'in_transit', label: 'On the Way' },
+  { key: 'in_transit', label: 'On the\nWay' },
   { key: 'delivered',  label: 'Delivered' },
 ]
 
@@ -260,19 +407,94 @@ const progressWidth = computed(() => {
 })
 
 const isStepDone = (key: string) => {
-  if (order.value?.status === 'delivered' && key === 'delivered') return true
   const orderIdx = statusOrder.indexOf(order.value?.status)
-  const stepIdx = statusOrder.indexOf(key)
+  const stepIdx  = statusOrder.indexOf(key)
   return stepIdx < orderIdx
 }
 
 const isStepActive = (key: string) => {
   const s = order.value?.status
-  if (key === 'pending') return ['pending', 'confirmed'].includes(s)
-  if (key === 'preparing') return ['preparing', 'ready'].includes(s)
+  if (key === 'pending')    return ['pending', 'confirmed'].includes(s)
+  if (key === 'preparing')  return ['preparing', 'ready'].includes(s)
   if (key === 'in_transit') return s === 'in_transit'
-  if (key === 'delivered') return s === 'delivered'
+  if (key === 'delivered')  return s === 'delivered'
   return false
+}
+
+const allReviewed = computed(() =>
+  order.value?.items?.every((i: any) => reviewedProductIds.value.has(i.product_id))
+)
+
+const hasAnyRating = computed(() =>
+  order.value?.items?.some((i: any) =>
+    !reviewedProductIds.value.has(i.product_id) && (ratings.value[i.product_id] ?? 0) > 0
+  )
+)
+
+const setRating = (productId: number, star: number) => {
+  ratings.value = { ...ratings.value, [productId]: star }
+}
+
+const checkExistingReviews = async () => {
+  if (!order.value) return
+  try {
+    for (const item of order.value.items) {
+      const res: any = await get('/reviews', { product_id: item.product_id })
+      const alreadyReviewed = (res.data ?? []).some(
+        (r: any) => r.order_id === order.value.id
+      )
+      if (alreadyReviewed) {
+        reviewedProductIds.value = new Set([...reviewedProductIds.value, item.product_id])
+      }
+    }
+  } catch (e) {
+    console.error('Failed to check existing reviews', e)
+  }
+}
+
+const submitAllReviews = async () => {
+  if (!order.value || submittingReview.value) return
+  submittingReview.value = true
+  try {
+    for (const item of order.value.items) {
+      if (reviewedProductIds.value.has(item.product_id)) continue
+      const rating = ratings.value[item.product_id] ?? 0
+      if (rating === 0) continue
+      await post('/reviews', {
+        product_id: item.product_id,
+        order_id:   order.value.id,
+        rating,
+        comment: comments.value[item.product_id] ?? '',
+      })
+      reviewedProductIds.value = new Set([...reviewedProductIds.value, item.product_id])
+    }
+    showRatingModal.value = false
+  } catch (e) {
+    console.error('Failed to submit reviews', e)
+  } finally {
+    submittingReview.value = false
+  }
+}
+
+const etaEmoji = (status: string) => {
+  const map: Record<string, string> = { confirmed: '✅', preparing: '🧑‍🍳', ready: '📦', in_transit: '🛵' }
+  return map[status] ?? '📦'
+}
+
+const etaLabel = (status: string) => {
+  const map: Record<string, string> = {
+    confirmed: 'Order confirmed by seller!', preparing: 'Seller is preparing your order',
+    ready: 'Order ready — waiting for a driver', in_transit: 'Driver is on the way!',
+  }
+  return map[status] ?? ''
+}
+
+const etaTime = (status: string) => {
+  const map: Record<string, string> = {
+    confirmed: '45 – 60 minutes', preparing: '45 – 60 minutes',
+    ready: '30 – 45 minutes', in_transit: '30 – 45 minutes',
+  }
+  return map[status] ?? ''
 }
 
 const formatDate = (d: string) => {
@@ -322,6 +544,9 @@ onMounted(async () => {
   try {
     const res: any = await get(`/orders/${route.params.id}`)
     order.value = res
+    if (res?.status === 'delivered') {
+      await checkExistingReviews()
+    }
   } catch (e) {
     console.error(e)
     order.value = null
@@ -330,3 +555,8 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+</style>
