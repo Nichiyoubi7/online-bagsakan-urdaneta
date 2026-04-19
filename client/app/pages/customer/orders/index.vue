@@ -280,7 +280,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import GuestLayout from '../../components/layout/GuestLayout.vue'
+import GuestLayout from '../../../components/layout/GuestLayout.vue'
 
 const { get, put } = useApi()
 

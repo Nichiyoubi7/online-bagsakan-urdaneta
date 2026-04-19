@@ -81,12 +81,11 @@
                   <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold', verificationClass(seller.verification_status)]">
                     {{ verificationLabel(seller.verification_status) }}
                   </span>
-                  
+                  <button
                     v-if="seller.id_document"
-                    :href="apiBase + '/storage/' + seller.id_document"
-                    target="_blank"
+                    @click="viewDocument(seller.id_document)"
                     class="text-xs text-blue-500 hover:underline font-semibold"
-                  <a>View ID</a>
+                  >View ID</button>
                 </div>
               </td>
               <td class="px-5 py-4">
@@ -219,5 +218,9 @@ const verifyUser = async (seller: any, status: string) => {
   } catch (e) {
     console.error('Failed to update verification', e)
   }
+}
+
+const viewDocument = (path: string) => {
+  window.open(apiBase + '/storage/' + path, '_blank')
 }
 </script>
