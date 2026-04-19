@@ -86,7 +86,7 @@
                     :href="apiBase + '/storage/' + seller.id_document"
                     target="_blank"
                     class="text-xs text-blue-500 hover:underline font-semibold"
-                  >View ID</a>
+                  <a>View ID</a>
                 </div>
               </td>
               <td class="px-5 py-4">
