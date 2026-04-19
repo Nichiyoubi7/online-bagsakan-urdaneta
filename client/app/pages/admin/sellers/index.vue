@@ -1,7 +1,6 @@
 <template>
   <AdminLayout title="Sellers" subtitle="Manage and approve sellers">
 
-    <!-- Stats -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <div
         v-for="stat in stats"
@@ -16,7 +15,6 @@
       </div>
     </div>
 
-    <!-- Table -->
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 
       <div class="flex flex-col md:flex-row md:items-center justify-between px-5 py-4 border-b border-gray-100 gap-3">
@@ -42,7 +40,6 @@
         </div>
       </div>
 
-      <!-- Loading -->
       <div v-if="loading" class="p-4 flex flex-col gap-3">
         <div v-for="n in 5" :key="n" class="h-14 bg-gray-100 rounded-xl animate-pulse" />
       </div>
@@ -86,29 +83,29 @@
                   </span>
                   
                     v-if="seller.id_document"
-                    :href="`${apiBase}/storage/${seller.id_document}`"
+                    :href="apiBase + '/storage/' + seller.id_document"
                     target="_blank"
                     class="text-xs text-blue-500 hover:underline font-semibold"
                   >View ID</a>
                 </div>
               </td>
-<td class="px-5 py-4">
+              <td class="px-5 py-4">
                 <div class="flex items-center gap-2 flex-wrap">
                   <button
                     v-if="seller.verification_status === 'pending'"
                     @click="verifyUser(seller, 'verified')"
                     class="text-xs bg-green-500 hover:bg-green-600 text-white font-semibold px-3 py-1.5 rounded-full transition-colors"
-                  >✓ Approve</button>
+                  >Approve</button>
                   <button
                     v-if="seller.verification_status === 'pending'"
                     @click="verifyUser(seller, 'rejected')"
                     class="text-xs bg-red-100 hover:bg-red-200 text-red-600 font-semibold px-3 py-1.5 rounded-full transition-colors"
-                  >✕ Reject</button>
+                  >Reject</button>
                   <button
                     v-if="seller.verification_status === 'rejected'"
                     @click="verifyUser(seller, 'verified')"
                     class="text-xs bg-green-100 hover:bg-green-200 text-green-600 font-semibold px-3 py-1.5 rounded-full transition-colors"
-                  >✓ Approve</button>
+                  >Approve</button>
                   <button
                     @click="toggleStatus(seller)"
                     :class="[
