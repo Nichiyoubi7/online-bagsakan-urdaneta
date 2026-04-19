@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Notification;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class OrderController extends Controller
 {
@@ -85,11 +86,12 @@ class OrderController extends Controller
             'total_weight_kg'  => $totalWeight,
             'delivery_address' => $request->delivery_address,
             'delivery_note'    => $request->delivery_note,
+            'payment_status'   => 'unpaid',
         ]);
 
         $order->items()->createMany($orderItems);
 
-        // Notify seller of new order
+        // Notify seller
         Notification::create([
             'user_id'  => $request->seller_id,
             'title'    => 'New Order Received! 🛍️',
@@ -124,7 +126,7 @@ class OrderController extends Controller
             }
         }
 
-        // Audit log — order placed
+        // Audit log
         AuditLog::create([
             'user_id'    => $request->user()->id,
             'action'     => 'order.placed',
@@ -139,9 +141,43 @@ class OrderController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
+        // GCash via Xendit — create invoice
+        $xenditInvoiceUrl = null;
+        if ($request->payment_method === 'gcash') {
+            try {
+                $frontendUrl = env('FRONTEND_URL', 'https://online-bagsakan-urdaneta.vercel.app');
+                $response = Http::withBasicAuth(env('XENDIT_SECRET_KEY'), '')
+                    ->post('https://api.xendit.co/v2/invoices', [
+                        'external_id'       => 'OBRA-ORDER-' . $order->id,
+                        'amount'            => (int) $total,
+                        'currency'          => 'PHP',
+                        'description'       => "OBRA Order #{$order->id} — {$request->user()->name}",
+                        'customer'          => [
+                            'given_names' => $request->user()->name,
+                            'email'       => $request->user()->email,
+                        ],
+                        'success_redirect_url' => $frontendUrl . '/payment/success?order_id=' . $order->id,
+                        'failure_redirect_url' => $frontendUrl . '/payment/failed?order_id=' . $order->id,
+                        'payment_methods'   => ['GCASH'],
+                    ]);
+
+                if ($response->successful()) {
+                    $invoice = $response->json();
+                    $order->update([
+                        'xendit_invoice_id'  => $invoice['id'],
+                        'xendit_invoice_url' => $invoice['invoice_url'],
+                    ]);
+                    $xenditInvoiceUrl = $invoice['invoice_url'];
+                }
+            } catch (\Exception $e) {
+                \Log::error('Xendit invoice creation failed: ' . $e->getMessage());
+            }
+        }
+
         return response()->json([
-            'message' => 'Order placed successfully!',
-            'order'   => $order->load('items'),
+            'message'          => 'Order placed successfully!',
+            'order'            => $order->load('items'),
+            'xendit_invoice_url' => $xenditInvoiceUrl,
         ], 201);
     }
 
@@ -168,7 +204,6 @@ class OrderController extends Controller
         $orderId    = $order->id;
         $sellerName = $order->seller->name ?? 'Seller';
 
-        // Audit log — status change
         AuditLog::create([
             'user_id'    => $request->user()->id,
             'action'     => 'order.status_changed',

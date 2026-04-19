@@ -320,23 +320,35 @@ const handlePlaceOrder = async () => {
       ? `${form.value.address}, ${form.value.barangay}, ${form.value.city}, ${form.value.province}`
       : 'Store Pickup'
 
+    let xenditUrl = null
+
     for (const group of sellerGroups.value) {
-      await post('/orders', {
-        seller_id: group.sellerId,
-        delivery_type: form.value.deliveryType,
-        payment_method: form.value.paymentMethod,
+      const res: any = await post('/orders', {
+        seller_id:        group.sellerId,
+        delivery_type:    form.value.deliveryType,
+        payment_method:   form.value.paymentMethod,
         delivery_address: deliveryAddress,
-        delivery_note: form.value.note,
-        tip: form.value.tip,
+        delivery_note:    form.value.note,
+        tip:              form.value.tip,
         items: group.items.map(i => ({
           product_id: i.productId,
-          quantity: i.quantity,
+          quantity:   i.quantity,
         })),
       })
+
+      if (res.xendit_invoice_url) {
+        xenditUrl = res.xendit_invoice_url
+      }
     }
 
     selectedItems.value.forEach(i => cartStore.removeItem(i.id))
-    showSuccess.value = true
+
+    if (xenditUrl) {
+      // Redirect to Xendit GCash payment page
+      window.location.href = xenditUrl
+    } else {
+      showSuccess.value = true
+    }
 
   } catch (e: any) {
     error.value = e?.data?.message || 'Failed to place order. Please try again.'
