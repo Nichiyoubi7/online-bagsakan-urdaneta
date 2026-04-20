@@ -75,8 +75,13 @@ workbox: {
   devtools: { enabled: true },
   css: ["~/assets/css/main.css"],
 
-  routeRules: {
-    "/": { prerender: true }
+routeRules: {
+    "/": { prerender: true },
+    "/admin/**": { ssr: false },
+    "/seller/**": { ssr: false },
+    "/driver/**": { ssr: false },
+    "/customer/**": { ssr: false },
+    "/payment/**": { ssr: false },
   },
 
   compatibilityDate: "2025-01-15",
