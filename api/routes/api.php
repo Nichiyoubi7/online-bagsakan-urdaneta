@@ -21,6 +21,8 @@ Route::get("/categories/{id}",   [CategoryController::class, "show"]);
 Route::get("/products",          [ProductController::class, "index"]);
 Route::get("/products/{id}",     [ProductController::class, "show"]);
 Route::get("/reviews",           [ReviewController::class, "index"]);
+// Seller — get own products
+
 
 // Seller's own products
 Route::get("/seller/products", [ProductController::class, "sellerProducts"]);
@@ -37,6 +39,8 @@ Route::middleware("auth:sanctum")->group(function () {
 
     // Seller uploads their ID document
     Route::post("/profile/document", [UserController::class, "uploadDocument"]);
+
+    Route::get('/seller/products', [ProductController::class, 'sellerProducts']);
 
     // Products
     Route::post("/products",          [ProductController::class, "store"]);
