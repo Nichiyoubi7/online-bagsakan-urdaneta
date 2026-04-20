@@ -163,7 +163,7 @@
   <NuxtLink
     v-if="order.status === 'delivered'"
     :to="`/customer/orders/${order.id}`"
-    class="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors"
+    class="flex items-center gap-2 border border-yellow-400 text-yellow-500 hover:bg-yellow-50 text-sm font-semibold px-4 py-2 rounded-full transition-colors"
   >
     ⭐ Rate Order
   </NuxtLink>
