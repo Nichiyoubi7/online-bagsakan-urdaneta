@@ -1,62 +1,62 @@
 export default defineNuxtRouteMiddleware((to) => {
+  if (!import.meta.client) return
+
   const authStore = useAuthStore()
 
-  if (import.meta.client) {
-    authStore.loadFromStorage()
-  }
+  // Always load fresh from localStorage
+  authStore.loadFromStorage()
 
   const role = authStore.role
   const isLoggedIn = authStore.isLoggedIn
   const path = to.path
 
-  const adminRoutes    = path.startsWith('/admin')
-  const sellerRoutes   = path.startsWith('/seller')
-  const driverRoutes   = path.startsWith('/driver')
-  const staffRoutes    = path.startsWith('/staff')
+  const isAdminRoute  = path.startsWith('/admin')
+  const isSellerRoute = path.startsWith('/seller')
+  const isDriverRoute = path.startsWith('/driver')
+  const isStaffRoute  = path.startsWith('/staff')
 
-  // Guest pages that logged-in users with dashboards shouldn't access
-  const guestPages = [
-    '/',
-    '/sellers',
-    '/about',
-    '/contact',
-    '/customer',
-    '/seller-store',
-  ]
-  const isGuestPage = guestPages.some(p => path === p || path.startsWith(p))
-
+  // Not logged in — block all dashboard routes
   if (!isLoggedIn) {
-    // Not logged in trying to access protected routes
-    if (adminRoutes || sellerRoutes || driverRoutes || staffRoutes) {
+    if (isAdminRoute || isSellerRoute || isDriverRoute || isStaffRoute) {
       return navigateTo('/')
     }
     return
   }
 
-  // Logged in — enforce role-based access
+  // ADMIN or STAFF
   if (role === 'admin' || role === 'staff') {
-    // Admin/staff should not be on guest pages or seller/driver dashboards
-    if (isGuestPage || sellerRoutes || driverRoutes) {
+    if (isSellerRoute || isDriverRoute) {
+      return navigateTo('/admin/dashboard')
+    }
+    // Redirect from any public/customer page back to admin dashboard
+    if (!isAdminRoute && !isStaffRoute) {
       return navigateTo('/admin/dashboard')
     }
   }
 
+  // SELLER
   if (role === 'seller') {
-    // Seller should not be on admin/driver pages or pure guest pages like landing
-    if (adminRoutes || driverRoutes) {
+    if (isAdminRoute || isDriverRoute || isStaffRoute) {
       return navigateTo('/seller/dashboard')
     }
-    // Allow sellers to browse customer pages (they might want to shop too)
+    if (path === '/') {
+      return navigateTo('/seller/dashboard')
+    }
   }
 
+  // DRIVER
   if (role === 'driver') {
-    if (adminRoutes || sellerRoutes) {
+    if (isAdminRoute || isSellerRoute || isStaffRoute) {
+      return navigateTo('/driver/dashboard')
+    }
+    if (path === '/') {
       return navigateTo('/driver/dashboard')
     }
   }
 
+  // CUSTOMER
   if (role === 'customer') {
-    if (adminRoutes || sellerRoutes || driverRoutes || staffRoutes) {
+    if (isAdminRoute || isSellerRoute || isDriverRoute || isStaffRoute) {
       return navigateTo('/')
     }
   }
