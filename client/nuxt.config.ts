@@ -43,9 +43,10 @@ export default defineNuxtConfig({
         },
       ],
     },
-    workbox: {
+workbox: {
       navigateFallback: "/",
-      globPatterns: ["**/*.{js,css,html,png,svg,ico}"],
+      globPatterns: ["**/*.{js,css,html,ico}"],
+      maximumFileSizeToCacheInBytes: 3000000,
     },
     devOptions: {
       enabled: false,
@@ -74,8 +75,13 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ["~/assets/css/main.css"],
 
-  routeRules: {
-    "/": { prerender: true }
+routeRules: {
+    "/": { prerender: true },
+    "/admin/**": { ssr: false },
+    "/seller/**": { ssr: false },
+    "/driver/**": { ssr: false },
+    "/customer/**": { ssr: false },
+    "/payment/**": { ssr: false },
   },
 
   compatibilityDate: "2025-01-15",
