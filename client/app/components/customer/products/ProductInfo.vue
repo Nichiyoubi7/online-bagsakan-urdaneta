@@ -36,38 +36,76 @@
       </span>
     </div>
 
-    <!-- Quantity + Add to Cart -->
-    <div class="flex items-center gap-3">
-      <div class="flex items-center border border-gray-200 rounded-xl overflow-hidden">
-        <button
-          @click="quantity > 1 ? quantity-- : null"
-          class="px-4 py-2.5 text-gray-600 hover:bg-gray-50 transition-colors font-bold text-lg"
-        >−</button>
-        <span class="px-4 py-2.5 text-sm font-semibold text-gray-800 min-w-[40px] text-center">{{ quantity }}</span>
-        <button
-          @click="quantity++"
-          class="px-4 py-2.5 text-gray-600 hover:bg-gray-50 transition-colors font-bold text-lg"
-        >+</button>
-      </div>
-      <button
-        @click="handleAddToCart"
-        :disabled="product.stock === 0"
-        class="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white font-semibold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 transition-colors shadow-md"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 6M17 13l1.5 6M9 19a1 1 0 100 2 1 1 0 000-2zm8 0a1 1 0 100 2 1 1 0 000-2z"/>
-        </svg>
-        Add to Cart
-      </button>
-      <button
-        @click="wishlisted = !wishlisted"
-        :class="['w-11 h-11 rounded-full border flex items-center justify-center transition-all shrink-0', wishlisted ? 'bg-red-50 border-red-300 text-red-500' : 'border-gray-200 text-gray-400 hover:border-red-300 hover:text-red-400']"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" :fill="wishlisted ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-        </svg>
-      </button>
+<!-- Quantity + Buttons -->
+<div class="flex flex-col gap-3">
+  <div class="flex items-center gap-3">
+    <div class="flex items-center border border-gray-200 rounded-xl overflow-hidden">
+      <button @click="quantity > 1 ? quantity-- : null"
+        class="px-4 py-2.5 text-gray-600 hover:bg-gray-50 transition-colors font-bold text-lg">−</button>
+      <span class="px-4 py-2.5 text-sm font-semibold text-gray-800 min-w-[40px] text-center">{{ quantity }}</span>
+      <button @click="quantity++"
+        class="px-4 py-2.5 text-gray-600 hover:bg-gray-50 transition-colors font-bold text-lg">+</button>
     </div>
+
+    <!-- Add to Cart -->
+    <button
+      @click="handleAddToCart"
+      :disabled="product.stock === 0"
+      class="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white font-semibold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 transition-colors shadow-md"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 6M17 13l1.5 6M9 19a1 1 0 100 2 1 1 0 000-2zm8 0a1 1 0 100 2 1 1 0 000-2z"/>
+      </svg>
+      Add to Cart
+    </button>
+
+    <button
+      @click="wishlisted = !wishlisted"
+      :class="['w-11 h-11 rounded-full border flex items-center justify-center transition-all shrink-0', wishlisted ? 'bg-red-50 border-red-300 text-red-500' : 'border-gray-200 text-gray-400 hover:border-red-300 hover:text-red-400']"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" :fill="wishlisted ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Buy Now Button -->
+  <button
+    @click="handleBuyNow"
+    :disabled="product.stock === 0"
+    class="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white font-bold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 transition-colors shadow-md"
+  >
+    ⚡ Buy Now
+  </button>
+</div>
+
+<!-- Login Prompt Modal -->
+<Transition name="fade">
+  <div v-if="showLoginPrompt" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" @click.self="showLoginPrompt = false">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-black text-gray-900 mb-2">Sign in to continue</h3>
+      <p class="text-sm text-gray-400 mb-6">
+        You need an account to {{ pendingAction === 'buy' ? 'buy products' : 'add items to your cart' }}. Join OBRA today!
+      </p>
+      <div class="flex flex-col gap-3">
+        <button @click="goToLogin" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition-colors">
+          Sign In
+        </button>
+        <button @click="goToRegister" class="w-full border-2 border-green-500 text-green-600 font-semibold py-3 rounded-xl hover:bg-green-50 transition-colors">
+          Create Account
+        </button>
+        <button @click="showLoginPrompt = false" class="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+          Maybe later
+        </button>
+      </div>
+    </div>
+  </div>
+</Transition>
 
     <!-- Category + Tags -->
     <div class="flex flex-col gap-2 pt-2 border-t border-gray-100 text-sm">
@@ -116,6 +154,8 @@ const props = defineProps<{
     category: string
     tags: string[]
     stock?: number
+    sellerId?: number
+    sellerName?: string
   }
 }>()
 
@@ -123,10 +163,38 @@ const emit = defineEmits<{
   (e: 'add-to-cart', quantity: number): void
 }>()
 
+const authStore = useAuthStore()
 const quantity = ref(1)
 const wishlisted = ref(false)
+const showLoginPrompt = ref(false)
+const pendingAction = ref<'cart' | 'buy'>('cart')
 
 const handleAddToCart = () => {
+  if (!authStore.isLoggedIn) {
+    pendingAction.value = 'cart'
+    showLoginPrompt.value = true
+    return
+  }
   emit('add-to-cart', quantity.value)
+}
+
+const handleBuyNow = () => {
+  if (!authStore.isLoggedIn) {
+    pendingAction.value = 'buy'
+    showLoginPrompt.value = true
+    return
+  }
+  emit('add-to-cart', quantity.value)
+  navigateTo('/customer/cart')
+}
+
+const goToLogin = () => {
+  showLoginPrompt.value = false
+  navigateTo('/?login=true')
+}
+
+const goToRegister = () => {
+  showLoginPrompt.value = false
+  navigateTo('/?register=true')
 }
 </script>
