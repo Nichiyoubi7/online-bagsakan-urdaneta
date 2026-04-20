@@ -21,6 +21,7 @@ Route::get("/categories/{id}",   [CategoryController::class, "show"]);
 Route::get("/products",          [ProductController::class, "index"]);
 Route::get("/products/{id}",     [ProductController::class, "show"]);
 Route::get("/reviews",           [ReviewController::class, "index"]);
+Route::get("/users/{id}",        [UserController::class, "show"]);
 // Seller — get own products
 
 

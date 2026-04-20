@@ -81,11 +81,13 @@
                   <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold', verificationClass(seller.verification_status)]">
                     {{ verificationLabel(seller.verification_status) }}
                   </span>
-                  <button
+                  
                     v-if="seller.id_document"
-                    @click="viewDocument(seller.id_document)"
-                    class="text-xs text-blue-500 hover:underline font-semibold"
-                  >View ID</button>
+  :href="`${apiBase.replace('/api', '')}/storage/${seller.id_document}`"
+  target="_blank"
+  rel="noopener noreferrer"
+  class="text-xs text-blue-500 hover:underline font-semibold"
+>View ID</a>
                 </div>
               </td>
               <td class="px-5 py-4">
