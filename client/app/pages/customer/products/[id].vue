@@ -194,7 +194,7 @@ const mappedProduct = computed(() => {
     category: catName,
     stock: product.value.stock ?? 0,
     tags: [catName, 'Fresh', 'Local', 'Urdaneta'].filter(Boolean),
-    image: imageMap[product.value.name] || '/images/products/placeholder.png',
+    image: productImages.value[0] || imageMap[product.value.name] || '/images/products/placeholder.png',
     sellerId: product.value.user_id ?? 1,
     sellerName: product.value.seller?.name || product.value.user?.name || 'OBRA Store',
   }
@@ -223,7 +223,7 @@ const loadProduct = async () => {
           name: p.name,
           price: Number(p.price),
           originalPrice: p.original_price ? Number(p.original_price) : undefined,
-          image: imageMap[p.name] || '/images/products/placeholder.png',
+          image: (p.images?.[0]?.path ? `https://api.obra-ur.xyz/storage/${p.images[0].path}` : null) || imageMap[p.name] || '/images/products/placeholder.png',
           category: p.category?.name || '',
           rating: 4,
           badge: p.original_price && Number(p.original_price) > Number(p.price) ? 'Sale' : undefined,
