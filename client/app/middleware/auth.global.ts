@@ -1,7 +1,6 @@
 export default defineNuxtRouteMiddleware((to) => {
   const authStore = useAuthStore()
 
-  // Load from storage on every navigation
   if (import.meta.client) {
     authStore.loadFromStorage()
   }
@@ -10,42 +9,54 @@ export default defineNuxtRouteMiddleware((to) => {
   const isLoggedIn = authStore.isLoggedIn
   const path = to.path
 
-  // Define which roles can access which routes
-  const adminRoutes   = path.startsWith('/admin')
-  const sellerRoutes  = path.startsWith('/seller')
-  const driverRoutes  = path.startsWith('/driver')
-  const staffRoutes   = path.startsWith('/staff')
-  const customerRoutes = path.startsWith('/customer')
+  const adminRoutes    = path.startsWith('/admin')
+  const sellerRoutes   = path.startsWith('/seller')
+  const driverRoutes   = path.startsWith('/driver')
+  const staffRoutes    = path.startsWith('/staff')
 
-  // Not logged in trying to access protected routes
-  if (!isLoggedIn && (adminRoutes || sellerRoutes || driverRoutes || staffRoutes)) {
-    return navigateTo('/')
+  // Guest pages that logged-in users with dashboards shouldn't access
+  const guestPages = [
+    '/',
+    '/sellers',
+    '/about',
+    '/contact',
+    '/customer',
+    '/seller-store',
+  ]
+  const isGuestPage = guestPages.some(p => path === p || path.startsWith(p))
+
+  if (!isLoggedIn) {
+    // Not logged in trying to access protected routes
+    if (adminRoutes || sellerRoutes || driverRoutes || staffRoutes) {
+      return navigateTo('/')
+    }
+    return
   }
 
-  // Wrong role trying to access wrong dashboard
-  if (isLoggedIn) {
-    // Admin trying to go to seller/driver/customer pages
-    if (role === 'admin' && (sellerRoutes || driverRoutes)) {
+  // Logged in — enforce role-based access
+  if (role === 'admin' || role === 'staff') {
+    // Admin/staff should not be on guest pages or seller/driver dashboards
+    if (isGuestPage || sellerRoutes || driverRoutes) {
       return navigateTo('/admin/dashboard')
     }
+  }
 
-    // Seller trying to go to admin/driver/customer account pages
-    if (role === 'seller' && (adminRoutes || driverRoutes)) {
+  if (role === 'seller') {
+    // Seller should not be on admin/driver pages or pure guest pages like landing
+    if (adminRoutes || driverRoutes) {
       return navigateTo('/seller/dashboard')
     }
+    // Allow sellers to browse customer pages (they might want to shop too)
+  }
 
-    // Driver trying to go to admin/seller pages
-    if (role === 'driver' && (adminRoutes || sellerRoutes)) {
+  if (role === 'driver') {
+    if (adminRoutes || sellerRoutes) {
       return navigateTo('/driver/dashboard')
     }
+  }
 
-    // Staff trying to go to admin/seller/driver pages
-    if (role === 'staff' && (adminRoutes || sellerRoutes || driverRoutes)) {
-      return navigateTo('/staff/dashboard')
-    }
-
-    // Customer trying to go to admin/seller/driver/staff pages
-    if (role === 'customer' && (adminRoutes || sellerRoutes || driverRoutes || staffRoutes)) {
+  if (role === 'customer') {
+    if (adminRoutes || sellerRoutes || driverRoutes || staffRoutes) {
       return navigateTo('/')
     }
   }
