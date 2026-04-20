@@ -70,50 +70,16 @@
         <!-- Buy Now -->
         <button
           @click.prevent="handleBuyNow"
-          class="flex-1 text-xs font-semibold py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white transition-all flex items-center justify-center gap-1"
+          class="flex-1 text-xs font-semibold py-2 rounded-xl bg-[#0f2d1f] hover:bg-[#1a4a30] text-white transition-all flex items-center justify-center gap-1"
         >
-          ⚡ Buy
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          Buy Now
         </button>
       </div>
     </div>
   </div>
-
-  <!-- Login Prompt Modal -->
-  <Transition name="fade">
-    <div v-if="showLoginPrompt" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" @click.self="showLoginPrompt = false">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
-        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-          </svg>
-        </div>
-        <h3 class="text-lg font-black text-gray-900 mb-2">Sign in to continue</h3>
-        <p class="text-sm text-gray-400 mb-6">
-          You need an account to {{ pendingAction === 'buy' ? 'buy products' : 'add items to your cart' }}. Join OBRA today!
-        </p>
-        <div class="flex flex-col gap-3">
-          <button
-            @click="goToLogin"
-            class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition-colors"
-          >
-            Sign In
-          </button>
-          <button
-            @click="goToRegister"
-            class="w-full border-2 border-green-500 text-green-600 font-semibold py-3 rounded-xl hover:bg-green-50 transition-colors"
-          >
-            Create Account
-          </button>
-          <button
-            @click="showLoginPrompt = false"
-            class="text-sm text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            Maybe later
-          </button>
-        </div>
-      </div>
-    </div>
-  </Transition>
 </template>
 
 <script setup lang="ts">
@@ -136,10 +102,8 @@ const props = defineProps<{
 }>()
 
 const cartStore = useCartStore()
-const authStore = useAuthStore()
+const { requireAuth } = useAuthGate()
 const added = ref(false)
-const showLoginPrompt = ref(false)
-const pendingAction = ref<'cart' | 'buy'>('cart')
 
 const addToCart = () => {
   cartStore.addItem({
@@ -158,31 +122,13 @@ const addToCart = () => {
 }
 
 const handleAddToCart = () => {
-  if (!authStore.isLoggedIn) {
-    pendingAction.value = 'cart'
-    showLoginPrompt.value = true
-    return
-  }
-  addToCart()
+  requireAuth(() => addToCart())
 }
 
 const handleBuyNow = () => {
-  if (!authStore.isLoggedIn) {
-    pendingAction.value = 'buy'
-    showLoginPrompt.value = true
-    return
-  }
-  addToCart()
-  navigateTo('/customer/cart')
-}
-
-const goToLogin = () => {
-  showLoginPrompt.value = false
-  navigateTo('/?login=true')
-}
-
-const goToRegister = () => {
-  showLoginPrompt.value = false
-  navigateTo('/?register=true')
+  requireAuth(() => {
+    addToCart()
+    navigateTo('/customer/cart')
+  })
 }
 </script>

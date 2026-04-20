@@ -47,7 +47,6 @@
         class="px-4 py-2.5 text-gray-600 hover:bg-gray-50 transition-colors font-bold text-lg">+</button>
     </div>
 
-    <!-- Add to Cart -->
     <button
       @click="handleAddToCart"
       :disabled="product.stock === 0"
@@ -69,13 +68,16 @@
     </button>
   </div>
 
-  <!-- Buy Now Button -->
+  <!-- Buy Now -->
   <button
     @click="handleBuyNow"
     :disabled="product.stock === 0"
-    class="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white font-bold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 transition-colors shadow-md"
+    class="w-full bg-[#0f2d1f] hover:bg-[#1a4a30] disabled:bg-gray-300 text-white font-bold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 transition-colors shadow-md"
   >
-    ⚡ Buy Now
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+    </svg>
+    Buy Now
   </button>
 </div>
 
@@ -163,38 +165,18 @@ const emit = defineEmits<{
   (e: 'add-to-cart', quantity: number): void
 }>()
 
-const authStore = useAuthStore()
+const { requireAuth } = useAuthGate()
 const quantity = ref(1)
 const wishlisted = ref(false)
-const showLoginPrompt = ref(false)
-const pendingAction = ref<'cart' | 'buy'>('cart')
 
 const handleAddToCart = () => {
-  if (!authStore.isLoggedIn) {
-    pendingAction.value = 'cart'
-    showLoginPrompt.value = true
-    return
-  }
-  emit('add-to-cart', quantity.value)
+  requireAuth(() => emit('add-to-cart', quantity.value))
 }
 
 const handleBuyNow = () => {
-  if (!authStore.isLoggedIn) {
-    pendingAction.value = 'buy'
-    showLoginPrompt.value = true
-    return
-  }
-  emit('add-to-cart', quantity.value)
-  navigateTo('/customer/cart')
-}
-
-const goToLogin = () => {
-  showLoginPrompt.value = false
-  navigateTo('/?login=true')
-}
-
-const goToRegister = () => {
-  showLoginPrompt.value = false
-  navigateTo('/?register=true')
+  requireAuth(() => {
+    emit('add-to-cart', quantity.value)
+    navigateTo('/customer/cart')
+  })
 }
 </script>
