@@ -82,12 +82,12 @@
                     {{ verificationLabel(seller.verification_status) }}
                   </span>
                   
-                    v-if="seller.id_document"
-  :href="`${apiBase.replace('/api', '')}/storage/${seller.id_document}`"
-  target="_blank"
-  rel="noopener noreferrer"
-  class="text-xs text-blue-500 hover:underline font-semibold"
->View ID</a>
+v-if="seller.id_document"
+                    :href="`${storageBase}/storage/${seller.id_document}`"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-xs text-blue-500 hover:underline font-semibold"
+                  >View ID</a>
                 </div>
               </td>
               <td class="px-5 py-4">
@@ -141,6 +141,7 @@ import AdminLayout from '../../../components/admin/layout/AdminLayout.vue'
 const { get, put } = useApi()
 const config = useRuntimeConfig()
 const apiBase = config.public.apiBase
+const storageBase = computed(() => apiBase.replace('/api', ''))
 
 const search             = ref('')
 const statusFilter       = ref('all')
