@@ -221,6 +221,7 @@ const verifyUser = async (seller: any, status: string) => {
 }
 
 const viewDocument = (path: string) => {
-  window.open(apiBase + '/storage/' + path, '_blank')
+  const storageBase = apiBase.replace('/api', '')
+  window.open(storageBase + '/storage/' + path, '_blank')
 }
 </script>

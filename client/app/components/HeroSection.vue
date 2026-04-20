@@ -14,7 +14,7 @@
           Organic Food
         </h1>
         <p class="text-gray-700 text-lg mb-2">
-          Sale up to <span class="text-orange-500 font-bold">30% OFF</span>
+           
         </p>
         <p class="text-gray-500 text-sm mb-8">
           Free shipping on all your order. We deliver, you enjoy.

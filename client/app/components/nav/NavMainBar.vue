@@ -24,7 +24,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search products, sellers..."
+            placeholder="Search products..."
             class="flex-1 px-4 py-2.5 text-sm text-gray-700 outline-none placeholder:text-gray-400"
             @keyup.enter="handleSearch"
             @input="handleInput"
