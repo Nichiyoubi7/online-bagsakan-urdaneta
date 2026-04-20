@@ -1,10 +1,7 @@
 <template>
-  <div class="px-6 py-8">
+  <div class="px-6 py-6 max-h-[80vh] overflow-y-auto">
 
-    <button
-      @click="$emit('back')"
-      class="flex items-center gap-2 text-gray-500 hover:text-gray-700 text-sm mb-6 transition-colors"
-    >
+    <button @click="$emit('back')" class="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 mb-4 transition-colors">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
       </svg>
@@ -14,115 +11,84 @@
     <h2 class="text-2xl font-black text-gray-900 mb-1">Create Account</h2>
     <p class="text-gray-400 text-sm mb-6">Join OBRA Urdaneta today</p>
 
+    <p v-if="presetRole !== 'customer'" class="text-sm text-green-600 font-semibold mb-4 bg-green-50 rounded-xl px-4 py-2">
+      Registering as: {{ presetRole === 'seller' ? '🏪 Seller' : '🛵 Driver' }}
+    </p>
+
     <form @submit.prevent="handleRegister" class="flex flex-col gap-4">
 
-      <!-- Role Selector -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">I am registering as</label>
-        <div class="grid grid-cols-3 gap-2">
-          <button
-            v-for="r in roles"
-            :key="r.value"
-            type="button"
-            @click="form.role = r.value"
-            :class="[
-              'flex flex-col items-center gap-1 py-2 px-1 rounded-xl border text-xs font-semibold transition-all',
-              form.role === r.value
-                ? 'border-green-500 bg-green-50 text-green-600'
-                : 'border-gray-200 text-gray-500 hover:border-green-300'
-            ]"
-          >
-            <span class="text-xl">{{ r.icon }}</span>
-            {{ r.label }}
-          </button>
-        </div>
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">Full Name</label>
         <input
           v-model="form.name"
           type="text"
           placeholder="Enter your full name"
-          class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all"
           required
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-400 transition-colors"
         />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">Email</label>
         <input
           v-model="form.email"
           type="email"
           placeholder="Enter your email"
-          class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all"
           required
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-400 transition-colors"
         />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">
-          Phone Number
-          <span class="text-xs text-gray-400 font-normal ml-1">(optional)</span>
-        </label>
-        <div class="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-100 transition-all">
-          <span class="px-3 py-3 bg-gray-50 text-sm text-gray-500 border-r border-gray-200">🇵🇭 +63</span>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">Phone Number <span class="text-gray-400 font-normal">(optional)</span></label>
+        <div class="flex gap-2">
+          <span class="border border-gray-200 rounded-xl px-3 py-3 text-sm text-gray-500 bg-gray-50">PH +63</span>
           <input
             v-model="form.phone"
             type="tel"
             placeholder="9XX XXX XXXX"
-            class="flex-1 px-3 py-3 text-sm outline-none bg-white"
-            maxlength="10"
+            class="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-400 transition-colors"
           />
         </div>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">Password</label>
         <div class="relative">
           <input
             v-model="form.password"
             :type="showPassword ? 'text' : 'password'"
             placeholder="At least 8 characters"
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all pr-10"
             required
-            minlength="8"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-400 transition-colors pr-10"
           />
-          <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-            <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-            </svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
             </svg>
           </button>
         </div>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Confirm Password</label>
+        <label class="text-sm font-semibold text-gray-700 mb-1 block">Confirm Password</label>
         <input
           v-model="form.password_confirmation"
           :type="showPassword ? 'text' : 'password'"
           placeholder="Repeat your password"
-          class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all"
           required
-          minlength="8"
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-400 transition-colors"
         />
       </div>
 
-      <p v-if="error" class="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg">{{ error }}</p>
+      <p v-if="error" class="text-red-500 text-xs">{{ error }}</p>
 
       <button
         type="submit"
         :disabled="loading"
-        class="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white font-semibold py-3 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2"
+        class="w-full bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white font-semibold py-3 rounded-xl transition-colors duration-200"
       >
-        <svg v-if="loading" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-        </svg>
         {{ loading ? 'Sending verification code...' : 'Continue' }}
       </button>
 
@@ -137,6 +103,10 @@
 </template>
 
 <script setup lang="ts">
+const props = defineProps<{
+  presetRole?: string
+}>()
+
 const emit = defineEmits<{
   (e: 'back'): void
   (e: 'goto', step: string): void
@@ -152,20 +122,15 @@ const emit = defineEmits<{
 
 const config = useRuntimeConfig()
 
-const roles = [
-  { value: 'customer', label: 'Buyer', icon: '🛒' },
-  { value: 'seller', label: 'Seller', icon: '🪙' },
-  { value: 'driver', label: 'Driver', icon: '🛵' },
-]
-
 const form = ref({
   name: '',
   email: '',
   phone: '',
   password: '',
   password_confirmation: '',
-  role: 'customer',
+  role: props.presetRole === 'seller' ? 'seller' : props.presetRole === 'driver' ? 'driver' : 'customer',
 })
+
 const showPassword = ref(false)
 const loading = ref(false)
 const error = ref('')
