@@ -132,18 +132,11 @@ const navGroups = [
       { icon: '🛵', label: 'Drivers',   to: '/admin/drivers', badge: null },
     ],
   },
-  {
-    label: 'Catalog',
-    items: [
-      { icon: '🛍️', label: 'Products',   to: '/admin/products',   badge: null },
-      { icon: '🏷️', label: 'Categories', to: '/admin/categories', badge: null },
-    ],
-  },
+  
   {
     label: 'System',
     items: [
       { icon: '📈', label: 'Reports',  to: '/admin/reports',  badge: null },
-      { icon: '⚙️', label: 'Settings', to: '/admin/settings', badge: null },
     ],
   },
 ]
