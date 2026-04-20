@@ -117,7 +117,7 @@ const mapProduct = (p: any) => ({
   name: p.name,
   price: Number(p.price),
   originalPrice: p.original_price ? Number(p.original_price) : undefined,
-  image: imageMap[p.name] || '/images/products/vegetables/Tomato.png',
+  image: (p.images?.[0]?.path ? `https://api.obra-ur.xyz/storage/${p.images[0].path}` : null) || imageMap[p.name] || '/images/products/placeholder.png',
   category: p.category?.name || '',
   rating: 4,
   badge: p.original_price && Number(p.original_price) > Number(p.price) ? 'Sale' : undefined,
