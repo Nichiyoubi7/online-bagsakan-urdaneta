@@ -239,27 +239,25 @@ const loadProduct = async () => {
   }
 }
 
+const { requireAuth } = useAuthGate()
+
 const handleAddToCart = (quantity: number) => {
-  if (!authStore.isLoggedIn) {
-    navigateTo('/?login=true')
-    return
-  }
-  if (!mappedProduct.value) return
-
-  cartStore.addItem({
-    productId: mappedProduct.value.id,
-    name: mappedProduct.value.name,
-    image: mappedProduct.value.image,
-    price: mappedProduct.value.price,
-    originalPrice: mappedProduct.value.originalPrice,
-    quantity,
-    category: mappedProduct.value.category,
-    sellerId: mappedProduct.value.sellerId,
-    sellerName: mappedProduct.value.sellerName,
+  requireAuth(() => {
+    if (!mappedProduct.value) return
+    cartStore.addItem({
+      productId: mappedProduct.value.id,
+      name: mappedProduct.value.name,
+      image: mappedProduct.value.image,
+      price: mappedProduct.value.price,
+      originalPrice: mappedProduct.value.originalPrice,
+      quantity,
+      category: mappedProduct.value.category,
+      sellerId: mappedProduct.value.sellerId,
+      sellerName: mappedProduct.value.sellerName,
+    })
+    showToast.value = true
+    setTimeout(() => { showToast.value = false }, 2500)
   })
-
-  showToast.value = true
-  setTimeout(() => { showToast.value = false }, 2500)
 }
 
 onMounted(() => loadProduct())

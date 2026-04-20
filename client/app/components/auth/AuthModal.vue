@@ -3,9 +3,8 @@
     <div
       v-if="modelValue"
       class="fixed inset-0 z-50 flex items-center justify-center p-4"
-      
     >
-      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"  />
+      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
       <Transition name="slide-up">
         <div
@@ -28,6 +27,7 @@
               v-if="step === 'welcome'"
               :key="'welcome'"
               @goto="step = $event"
+              @goto-register="(role) => { registerRole = role; step = 'register' }"
               @close="closeModal"
             />
 
@@ -43,6 +43,7 @@
             <AuthRegister
               v-else-if="step === 'register'"
               :key="'register'"
+              :preset-role="registerRole"
               @back="step = 'welcome'"
               @close="closeModal"
               @goto="step = $event"
@@ -57,7 +58,6 @@
               @success="handleOtpSuccess"
             />
 
-            <!-- Shop Setup Step for Sellers -->
             <AuthShopSetup
               v-else-if="step === 'shop'"
               :key="'shop'"
@@ -107,6 +107,7 @@ const emit = defineEmits<{
 const authStore = useAuthStore()
 const { completePendingAction } = useAuthGate()
 const step = ref('welcome')
+const registerRole = ref('customer')
 const otpPayload = ref<any>(null)
 const registeredUser = ref<any>(null)
 
@@ -131,7 +132,6 @@ const handleOtp = (payload: any) => {
 
 const handleOtpSuccess = (user: any) => {
   registeredUser.value = user
-  // If seller, go to shop setup — otherwise go to success
   if (otpPayload.value?.role === 'seller') {
     step.value = 'shop'
   } else {
@@ -147,14 +147,9 @@ const handleLoginSuccess = async () => {
   completePendingAction()
   const role = authStore.role
   closeModal()
-  if (role === 'seller') {
-    navigateTo('/seller/dashboard')
-  } else if (role === 'admin') {
-    navigateTo('/admin/dashboard')
-  } else if (role === 'driver') {
-    navigateTo('/driver/dashboard')
-  } else {
-    navigateTo('/')
-  }
+  if (role === 'seller') navigateTo('/seller/dashboard')
+  else if (role === 'admin') navigateTo('/admin/dashboard')
+  else if (role === 'driver') navigateTo('/driver/dashboard')
+  else navigateTo('/')
 }
 </script>

@@ -6,11 +6,11 @@
 
       <!-- Brand -->
       <div class="flex items-center gap-3 px-4 py-5 border-b border-white/10">
-        <div class="w-9 h-9 bg-green-500 rounded-lg flex items-center justify-center font-bold text-white text-lg shrink-0">B</div>
-        <div v-if="!collapsed">
-          <div class="text-white font-semibold text-sm">Bagsakan</div>
-          <div class="text-white/40 text-xs">Driver Panel</div>
-        </div>
+      <img src="/images/logo/OBRA_Logo.png" alt="OBRA" class="h-9 w-9 object-contain shrink-0" />
+      <div v-if="!collapsed">
+        <div class="text-white font-semibold text-sm">OBRA</div>
+        <div class="text-white/40 text-xs">Driver Panel</div>
+      </div>
       </div>
 
       <!-- Nav -->
