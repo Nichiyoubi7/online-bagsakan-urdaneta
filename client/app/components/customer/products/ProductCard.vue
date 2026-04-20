@@ -1,18 +1,6 @@
 <template>
   <div class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 group relative overflow-hidden">
 
-    <!-- Sale Badge -->
-    <span v-if="product.badge" class="absolute top-3 left-3 z-10 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-      {{ product.badge }}
-    </span>
-
-    <!-- Wishlist Button -->
-    <button class="absolute top-3 right-3 z-10 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center text-gray-400 hover:text-red-400 transition-colors">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-      </svg>
-    </button>
-
     <!-- Product Image -->
     <NuxtLink :to="`/customer/products/${product.id}`">
       <div class="p-4 flex items-center justify-center h-40 md:h-44 bg-gray-50">
@@ -68,9 +56,10 @@
         </button>
 
         <!-- Buy Now -->
+<!-- Buy Now -->
         <button
           @click.prevent="handleBuyNow"
-          class="flex-1 text-xs font-semibold py-2 rounded-xl bg-[#0f2d1f] hover:bg-[#1a4a30] text-white transition-all flex items-center justify-center gap-1"
+          class="flex-1 text-xs font-semibold py-2 rounded-xl border border-gray-800 text-gray-800 hover:bg-gray-800 hover:text-white transition-all flex items-center justify-center gap-1"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>

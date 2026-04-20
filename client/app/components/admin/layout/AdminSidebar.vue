@@ -12,10 +12,8 @@
     <!-- Logo + Close -->
     <div class="flex items-center justify-between px-4 py-5 border-b border-gray-700">
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 bg-green-500 rounded-xl flex items-center justify-center shrink-0">
-          <span class="text-white font-black text-sm">O</span>
-        </div>
-        <span v-if="!collapsed || mobileOpen" class="font-black text-white text-lg">Bagsakan</span>
+<img src="/images/logo/OBRA_Logo.png" alt="OBRA" class="h-8 w-8 object-contain shrink-0" />
+<span v-if="!collapsed || mobileOpen" class="font-black text-white text-lg">OBRA</span>
       </div>
       <button
         class="md:hidden w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
