@@ -105,29 +105,37 @@ const cartStore = useCartStore()
 const { requireAuth } = useAuthGate()
 const added = ref(false)
 
-const addToCart = () => {
-  cartStore.addItem({
-    productId: props.product.id,
-    name: props.product.name,
-    image: props.product.image || (props.product.images?.[0]) || '/images/products/placeholder.png',
-    price: props.product.price,
-    originalPrice: props.product.originalPrice,
-    quantity: 1,
-    category: props.product.category || '',
-    sellerId: props.product.sellerId ?? 1,
-    sellerName: props.product.sellerName || 'OBRA Store',
-  })
-  added.value = true
-  setTimeout(() => { added.value = false }, 2000)
-}
-
 const handleAddToCart = () => {
-  requireAuth(() => addToCart())
+  requireAuth(() => {
+    cartStore.addItem({
+      productId: props.product.id,
+      name: props.product.name,
+      image: props.product.image || (props.product.images?.[0]) || '/images/products/placeholder.png',
+      price: props.product.price,
+      originalPrice: props.product.originalPrice,
+      quantity: 1,
+      category: props.product.category || '',
+      sellerId: props.product.sellerId ?? 1,
+      sellerName: props.product.sellerName || 'OBRA Store',
+    })
+    added.value = true
+    setTimeout(() => { added.value = false }, 2000)
+  })
 }
 
 const handleBuyNow = () => {
   requireAuth(() => {
-    addToCart()
+    cartStore.addItem({
+      productId: props.product.id,
+      name: props.product.name,
+      image: props.product.image || (props.product.images?.[0]) || '/images/products/placeholder.png',
+      price: props.product.price,
+      originalPrice: props.product.originalPrice,
+      quantity: 1,
+      category: props.product.category || '',
+      sellerId: props.product.sellerId ?? 1,
+      sellerName: props.product.sellerName || 'OBRA Store',
+    })
     navigateTo('/customer/cart')
   })
 }
