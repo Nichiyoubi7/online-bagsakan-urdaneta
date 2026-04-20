@@ -1,13 +1,14 @@
 <template>
-  <aside
-    :class="[
-      'fixed top-0 left-0 h-full bg-gray-900 text-white z-40 flex-col',
-      'transition-transform duration-300 ease-in-out',
-      'hidden md:flex',
-      collapsed ? 'md:w-16' : 'md:w-64',
-      mobileOpen ? '!flex w-72 translate-x-0' : 'md:translate-x-0 -translate-x-full',
-    ]"
-  >
+<aside
+  :class="[
+    'fixed top-0 left-0 h-full bg-gray-900 text-white z-40 flex-col',
+    'transition-transform duration-300 ease-in-out',
+    collapsed ? 'md:w-16' : 'md:w-64',
+    mobileOpen
+      ? 'flex w-72 translate-x-0'
+      : 'hidden md:flex md:translate-x-0 -translate-x-full',
+  ]"
+>
     <!-- Logo + Close -->
     <div class="flex items-center justify-between px-4 py-5 border-b border-gray-700">
       <div class="flex items-center gap-3">
