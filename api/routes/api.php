@@ -21,6 +21,8 @@ Route::get("/categories/{id}",   [CategoryController::class, "show"]);
 Route::get("/products",          [ProductController::class, "index"]);
 Route::get("/products/{id}",     [ProductController::class, "show"]);
 Route::get("/reviews",           [ReviewController::class, "index"]);
+// Seller — get own products
+Route::get('/seller/products', [ProductController::class, 'index']);
 
 // Protected routes
 Route::middleware("auth:sanctum")->group(function () {
