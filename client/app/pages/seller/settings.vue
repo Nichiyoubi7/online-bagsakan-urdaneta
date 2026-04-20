@@ -76,22 +76,7 @@
         </div>
       </div>
 
-      <!-- Danger Zone -->
-      <div class="bg-white rounded-2xl border border-red-100 shadow-sm p-6">
-        <h3 class="text-base font-black text-red-600 mb-1">Danger Zone</h3>
-        <p class="text-xs text-gray-400 mb-4">These actions are irreversible. Please be careful.</p>
-        <div class="flex flex-col gap-3">
-          <div class="flex items-center justify-between p-4 bg-red-50 rounded-xl">
-            <div>
-              <p class="text-sm font-semibold text-gray-800">Deactivate Store</p>
-              <p class="text-xs text-gray-400">Your store will be hidden from customers</p>
-            </div>
-            <button class="text-xs font-bold px-4 py-2 rounded-xl border border-red-300 text-red-600 hover:bg-red-100 transition-colors">
-              Deactivate
-            </button>
-          </div>
-        </div>
-      </div>
+      
 
     </div>
 
