@@ -22,7 +22,7 @@ Route::get("/products",          [ProductController::class, "index"]);
 Route::get("/products/{id}",     [ProductController::class, "show"]);
 Route::get("/reviews",           [ReviewController::class, "index"]);
 // Seller — get own products
-Route::get('/seller/products', [ProductController::class, 'index']);
+
 
 // Protected routes
 Route::middleware("auth:sanctum")->group(function () {
@@ -36,6 +36,8 @@ Route::middleware("auth:sanctum")->group(function () {
 
     // Seller uploads their ID document
     Route::post("/profile/document", [UserController::class, "uploadDocument"]);
+
+    Route::get('/seller/products', [ProductController::class, 'sellerProducts']);
 
     // Products
     Route::post("/products",          [ProductController::class, "store"]);

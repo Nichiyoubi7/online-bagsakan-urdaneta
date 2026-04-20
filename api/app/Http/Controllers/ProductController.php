@@ -239,4 +239,21 @@ class ProductController extends Controller
 
         return response()->json(['message' => 'Product deleted!']);
     }
+
+
+    public function sellerProducts(Request $request)
+{
+    $user = $request->user();
+
+    if (!$user) {
+        return response()->json(['message' => 'Unauthenticated.'], 401);
+    }
+
+    $query = Product::with(['category', 'images'])
+        ->where('user_id', $user->id);
+
+    $perPage = min((int) $request->get('per_page', 20), 100);
+
+    return response()->json($query->paginate($perPage));
+}
 }
