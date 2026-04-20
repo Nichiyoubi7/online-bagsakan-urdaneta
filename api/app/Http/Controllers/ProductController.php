@@ -26,7 +26,7 @@ class ProductController extends Controller
         }
 
         if ($request->filled('search')) {
-            $query->where('name', 'LIKE', '%' . $request->search . '%');
+            $query->where('name', 'ILIKE', '%' . $request->search . '%');
         }
 
         if ($request->filled('seller_id')) {
