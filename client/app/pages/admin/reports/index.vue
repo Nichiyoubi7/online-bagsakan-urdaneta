@@ -252,8 +252,10 @@ const topProducts = computed(() => {
   filteredOrders.value.forEach((order: any) => {
     order.items?.forEach((item: any) => {
       if (!map[item.product_name]) map[item.product_name] = { name: item.product_name, sold: 0, revenue: 0 }
-      map[item.product_name].sold    += item.quantity
-      map[item.product_name].revenue += Number(item.subtotal)
+      if (map[item.product_name]) {
+        map[item.product_name].sold    += item.quantity
+        map[item.product_name].revenue += Number(item.subtotal)
+      }
     })
   })
   return Object.values(map).sort((a, b) => b.revenue - a.revenue).slice(0, 5)
