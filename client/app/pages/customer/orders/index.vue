@@ -150,28 +150,38 @@
           </div>
 
           <!-- Actions -->
-          <div class="px-4 md:px-6 py-3 flex items-center gap-2 flex-wrap border-t border-gray-50">
-            <button
-              v-if="['delivered','cancelled'].includes(order.status)"
-              @click="navigateTo('/customer')"
-              class="flex items-center gap-2 border border-green-400 text-green-600 hover:bg-green-50 text-sm font-semibold px-4 py-2 rounded-full transition-colors"
-            >
-              🔁 Reorder
-            </button>
-            <button
-              v-if="order.status === 'pending'"
-              @click="cancelOrder(order.id)"
-              class="flex items-center gap-2 border border-red-200 text-red-500 hover:bg-red-50 text-sm font-semibold px-4 py-2 rounded-full transition-colors"
-            >
-              ✕ Cancel
-            </button>
-            <button
-              @click="selectedOrder = order"
-              class="flex items-center gap-2 border border-gray-200 text-gray-600 hover:border-green-400 text-sm font-semibold px-4 py-2 rounded-full transition-colors"
-            >
-              View Details
-            </button>
-          </div>
+<div class="px-4 md:px-6 py-3 flex items-center gap-2 flex-wrap border-t border-gray-50">
+  <button
+    v-if="['delivered','cancelled'].includes(order.status)"
+    @click="navigateTo('/customer')"
+    class="flex items-center gap-2 border border-green-400 text-green-600 hover:bg-green-50 text-sm font-semibold px-4 py-2 rounded-full transition-colors"
+  >
+    🔁 Reorder
+  </button>
+
+  <!-- ⭐ ADD THIS BUTTON -->
+  <NuxtLink
+    v-if="order.status === 'delivered'"
+    :to="`/customer/orders/${order.id}`"
+    class="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors"
+  >
+    ⭐ Rate Order
+  </NuxtLink>
+
+  <button
+    v-if="order.status === 'pending'"
+    @click="cancelOrder(order.id)"
+    class="flex items-center gap-2 border border-red-200 text-red-500 hover:bg-red-50 text-sm font-semibold px-4 py-2 rounded-full transition-colors"
+  >
+    ✕ Cancel
+  </button>
+  <button
+    @click="selectedOrder = order"
+    class="flex items-center gap-2 border border-gray-200 text-gray-600 hover:border-green-400 text-sm font-semibold px-4 py-2 rounded-full transition-colors"
+  >
+    View Details
+  </button>
+</div>
 
         </div>
       </div>
