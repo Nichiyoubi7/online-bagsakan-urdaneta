@@ -82,7 +82,7 @@
                     {{ verificationLabel(seller.verification_status) }}
                   </span>
                   
-v-if="seller.id_document"
+                    v-if="seller.id_document"
                     :href="`${storageBase}/storage/${seller.id_document}`"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -167,7 +167,7 @@ const stats = computed(() => [
   { icon: '🏪', label: 'Total Sellers',  value: sellers.value.length },
   { icon: '✅', label: 'Active',          value: sellers.value.filter(s => s.status === 'active').length },
   { icon: '⏳', label: 'Pending Review',  value: sellers.value.filter(s => s.verification_status === 'pending').length },
-  { icon: '🔒', label: 'Verified',        value: sellers.value.filter(s => s.verification_status === 'verified').length },
+  { icon: '🔒', label: 'Verified',        value: sellers.Base.filter(s => s.verification_status === 'verified').length },
 ])
 
 const filteredSellers = computed(() => {
@@ -221,10 +221,5 @@ const verifyUser = async (seller: any, status: string) => {
   } catch (e) {
     console.error('Failed to update verification', e)
   }
-}
-
-const viewDocument = (path: string) => {
-  const storageBase = apiBase.replace('/api', '')
-  window.open(storageBase + '/storage/' + path, '_blank')
 }
 </script>
