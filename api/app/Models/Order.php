@@ -10,15 +10,19 @@ class Order extends Model
         'payment_method', 'subtotal', 'delivery_fee', 'tip', 'total',
         'total_weight_kg', 'delivery_address', 'delivery_note', 'delivered_at',
         'xendit_invoice_id', 'xendit_invoice_url', 'payment_status',
+        'gcash_receipt', 'gcash_ref_no', 'payment_verified', 'payment_verified_at',
+        'ai_verification_result',
     ];
 
     protected $casts = [
-        'subtotal'        => 'float',
-        'delivery_fee'    => 'float',
-        'tip'             => 'float',
-        'total'           => 'float',
-        'total_weight_kg' => 'float',
-        'delivered_at'    => 'datetime',
+        'subtotal'             => 'float',
+        'delivery_fee'         => 'float',
+        'tip'                  => 'float',
+        'total'                => 'float',
+        'total_weight_kg'      => 'float',
+        'delivered_at'         => 'datetime',
+        'payment_verified'     => 'boolean',
+        'payment_verified_at'  => 'datetime',
     ];
 
     public function customer() { return $this->belongsTo(User::class, 'customer_id'); }

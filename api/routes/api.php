@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PaymentController;
 
 // Public routes
 Route::post("/register", [AuthController::class, "register"]);
@@ -30,6 +31,10 @@ Route::get("/seller/products", [ProductController::class, "sellerProducts"]);
 
 // Protected routes
 Route::middleware("auth:sanctum")->group(function () {
+
+    // Payment verification
+    Route::post('/orders/{id}/upload-receipt', [PaymentController::class, 'uploadReceipt']);
+    Route::get('/orders/{id}/payment-status',  [PaymentController::class, 'getPaymentStatus']);
 
     // Auth
     Route::post("/logout", [AuthController::class, "logout"]);
