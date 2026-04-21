@@ -81,9 +81,9 @@
                   <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold', verificationClass(seller.verification_status)]">
                     {{ verificationLabel(seller.verification_status) }}
                   </span>
-                  
+                  <a
                     v-if="seller.id_document"
-                    :href="`${storageBase}/storage/${seller.id_document}`"
+                    :href="storageBase + '/storage/' + seller.id_document"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="text-xs text-blue-500 hover:underline font-semibold"
@@ -167,7 +167,7 @@ const stats = computed(() => [
   { icon: '🏪', label: 'Total Sellers',  value: sellers.value.length },
   { icon: '✅', label: 'Active',          value: sellers.value.filter(s => s.status === 'active').length },
   { icon: '⏳', label: 'Pending Review',  value: sellers.value.filter(s => s.verification_status === 'pending').length },
-  { icon: '🔒', label: 'Verified',        value: sellers.Base.filter(s => s.verification_status === 'verified').length },
+  { icon: '🔒', label: 'Verified',        value: sellers.value.filter(s => s.verification_status === 'verified').length },
 ])
 
 const filteredSellers = computed(() => {
