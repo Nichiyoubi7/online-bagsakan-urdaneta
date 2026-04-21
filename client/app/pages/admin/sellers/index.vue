@@ -141,7 +141,7 @@ import AdminLayout from '../../../components/admin/layout/AdminLayout.vue'
 const { get, put } = useApi()
 const config = useRuntimeConfig()
 const apiBase = config.public.apiBase
-const storageBase = computed(() => apiBase.replace('/api', ''))
+const storageBase = 'https://api.obra-ur.xyz'
 
 const search             = ref('')
 const statusFilter       = ref('all')
