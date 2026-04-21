@@ -116,7 +116,7 @@
                 <div class="w-10 h-7 rounded flex items-center justify-center bg-blue-500 text-white text-xs font-black shrink-0">G</div>
                 <div>
                   <p class="text-sm font-semibold text-gray-800">GCash</p>
-                  <p class="text-xs text-gray-400">Pay via GCash mobile wallet</p>
+                  <p class="text-xs text-gray-400">Pay via GCash — AI-verified receipt</p>
                 </div>
               </label>
             </div>
@@ -220,7 +220,7 @@
       </div>
     </div>
 
-    <!-- Success Modal -->
+    <!-- Success Modal (COD only) -->
     <Transition name="fade">
       <div v-if="showSuccess" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
@@ -251,10 +251,12 @@ import GuestLayout from '../../components/layout/GuestLayout.vue'
 const cartStore = useCartStore()
 const authStore = useAuthStore()
 const { post } = useApi()
+const router = useRouter()
 
 const loading = ref(false)
 const error = ref('')
 const showSuccess = ref(false)
+let lastOrderId = 0
 
 const form = ref({
   address: '',
@@ -320,8 +322,6 @@ const handlePlaceOrder = async () => {
       ? `${form.value.address}, ${form.value.barangay}, ${form.value.city}, ${form.value.province}`
       : 'Store Pickup'
 
-    let xenditUrl = null
-
     for (const group of sellerGroups.value) {
       const res: any = await post('/orders', {
         seller_id:        group.sellerId,
@@ -335,17 +335,13 @@ const handlePlaceOrder = async () => {
           quantity:   i.quantity,
         })),
       })
-
-      if (res.xendit_invoice_url) {
-        xenditUrl = res.xendit_invoice_url
-      }
+      lastOrderId = res.order?.id
     }
 
     selectedItems.value.forEach(i => cartStore.removeItem(i.id))
 
-    if (xenditUrl) {
-      // Redirect to Xendit GCash payment page
-      window.location.href = xenditUrl
+    if (form.value.paymentMethod === 'gcash') {
+      router.push(`/payment/verify?order_id=${lastOrderId}&total=${orderTotal.value.toFixed(2)}`)
     } else {
       showSuccess.value = true
     }
