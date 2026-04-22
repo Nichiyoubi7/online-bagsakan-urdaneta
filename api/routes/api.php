@@ -9,6 +9,7 @@ use App\Http\Controllers\OtpController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\DisbursementController;
 
 // Public routes
 Route::post("/register", [AuthController::class, "register"]);
@@ -78,6 +79,10 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::delete("/users/{id}",          [UserController::class, "destroy"]);
     Route::put("/users/{id}/verify",      [UserController::class, "verify"]);
 
+    // Disbursements (admin only)
+    Route::get('/disbursements',              [DisbursementController::class, 'index']);
+    Route::post('/disbursements/release-all', [DisbursementController::class, 'releaseAll']);
+    Route::post('/disbursements/{id}/release',[DisbursementController::class, 'releaseSingle']);
     // Seller shop setup
     Route::post('/seller/shop', function(\Illuminate\Http\Request $request) {
         $user = $request->user();

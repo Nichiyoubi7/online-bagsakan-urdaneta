@@ -7,4 +7,6 @@ use Illuminate\Support\Facades\Schedule;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
 Schedule::command('orders:auto-cancel')->everyMinute();
+Schedule::command('obra:release-disbursements')->dailyAt('08:00');
