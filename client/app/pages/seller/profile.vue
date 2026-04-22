@@ -30,11 +30,11 @@
             </div>
             <div class="flex items-center justify-between">
               <span class="text-gray-500">Phone</span>
-              <span class="font-semibold text-gray-800">{{ form.phone || '—' }}</span>
+              <span class="font-semibold text-gray-800">{{ authStore.user?.phone || '—' }}</span>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-gray-500">GCash</span>
-              <span class="font-semibold text-gray-800">{{ form.gcash_number || '—' }}</span>
+              <span class="font-semibold text-gray-800">{{ authStore.user?.gcash_number || '—' }}</span>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-gray-500">Location</span>
@@ -183,7 +183,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import SellerLayout from '../../components/seller/layout/SellerLayout.vue'
 
 const { put } = useApi()
@@ -232,18 +232,17 @@ const savePersonal = async () => {
       phone:        form.value.phone,
       gcash_number: form.value.gcash_number,
     })
-    // Update form values directly — this is what the Store Info card reads
-    form.value.name         = res.user?.name         || form.value.name
-    form.value.phone        = res.user?.phone        || form.value.phone
-    form.value.gcash_number = res.user?.gcash_number || form.value.gcash_number
-    // Update auth store
-    if (authStore.user) {
-      authStore.user.name         = res.user?.name
-      authStore.user.phone        = res.user?.phone
-      authStore.user.gcash_number = res.user?.gcash_number
-    }
-    localStorage.setItem('obra_user', JSON.stringify({ ...authStore.user, ...res.user }))
-    personalSuccess.value = true
+    // Save to localStorage first
+    localStorage.setItem('obra_user', JSON.stringify(res.user))
+    // Force full reload of user — null then reload triggers Vue reactivity
+    authStore.user = null
+    await nextTick()
+    authStore.loadFromStorage()
+    // Update form values from response
+    form.value.name         = res.user?.name         || ''
+    form.value.phone        = res.user?.phone        || ''
+    form.value.gcash_number = res.user?.gcash_number || ''
+    personalSuccess.value   = true
     setTimeout(() => { personalSuccess.value = false }, 3000)
   } catch (e: any) {
     personalError.value = e?.data?.message || 'Failed to update. Please try again.'
@@ -261,13 +260,12 @@ const saveStore = async () => {
       store_name:        form.value.store_name,
       store_description: form.value.store_description,
     })
-    form.value.store_name        = res.user?.store_name        || form.value.store_name
-    form.value.store_description = res.user?.store_description || form.value.store_description
-    if (authStore.user) {
-      authStore.user.store_name        = res.user?.store_name
-      authStore.user.store_description = res.user?.store_description
-    }
-    localStorage.setItem('obra_user', JSON.stringify({ ...authStore.user, ...res.user }))
+    localStorage.setItem('obra_user', JSON.stringify(res.user))
+    authStore.user = null
+    await nextTick()
+    authStore.loadFromStorage()
+    form.value.store_name        = res.user?.store_name        || ''
+    form.value.store_description = res.user?.store_description || ''
     storeSuccess.value = true
     setTimeout(() => { storeSuccess.value = false }, 3000)
   } catch (e: any) {
@@ -302,8 +300,10 @@ const uploadDocument = async () => {
     const data = await res.json()
     if (!res.ok) throw new Error(data.message || 'Upload failed')
 
-    authStore.user = data.user
     localStorage.setItem('obra_user', JSON.stringify(data.user))
+    authStore.user = null
+    await nextTick()
+    authStore.loadFromStorage()
     docSuccess.value  = true
     selectedDoc.value = null
   } catch (e: any) {
