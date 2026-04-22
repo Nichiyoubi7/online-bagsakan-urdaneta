@@ -49,13 +49,15 @@ class UserController extends Controller
         return response()->json(['message' => 'User deleted!']);
     }
 
-    public function updateSelf(Request $request)
+public function updateSelf(Request $request)
     {
         $user = $request->user();
         $user->update($request->only([
             'name', 'phone', 'address',
             'store_name', 'store_description',
+            'gcash_number',
         ]));
+        $user->refresh();
         return response()->json(['message' => 'Profile updated!', 'user' => $user]);
     }
 
