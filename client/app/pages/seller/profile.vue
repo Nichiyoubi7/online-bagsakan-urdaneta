@@ -30,11 +30,11 @@
             </div>
             <div class="flex items-center justify-between">
               <span class="text-gray-500">Phone</span>
-              <span class="font-semibold text-gray-800">{{ authStore.user?.phone || '—' }}</span>
+              <span class="font-semibold text-gray-800">{{ form.phone || '—' }}</span>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-gray-500">GCash</span>
-              <span class="font-semibold text-gray-800">{{ authStore.user?.gcash_number || '—' }}</span>
+              <span class="font-semibold text-gray-800">{{ form.gcash_number || '—' }}</span>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-gray-500">Location</span>
@@ -232,9 +232,17 @@ const savePersonal = async () => {
       phone:        form.value.phone,
       gcash_number: form.value.gcash_number,
     })
-    authStore.user = { ...res.user }
-    localStorage.setItem('obra_user', JSON.stringify(res.user))
-    form.value.gcash_number = res.user.gcash_number || ''
+    // Update form values directly — this is what the Store Info card reads
+    form.value.name         = res.user?.name         || form.value.name
+    form.value.phone        = res.user?.phone        || form.value.phone
+    form.value.gcash_number = res.user?.gcash_number || form.value.gcash_number
+    // Update auth store
+    if (authStore.user) {
+      authStore.user.name         = res.user?.name
+      authStore.user.phone        = res.user?.phone
+      authStore.user.gcash_number = res.user?.gcash_number
+    }
+    localStorage.setItem('obra_user', JSON.stringify({ ...authStore.user, ...res.user }))
     personalSuccess.value = true
     setTimeout(() => { personalSuccess.value = false }, 3000)
   } catch (e: any) {
@@ -253,8 +261,13 @@ const saveStore = async () => {
       store_name:        form.value.store_name,
       store_description: form.value.store_description,
     })
-    authStore.user = res.user
-    localStorage.setItem('obra_user', JSON.stringify(res.user))
+    form.value.store_name        = res.user?.store_name        || form.value.store_name
+    form.value.store_description = res.user?.store_description || form.value.store_description
+    if (authStore.user) {
+      authStore.user.store_name        = res.user?.store_name
+      authStore.user.store_description = res.user?.store_description
+    }
+    localStorage.setItem('obra_user', JSON.stringify({ ...authStore.user, ...res.user }))
     storeSuccess.value = true
     setTimeout(() => { storeSuccess.value = false }, 3000)
   } catch (e: any) {
