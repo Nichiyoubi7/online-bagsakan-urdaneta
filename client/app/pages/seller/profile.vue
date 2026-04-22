@@ -232,8 +232,9 @@ const savePersonal = async () => {
       phone:        form.value.phone,
       gcash_number: form.value.gcash_number,
     })
-    authStore.user = res.user
+    authStore.user = { ...res.user }
     localStorage.setItem('obra_user', JSON.stringify(res.user))
+    form.value.gcash_number = res.user.gcash_number || ''
     personalSuccess.value = true
     setTimeout(() => { personalSuccess.value = false }, 3000)
   } catch (e: any) {
