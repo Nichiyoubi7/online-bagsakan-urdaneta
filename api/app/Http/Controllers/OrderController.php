@@ -5,8 +5,8 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Notification;
 use App\Models\AuditLog;
+use App\Models\Disbursement;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 
 class OrderController extends Controller
 {
@@ -141,43 +141,9 @@ class OrderController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
-        // GCash via Xendit — create invoice
-        $xenditInvoiceUrl = null;
-        if ($request->payment_method === 'gcash') {
-            try {
-                $frontendUrl = env('FRONTEND_URL', 'https://online-bagsakan-urdaneta.vercel.app');
-                $response = Http::withBasicAuth(env('XENDIT_SECRET_KEY'), '')
-                    ->post('https://api.xendit.co/v2/invoices', [
-                        'external_id'       => 'OBRA-ORDER-' . $order->id,
-                        'amount'            => (int) $total,
-                        'currency'          => 'PHP',
-                        'description'       => "OBRA Order #{$order->id} — {$request->user()->name}",
-                        'customer'          => [
-                            'given_names' => $request->user()->name,
-                            'email'       => $request->user()->email,
-                        ],
-                        'success_redirect_url' => $frontendUrl . '/payment/success?order_id=' . $order->id,
-                        'failure_redirect_url' => $frontendUrl . '/payment/failed?order_id=' . $order->id,
-                        'payment_methods'   => ['GCASH'],
-                    ]);
-
-                if ($response->successful()) {
-                    $invoice = $response->json();
-                    $order->update([
-                        'xendit_invoice_id'  => $invoice['id'],
-                        'xendit_invoice_url' => $invoice['invoice_url'],
-                    ]);
-                    $xenditInvoiceUrl = $invoice['invoice_url'];
-                }
-            } catch (\Exception $e) {
-                \Log::error('Xendit invoice creation failed: ' . $e->getMessage());
-            }
-        }
-
         return response()->json([
-            'message'          => 'Order placed successfully!',
-            'order'            => $order->load('items'),
-            'xendit_invoice_url' => $xenditInvoiceUrl,
+            'message' => 'Order placed successfully!',
+            'order'   => $order->load('items'),
         ], 201);
     }
 
@@ -195,11 +161,17 @@ class OrderController extends Controller
         if ($status === 'in_transit') {
             $data['driver_id'] = $request->user()->id;
         }
+
         if ($status === 'delivered') {
             $data['delivered_at'] = now();
         }
 
         $order->update($data);
+
+        // Trigger disbursement when delivered
+        if ($status === 'delivered') {
+            $this->processDisbursement($order);
+        }
 
         $orderId    = $order->id;
         $sellerName = $order->seller->name ?? 'Seller';
@@ -270,5 +242,41 @@ class OrderController extends Controller
             'message' => 'Order status updated!',
             'order'   => $order,
         ]);
+    }
+
+    private function processDisbursement(Order $order): void
+    {
+        try {
+            $order->load('seller');
+            $seller       = $order->seller;
+            $sellerGcash  = $seller->gcash_number ?? 'Not registered';
+            $sellerAmount = $order->subtotal + ($order->tip ?? 0);
+
+            // Create PENDING disbursement — released next business day at 8AM
+            Disbursement::create([
+                'order_id'    => $order->id,
+                'seller_id'   => $order->seller_id,
+                'amount'      => $sellerAmount,
+                'seller_gcash' => $sellerGcash,
+                'status'      => 'pending',
+                'released_at' => null,
+            ]);
+
+            // Update order payment status
+            $order->update(['payment_status' => 'disbursement_pending']);
+
+            // Notify seller — payment pending
+            Notification::create([
+                'user_id'  => $order->seller_id,
+                'title'    => 'Order Delivered — Payment Pending 🕐',
+                'message'  => "Order #{$order->id} has been delivered! Your payment of ₱" . number_format($sellerAmount, 2) . " will be released to your GCash ({$sellerGcash}) by 8:00 AM tomorrow.",
+                'type'     => 'info',
+                'icon'     => '🕐',
+                'order_id' => $order->id,
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Disbursement error for order ' . $order->id . ': ' . $e->getMessage());
+        }
     }
 }
