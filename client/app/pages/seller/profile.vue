@@ -33,6 +33,10 @@
               <span class="font-semibold text-gray-800">{{ authStore.user?.phone || '—' }}</span>
             </div>
             <div class="flex items-center justify-between">
+              <span class="text-gray-500">GCash</span>
+              <span class="font-semibold text-gray-800">{{ authStore.user?.gcash_number || '—' }}</span>
+            </div>
+            <div class="flex items-center justify-between">
               <span class="text-gray-500">Location</span>
               <span class="font-semibold text-gray-800">Urdaneta City</span>
             </div>
@@ -66,6 +70,11 @@
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Phone Number</label>
               <input v-model="form.phone" type="text" placeholder="+63 9XX XXX XXXX" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-gray-800 text-sm outline-none focus:border-green-500 transition-colors" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">GCash Number</label>
+              <input v-model="form.gcash_number" type="text" placeholder="09XX XXX XXXX" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-gray-800 text-sm outline-none focus:border-green-500 transition-colors" />
+              <p class="text-xs text-gray-400 mt-1">💸 Payments will be sent here after delivery confirmation</p>
             </div>
             <div v-if="personalSuccess" class="text-sm text-green-600 bg-green-50 border border-green-200 px-4 py-3 rounded-xl">✅ Personal info updated successfully!</div>
             <div v-if="personalError" class="text-sm text-red-600 bg-red-50 border border-red-200 px-4 py-3 rounded-xl">{{ personalError }}</div>
@@ -185,6 +194,7 @@ const form = ref({
   name:              '',
   email:             '',
   phone:             '',
+  gcash_number:      '',
   store_name:        '',
   store_description: '',
 })
@@ -197,17 +207,17 @@ const savingStore  = ref(false)
 const storeSuccess = ref(false)
 const storeError   = ref('')
 
-// Document upload
-const fileInput   = ref<HTMLInputElement | null>(null)
-const selectedDoc = ref<File | null>(null)
+const fileInput    = ref<HTMLInputElement | null>(null)
+const selectedDoc  = ref<File | null>(null)
 const uploadingDoc = ref(false)
-const docSuccess  = ref(false)
-const docError    = ref('')
+const docSuccess   = ref(false)
+const docError     = ref('')
 
 onMounted(() => {
   form.value.name              = authStore.user?.name || ''
   form.value.email             = authStore.user?.email || ''
   form.value.phone             = authStore.user?.phone || ''
+  form.value.gcash_number      = authStore.user?.gcash_number || ''
   form.value.store_name        = authStore.user?.store_name || ''
   form.value.store_description = authStore.user?.store_description || ''
 })
@@ -218,8 +228,9 @@ const savePersonal = async () => {
   personalError.value   = ''
   try {
     const res: any = await put('/profile', {
-      name:  form.value.name,
-      phone: form.value.phone,
+      name:         form.value.name,
+      phone:        form.value.phone,
+      gcash_number: form.value.gcash_number,
     })
     authStore.user = res.user
     localStorage.setItem('obra_user', JSON.stringify(res.user))
@@ -270,9 +281,9 @@ const uploadDocument = async () => {
 
     const token = localStorage.getItem('obra_token')
     const res = await fetch(`${config.public.apiBase}/profile/document`, {
-      method: 'POST',
+      method:  'POST',
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-      body: formData,
+      body:    formData,
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.message || 'Upload failed')
