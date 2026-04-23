@@ -15,6 +15,7 @@ class User extends Authenticatable
         'name', 'email', 'phone', 'password', 'role', 'status',
         'address', 'store_name', 'store_description', 'store_status',
         'vehicle_type', 'is_online', 'id_document', 'verification_status',
+        'gcash_number',
     ];
 
     protected $hidden = [
