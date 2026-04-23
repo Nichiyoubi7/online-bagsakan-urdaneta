@@ -322,6 +322,9 @@ const handlePlaceOrder = async () => {
       ? `${form.value.address}, ${form.value.barangay}, ${form.value.city}, ${form.value.province}`
       : 'Store Pickup'
 
+    // Save total BEFORE clearing cart
+    const finalTotal = orderTotal.value.toFixed(2)
+
     for (const group of sellerGroups.value) {
       const res: any = await post('/orders', {
         seller_id:        group.sellerId,
@@ -341,7 +344,7 @@ const handlePlaceOrder = async () => {
     selectedItems.value.forEach(i => cartStore.removeItem(i.id))
 
     if (form.value.paymentMethod === 'gcash') {
-      router.push(`/payment/verify?order_id=${lastOrderId}&total=${orderTotal.value.toFixed(2)}`)
+      router.push(`/payment/verify?order_id=${lastOrderId}&total=${finalTotal}`)
     } else {
       showSuccess.value = true
     }
