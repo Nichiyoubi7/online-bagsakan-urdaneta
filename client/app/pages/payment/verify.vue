@@ -25,7 +25,7 @@
               </div>
               <div class="flex items-center justify-between">
                 <span class="text-sm text-gray-500">Account Name</span>
-                <span class="text-base font-semibold text-gray-800">OBRA Bagsakan</span>
+                <span class="text-base font-semibold text-gray-800">Domingo Carolino (OBRA)</span>
               </div>
               <div class="flex items-center justify-between border-t border-blue-200 pt-3">
                 <span class="text-sm font-semibold text-gray-700">Amount to Pay</span>
@@ -188,20 +188,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import GuestLayout from '../../components/layout/GuestLayout.vue'
 
 const route  = useRoute()
 const config = useRuntimeConfig()
 
-const orderId          = route.query.order_id
-const orderTotal       = route.query.total
-const step             = ref(1)
-const fileInput        = ref<HTMLInputElement | null>(null)
-const selectedFile     = ref<File | null>(null)
-const previewUrl       = ref<string | null>(null)
-const verifying        = ref(false)
-const error            = ref('')
+const orderId            = ref(route.query.order_id as string)
+const orderTotal         = ref(route.query.total as string || '0.00')
+const step               = ref(1)
+const fileInput          = ref<HTMLInputElement | null>(null)
+const selectedFile       = ref<File | null>(null)
+const previewUrl         = ref<string | null>(null)
+const verifying          = ref(false)
+const error              = ref('')
 const verificationResult = ref<any>(null)
 
 const triggerFileInput = () => fileInput.value?.click()
@@ -230,7 +230,7 @@ const submitReceipt = async () => {
     formData.append('receipt', selectedFile.value)
 
     const token = localStorage.getItem('obra_token')
-    const res   = await fetch(`${config.public.apiBase}/orders/${orderId}/upload-receipt`, {
+    const res   = await fetch(`${config.public.apiBase}/orders/${orderId.value}/upload-receipt`, {
       method:  'POST',
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       body:    formData,

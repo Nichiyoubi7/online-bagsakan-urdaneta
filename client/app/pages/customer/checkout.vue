@@ -322,7 +322,7 @@ const handlePlaceOrder = async () => {
       ? `${form.value.address}, ${form.value.barangay}, ${form.value.city}, ${form.value.province}`
       : 'Store Pickup'
 
-    // Save total BEFORE clearing cart
+    // Capture total BEFORE anything changes
     const finalTotal = orderTotal.value.toFixed(2)
 
     for (const group of sellerGroups.value) {
@@ -341,6 +341,7 @@ const handlePlaceOrder = async () => {
       lastOrderId = res.order?.id
     }
 
+    // Clear cart AFTER saving total and order ID
     selectedItems.value.forEach(i => cartStore.removeItem(i.id))
 
     if (form.value.paymentMethod === 'gcash') {
