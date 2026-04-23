@@ -50,24 +50,28 @@ export const useAuthStore = defineStore("auth", () => {
   const loadFromStorage = async () => {
     if (import.meta.client) {
       token.value = localStorage.getItem("obra_token")
-      role.value = localStorage.getItem("obra_role")
+      role.value  = localStorage.getItem("obra_role")
       const stored = localStorage.getItem("obra_user")
       user.value = stored ? JSON.parse(stored) : null
 
-      // If token exists, fetch fresh user data from API to get latest fields
+      // Fetch fresh user data from /me to get latest fields including gcash_number
       if (token.value) {
         try {
-          const res: any = await $fetch("/profile", {
+          const res: any = await $fetch("/me", {
             baseURL,
             headers: {
               Authorization: `Bearer ${token.value}`,
               Accept: "application/json",
             },
           })
-          user.value = res.user || res
-          localStorage.setItem("obra_user", JSON.stringify(user.value))
+          // /me returns the user object directly
+          const freshUser = res.user ?? res
+          if (freshUser?.id) {
+            user.value = freshUser
+            localStorage.setItem("obra_user", JSON.stringify(freshUser))
+          }
         } catch (e) {
-          // Token might be expired — keep stored user as fallback
+          // Token expired or network error — keep stored user as fallback
         }
       }
     }
