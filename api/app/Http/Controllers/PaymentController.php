@@ -30,12 +30,12 @@ class PaymentController extends Controller
 
         if ($verificationResult['verified']) {
             $order->update([
-                'payment_verified'    => true,
-                'payment_verified_at' => now(),
-                'payment_status'      => 'paid',
-                'gcash_ref_no'        => $verificationResult['ref_no'] ?? null,
+                'payment_verified'       => true,
+                'payment_verified_at'    => now(),
+                'payment_status'         => 'paid',
+                'gcash_ref_no'           => $verificationResult['ref_no'] ?? null,
                 'ai_verification_result' => json_encode($verificationResult),
-                'status'              => 'confirmed',
+                'status'                 => 'confirmed',
             ]);
 
             // Notify seller
@@ -85,6 +85,13 @@ class PaymentController extends Controller
             $imageData = base64_encode(file_get_contents($fullPath));
             $mimeType  = mime_content_type($fullPath);
 
+            \Log::info('AI verification started', [
+                'path'      => $fullPath,
+                'mimeType'  => $mimeType,
+                'total'     => $orderTotal,
+                'imageSize' => strlen($imageData),
+            ]);
+
             $prompt = "You are verifying a GCash payment receipt for an e-commerce order.
 
 The expected payment amount is: ₱" . number_format($orderTotal, 2) . "
@@ -115,12 +122,12 @@ Respond ONLY in this exact JSON format:
   \"reason\": \"brief explanation of your decision\"
 }";
 
-            $response = Http::withHeaders([
+            $response = Http::timeout(60)->withHeaders([
                 'x-api-key'         => env('ANTHROPIC_API_KEY'),
                 'anthropic-version' => '2023-06-01',
                 'content-type'      => 'application/json',
             ])->post('https://api.anthropic.com/v1/messages', [
-                'model'      => 'claude-opus-4-5',
+                'model'      => 'claude-opus-4-5-20251101',
                 'max_tokens' => 1024,
                 'messages'   => [
                     [
@@ -143,8 +150,15 @@ Respond ONLY in this exact JSON format:
                 ],
             ]);
 
+            \Log::info('AI verification response', [
+                'status'   => $response->status(),
+                'body'     => $response->body(),
+            ]);
+
             if ($response->successful()) {
                 $content = $response->json('content.0.text');
+                \Log::info('AI raw content', ['content' => $content]);
+
                 // Clean JSON from response
                 $content = preg_replace('/```json\s*|\s*```/', '', $content);
                 $result  = json_decode(trim($content), true);
@@ -152,6 +166,16 @@ Respond ONLY in this exact JSON format:
                 if (json_last_error() === JSON_ERROR_NONE) {
                     return $result;
                 }
+
+                \Log::error('AI JSON parse error', [
+                    'json_error' => json_last_error_msg(),
+                    'content'    => $content,
+                ]);
+            } else {
+                \Log::error('AI API error', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
             }
 
             return [
@@ -161,9 +185,10 @@ Respond ONLY in this exact JSON format:
 
         } catch (\Exception $e) {
             \Log::error('AI verification error: ' . $e->getMessage());
+            \Log::error('AI verification trace: ' . $e->getTraceAsString());
             return [
                 'verified' => false,
-                'reason'   => 'Verification service temporarily unavailable.',
+                'reason'   => 'Error: ' . $e->getMessage(),
             ];
         }
     }
