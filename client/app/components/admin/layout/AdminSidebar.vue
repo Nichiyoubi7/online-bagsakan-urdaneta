@@ -133,10 +133,11 @@ const navGroups = [
     ],
   },
   
-  {
+{
     label: 'System',
     items: [
-      { icon: '📈', label: 'Reports',  to: '/admin/reports',  badge: null },
+      { icon: '📈', label: 'Reports',       to: '/admin/reports',       badge: null },
+      { icon: '💸', label: 'Disbursements', to: '/admin/disbursements', badge: null },
     ],
   },
 ]
