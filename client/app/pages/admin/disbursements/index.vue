@@ -34,18 +34,74 @@
           <span>{{ releasing ? 'Releasing...' : '💸 Release All Payments' }}</span>
         </button>
       </div>
-
-      <!-- Success message -->
       <div v-if="releaseSuccess" class="mt-4 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
         <p class="text-sm text-green-700 font-semibold">{{ releaseSuccess }}</p>
         <p class="text-xs text-green-500 mt-0.5">All sellers have been notified via their dashboard.</p>
       </div>
     </div>
 
-    <!-- Table -->
+    <!-- Pending Seller Summary -->
+    <div v-if="sellerPendingSummary.length > 0" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+      <div class="px-5 py-4 border-b border-gray-100">
+        <h3 class="text-base font-black text-gray-800">⏳ Pending — To Be Released</h3>
+        <p class="text-xs text-gray-400 mt-0.5">Send these amounts via GCash before clicking Release</p>
+      </div>
+      <div class="divide-y divide-gray-50">
+        <div v-for="s in sellerPendingSummary" :key="s.seller_id"
+          class="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 font-black text-base">
+              {{ s.name?.charAt(0)?.toUpperCase() }}
+            </div>
+            <div>
+              <p class="text-sm font-bold text-gray-800">{{ s.name }}</p>
+              <p class="text-xs text-blue-600 font-semibold">{{ s.gcash || 'GCash not registered' }}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-lg font-black text-yellow-600">₱{{ s.total.toLocaleString() }}</p>
+            <p class="text-xs text-gray-400">{{ s.count }} order{{ s.count > 1 ? 's' : '' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Released Summary -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+      <div class="px-5 py-4 border-b border-gray-100">
+        <h3 class="text-base font-black text-gray-800">✅ Today's GCash Payouts</h3>
+        <p class="text-xs text-gray-400 mt-0.5">Total released to each seller today — {{ todayLabel }}</p>
+      </div>
+      <div v-if="sellerTodaySummary.length === 0" class="py-10 text-center text-sm text-gray-400">
+        No payments released today
+      </div>
+      <div v-else class="divide-y divide-gray-50">
+        <div v-for="s in sellerTodaySummary" :key="s.seller_id"
+          class="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-black text-base">
+              {{ s.name?.charAt(0)?.toUpperCase() }}
+            </div>
+            <div>
+              <p class="text-sm font-bold text-gray-800">{{ s.name }}</p>
+              <p class="text-xs text-blue-600 font-semibold">{{ s.gcash || 'GCash not registered' }}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-lg font-black text-green-600">₱{{ s.total.toLocaleString() }}</p>
+            <p class="text-xs text-gray-400">{{ s.count }} order{{ s.count > 1 ? 's' : '' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Per-Order Disbursement Log -->
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-        <h3 class="text-base font-black text-gray-800">Disbursement Log</h3>
+        <div>
+          <h3 class="text-base font-black text-gray-800">Disbursement Log</h3>
+          <p class="text-xs text-gray-400 mt-0.5">Per-order breakdown</p>
+        </div>
         <div class="flex gap-2">
           <button
             v-for="f in filters"
@@ -135,6 +191,10 @@ const filters = [
   { label: 'Released', value: 'released' },
 ]
 
+const todayLabel = new Date().toLocaleDateString('en-PH', {
+  year: 'numeric', month: 'long', day: 'numeric'
+})
+
 onMounted(async () => {
   await loadDisbursements()
 })
@@ -151,6 +211,33 @@ const loadDisbursements = async () => {
   }
 }
 
+const groupBySeller = (list: any[]) => {
+  const map: Record<number, any> = {}
+  for (const d of list) {
+    const id = d.seller_id
+    if (!map[id]) {
+      map[id] = { seller_id: id, name: d.seller?.name || '—', gcash: d.seller_gcash || null, total: 0, count: 0 }
+    }
+    map[id].total += Number(d.amount)
+    map[id].count += 1
+  }
+  return Object.values(map).sort((a, b) => b.total - a.total)
+}
+
+// Pending — to be released
+const sellerPendingSummary = computed(() =>
+  groupBySeller(disbursements.value.filter(d => d.status === 'pending'))
+)
+
+// Released today
+const sellerTodaySummary = computed(() => {
+  const today = new Date().toDateString()
+  const todayReleased = disbursements.value.filter(d =>
+    d.status === 'released' && d.released_at && new Date(d.released_at).toDateString() === today
+  )
+  return groupBySeller(todayReleased)
+})
+
 const filteredDisbursements = computed(() => {
   if (activeFilter.value === 'all') return disbursements.value
   return disbursements.value.filter(d => d.status === activeFilter.value)
@@ -161,8 +248,8 @@ const pendingCount = computed(() =>
 )
 
 const stats = computed(() => [
-  { icon: '🕐', label: 'Pending', value: disbursements.value.filter(d => d.status === 'pending').length },
-  { icon: '✅', label: 'Released', value: disbursements.value.filter(d => d.status === 'released').length },
+  { icon: '🕐', label: 'Pending',        value: disbursements.value.filter(d => d.status === 'pending').length },
+  { icon: '✅', label: 'Released',       value: disbursements.value.filter(d => d.status === 'released').length },
   { icon: '💸', label: 'Total Released', value: '₱' + disbursements.value.filter(d => d.status === 'released').reduce((s, d) => s + Number(d.amount), 0).toLocaleString() },
   { icon: '🕐', label: 'Pending Amount', value: '₱' + disbursements.value.filter(d => d.status === 'pending').reduce((s, d) => s + Number(d.amount), 0).toLocaleString() },
 ])
